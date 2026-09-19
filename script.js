@@ -1,79 +1,604 @@
-// ================================================
-// VIRELIA: AFTERFALL
-// MOBILE LANDSCAPE + ANALOG BUILD
-// ================================================
-
 const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d", { alpha: false });
+const ctx = canvas.getContext("2d");
 
 const joystick = document.getElementById("joystick");
 const stick = document.getElementById("joystick-stick");
-const interactButton = document.getElementById("interact");
-const fullscreenButton = document.getElementById("fullscreen");
+const interactBtn = document.getElementById("interact");
+const fullscreenBtn = document.getElementById("fullscreen");
 
-// ------------------------------------------------
-// CANVAS
-// ------------------------------------------------
+canvas.width = 1280;
+canvas.height = 720;
 
-const VIEW_W = 1280;
-const VIEW_H = 720;
+const W = 2600;
+const H = 1900;
 
-canvas.width = VIEW_W;
-canvas.height = VIEW_H;
+let keys = {};
+let joyX = 0;
+let joyY = 0;
+let joyActive = false;
 
-const WORLD_W = 2600;
-const WORLD_H = 1900;
-
-// ------------------------------------------------
-// GAME STATE
-// ------------------------------------------------
-
-let lastTime = performance.now();
-let elapsed = 0;
+let camera = {
+  x: 0,
+  y: 0
+};
 
 let mode = "outside";
-
 let currentBuilding = null;
 
-let message = "";
-let messageTimer = 0;
+let timeMinutes = 13 * 60;
+let day = 1;
 
-// ------------------------------------------------
-// PLAYER
-// ------------------------------------------------
+let hp = 100;
+let hunger = 100;
 
-const player = {
+let player = {
   x: 1300,
-  y: 980,
-
-  radius: 15,
-
-  speed: 205,
-
-  hp: 100,
-  hunger: 100,
-
+  y: 950,
+  r: 16,
+  speed: 3.0,
   angle: 0,
-
+  inCar: false,
   car: null
 };
 
-// ------------------------------------------------
-// ANALOG
-// ------------------------------------------------
+// =====================================================
+// WORLD
+// =====================================================
 
-const analog = {
-  active: false,
-  pointerId: null,
+const buildings = [
+  {
+    id: 1,
+    x: 850,
+    y: 520,
+    w: 500,
+    h: 330,
+    door: {
+      x: 1075,
+      y: 850,
+      w: 70,
+      h: 18
+    }
+  },
 
-  x: 0,
-  y: 0,
+  {
+    id: 2,
+    x: 1500,
+    y: 450,
+    w: 430,
+    h: 300,
+    door: {
+      x: 1680,
+      y: 750,
+      w: 70,
+      h: 18
+    }
+  },
 
-  power: 0
-};
+  {
+    id: 3,
+    x: 450,
+    y: 1050,
+    w: 430,
+    h: 320,
+    door: {
+      x: 630,
+      y: 1370,
+      w: 70,
+      h: 18
+    }
+  },
 
-function updateAnalog(clientX, clientY) {
+  {
+    id: 4,
+    x: 1750,
+    y: 1050,
+    w: 470,
+    h: 330,
+    door: {
+      x: 1950,
+      y: 1380,
+      w: 70,
+      h: 18
+    }
+  }
+];
 
+const cars = [
+  { x: 600, y: 300, w: 78, h: 42, angle: 0, occupied: false },
+  { x: 930, y: 300, w: 78, h: 42, angle: 0, occupied: false },
+  { x: 1500, y: 300, w: 78, h: 42, angle: 0, occupied: false },
+  { x: 2050, y: 300, w: 78, h: 42, angle: 0, occupied: false },
+  { x: 400, y: 800, w: 78, h: 42, angle: 1.57, occupied: false },
+  { x: 2200, y: 850, w: 78, h: 42, angle: 1.57, occupied: false },
+  { x: 1050, y: 1450, w: 78, h: 42, angle: 0, occupied: false }
+];
+
+const trees = [
+  { x: 300, y: 350, r: 32 },
+  { x: 360, y: 500, r: 30 },
+  { x: 400, y: 700, r: 34 },
+  { x: 300, y: 1500, r: 34 },
+  { x: 1000, y: 1550, r: 32 },
+  { x: 1450, y: 1450, r: 30 },
+  { x: 2200, y: 500, r: 35 },
+  { x: 2350, y: 700, r: 30 },
+  { x: 2350, y: 1500, r: 35 },
+  { x: 1500, y: 1650, r: 32 },
+  { x: 700, y: 1650, r: 35 }
+];
+
+const rubble = [
+  { x: 550, y: 500, w: 55, h: 35 },
+  { x: 2100, y: 950, w: 60, h: 38 },
+  { x: 1100, y: 350, w: 55, h: 35 },
+  { x: 1250, y: 1500, w: 65, h: 40 },
+  { x: 350, y: 900, w: 55, h: 40 }
+];
+
+const zombies = [
+  { x: 500, y: 450, r: 14, speed: 0.55 },
+  { x: 1450, y: 900, r: 14, speed: 0.55 },
+  { x: 2050, y: 900, r: 14, speed: 0.55 },
+  { x: 700, y: 1500, r: 14, speed: 0.55 },
+  { x: 2300, y: 1200, r: 14, speed: 0.55 },
+  { x: 1500, y: 1100, r: 14, speed: 0.55 },
+  { x: 300, y: 1100, r: 14, speed: 0.55 },
+  { x: 2100, y: 1550, r: 14, speed: 0.55 }
+];
+
+// =====================================================
+// INTERIORS
+// =====================================================
+
+function getInterior(building) {
+  return {
+    x: building.x,
+    y: building.y,
+    w: building.w,
+    h: building.h,
+
+    furniture: [
+      {
+        x: building.x + 80,
+        y: building.y + 70,
+        w: 120,
+        h: 55,
+        type: "bed"
+      },
+
+      {
+        x: building.x + building.w - 170,
+        y: building.y + 70,
+        w: 80,
+        h: 100,
+        type: "cabinet"
+      },
+
+      {
+        x: building.x + 180,
+        y: building.y + 190,
+        w: 100,
+        h: 60,
+        type: "table"
+      },
+
+      {
+        x: building.x + building.w - 190,
+        y: building.y + 210,
+        w: 110,
+        h: 55,
+        type: "table"
+      }
+    ]
+  };
+}
+
+// =====================================================
+// COLLISION HELPERS
+// =====================================================
+
+function circleRectCollision(cx, cy, r, rect) {
+  const nearestX = Math.max(rect.x, Math.min(cx, rect.x + rect.w));
+  const nearestY = Math.max(rect.y, Math.min(cy, rect.y + rect.h));
+
+  const dx = cx - nearestX;
+  const dy = cy - nearestY;
+
+  return dx * dx + dy * dy < r * r;
+}
+
+function rectsOverlap(a, b) {
+  return (
+    a.x < b.x + b.w &&
+    a.x + a.w > b.x &&
+    a.y < b.y + b.h &&
+    a.y + a.h > b.y
+  );
+}
+
+function buildingSolidParts(b) {
+  const d = b.door;
+
+  return [
+    // top
+    {
+      x: b.x,
+      y: b.y,
+      w: b.w,
+      h: 22
+    },
+
+    // left
+    {
+      x: b.x,
+      y: b.y,
+      w: 22,
+      h: b.h
+    },
+
+    // right
+    {
+      x: b.x + b.w - 22,
+      y: b.y,
+      w: 22,
+      h: b.h
+    },
+
+    // bottom-left
+    {
+      x: b.x,
+      y: b.y + b.h - 22,
+      w: d.x - b.x,
+      h: 22
+    },
+
+    // bottom-right
+    {
+      x: d.x + d.w,
+      y: b.y + b.h - 22,
+      w: b.x + b.w - (d.x + d.w),
+      h: 22
+    }
+  ];
+}
+
+function exteriorBlocked(x, y, r) {
+  // MAP BORDER
+  if (x - r < 20) return true;
+  if (y - r < 20) return true;
+  if (x + r > W - 20) return true;
+  if (y + r > H - 20) return true;
+
+  // BUILDINGS
+  for (const b of buildings) {
+    for (const part of buildingSolidParts(b)) {
+      if (circleRectCollision(x, y, r, part)) {
+        return true;
+      }
+    }
+  }
+
+  // TREES
+  for (const t of trees) {
+    const dx = x - t.x;
+    const dy = y - t.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (dist < r + t.r * 0.75) {
+      return true;
+    }
+  }
+
+  // RUBBLE
+  for (const rbl of rubble) {
+    if (
+      circleRectCollision(x, y, r, {
+        x: rbl.x,
+        y: rbl.y,
+        w: rbl.w,
+        h: rbl.h
+      })
+    ) {
+      return true;
+    }
+  }
+
+  // CARS
+  for (const car of cars) {
+    if (
+      circleRectCollision(x, y, r, {
+        x: car.x - car.w / 2,
+        y: car.y - car.h / 2,
+        w: car.w,
+        h: car.h
+      })
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function interiorBlocked(x, y, r) {
+  const room = getInterior(currentBuilding);
+
+  // WALLS
+  const wall = 22;
+
+  // left wall
+  if (x - r < room.x + wall) return true;
+
+  // right wall
+  if (x + r > room.x + room.w - wall) return true;
+
+  // top wall
+  if (y - r < room.y + wall) return true;
+
+  // bottom wall EXCEPT DOOR
+  const d = currentBuilding.door;
+
+  const insideDoor =
+    x > d.x &&
+    x < d.x + d.w;
+
+  if (
+    y + r > room.y + room.h - wall &&
+    !insideDoor
+  ) {
+    return true;
+  }
+
+  // FURNITURE
+  for (const f of room.furniture) {
+    if (
+      circleRectCollision(x, y, r, {
+        x: f.x,
+        y: f.y,
+        w: f.w,
+        h: f.h
+      })
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+// =====================================================
+// MOVEMENT
+// =====================================================
+
+function tryMove(dx, dy) {
+  if (mode === "interior") {
+    const nx = player.x + dx;
+    const ny = player.y + dy;
+
+    if (!interiorBlocked(nx, player.y, player.r)) {
+      player.x = nx;
+    }
+
+    if (!interiorBlocked(player.x, ny, player.r)) {
+      player.y = ny;
+    }
+
+    return;
+  }
+
+  const nx = player.x + dx;
+  const ny = player.y + dy;
+
+  if (!exteriorBlocked(nx, player.y, player.r)) {
+    player.x = nx;
+  }
+
+  if (!exteriorBlocked(player.x, ny, player.r)) {
+    player.y = ny;
+  }
+}
+
+// =====================================================
+// CAR
+// =====================================================
+
+function nearCar() {
+  let closest = null;
+  let best = 70;
+
+  for (const car of cars) {
+    const dx = player.x - car.x;
+    const dy = player.y - car.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (dist < best) {
+      best = dist;
+      closest = car;
+    }
+  }
+
+  return closest;
+}
+
+function driveCar(car, dx, dy) {
+  const length = Math.sqrt(dx * dx + dy * dy);
+
+  if (length < 0.01) return;
+
+  const speed = 5.5;
+
+  const nx = car.x + (dx / length) * speed;
+  const ny = car.y + (dy / length) * speed;
+
+  // CAR MAP BOUNDARY
+  const halfW = car.w / 2;
+  const halfH = car.h / 2;
+
+  if (
+    nx - halfW < 25 ||
+    nx + halfW > W - 25 ||
+    ny - halfH < 25 ||
+    ny + halfH > H - 25
+  ) {
+    return;
+  }
+
+  // Don't drive through buildings
+  for (const b of buildings) {
+    const test = {
+      x: nx - halfW,
+      y: ny - halfH,
+      w: car.w,
+      h: car.h
+    };
+
+    for (const part of buildingSolidParts(b)) {
+      if (rectsOverlap(test, part)) {
+        return;
+      }
+    }
+  }
+
+  car.x = nx;
+  car.y = ny;
+  car.angle = Math.atan2(dy, dx);
+
+  player.x = car.x;
+  player.y = car.y;
+}
+
+// =====================================================
+// BUILDING ENTRY
+// =====================================================
+
+function nearBuildingDoor() {
+  for (const b of buildings) {
+    const d = b.door;
+
+    const cx = d.x + d.w / 2;
+    const cy = d.y + d.h / 2;
+
+    const dx = player.x - cx;
+    const dy = player.y - cy;
+
+    if (Math.sqrt(dx * dx + dy * dy) < 80) {
+      return b;
+    }
+  }
+
+  return null;
+}
+
+function enterBuilding(b) {
+  currentBuilding = b;
+  mode = "interior";
+
+  const d = b.door;
+
+  // Start just INSIDE the door
+  player.x = d.x + d.w / 2;
+  player.y = b.y + b.h - 65;
+
+  player.inCar = false;
+  player.car = null;
+}
+
+function exitBuilding() {
+  if (!currentBuilding) return;
+
+  const b = currentBuilding;
+  const d = b.door;
+
+  const nearDoor =
+    player.x > d.x - 45 &&
+    player.x < d.x + d.w + 45 &&
+    player.y > b.y + b.h - 100;
+
+  if (!nearDoor) {
+    return;
+  }
+
+  mode = "outside";
+
+  // Put player safely OUTSIDE the door
+  player.x = d.x + d.w / 2;
+  player.y = b.y + b.h + 45;
+
+  currentBuilding = null;
+}
+
+// =====================================================
+// INTERACT
+// =====================================================
+
+function interact() {
+  // INSIDE
+  if (mode === "interior") {
+    exitBuilding();
+    return;
+  }
+
+  // CAR
+  const car = nearCar();
+
+  if (car && !player.inCar) {
+    player.inCar = true;
+    player.car = car;
+    car.occupied = true;
+
+    player.x = car.x;
+    player.y = car.y;
+
+    return;
+  }
+
+  // EXIT CAR
+  if (player.inCar) {
+    const c = player.car;
+
+    player.inCar = false;
+    player.car = null;
+
+    c.occupied = false;
+
+    player.x = c.x + 55;
+    player.y = c.y;
+
+    return;
+  }
+
+  // BUILDING
+  const building = nearBuildingDoor();
+
+  if (building) {
+    enterBuilding(building);
+  }
+}
+
+// =====================================================
+// INPUT
+// =====================================================
+
+window.addEventListener("keydown", e => {
+  keys[e.key.toLowerCase()] = true;
+
+  if (
+    e.key.toLowerCase() === "e" ||
+    e.key === "Enter"
+  ) {
+    interact();
+  }
+});
+
+window.addEventListener("keyup", e => {
+  keys[e.key.toLowerCase()] = false;
+});
+
+// =====================================================
+// JOYSTICK
+// =====================================================
+
+function updateJoystick(clientX, clientY) {
   const rect = joystick.getBoundingClientRect();
 
   const centerX = rect.left + rect.width / 2;
@@ -82,2228 +607,831 @@ function updateAnalog(clientX, clientY) {
   let dx = clientX - centerX;
   let dy = clientY - centerY;
 
-  const maxDistance = rect.width * 0.38;
+  const max = rect.width * 0.32;
 
-  const distance = Math.hypot(dx, dy);
+  const dist = Math.sqrt(dx * dx + dy * dy);
 
-  if (distance > maxDistance) {
-    dx = dx / distance * maxDistance;
-    dy = dy / distance * maxDistance;
+  if (dist > max) {
+    dx = dx / dist * max;
+    dy = dy / dist * max;
   }
 
-  analog.x = dx / maxDistance;
-  analog.y = dy / maxDistance;
-
-  analog.power = Math.min(1, Math.hypot(analog.x, analog.y));
-
-  const stickX = analog.x * maxDistance;
-  const stickY = analog.y * maxDistance;
+  joyX = dx / max;
+  joyY = dy / max;
 
   stick.style.transform =
-    `translate(${stickX}px, ${stickY}px)`;
-}
-
-function resetAnalog() {
-
-  analog.active = false;
-  analog.pointerId = null;
-
-  analog.x = 0;
-  analog.y = 0;
-  analog.power = 0;
-
-  stick.style.transform = "translate(0px, 0px)";
+    `translate(${dx}px, ${dy}px)`;
 }
 
 joystick.addEventListener("pointerdown", e => {
-
-  e.preventDefault();
-
-  analog.active = true;
-  analog.pointerId = e.pointerId;
-
+  joyActive = true;
   joystick.setPointerCapture(e.pointerId);
-
-  updateAnalog(e.clientX, e.clientY);
+  updateJoystick(e.clientX, e.clientY);
 });
 
 joystick.addEventListener("pointermove", e => {
-
-  if (!analog.active) return;
-
-  if (e.pointerId !== analog.pointerId) return;
-
-  e.preventDefault();
-
-  updateAnalog(e.clientX, e.clientY);
+  if (!joyActive) return;
+  updateJoystick(e.clientX, e.clientY);
 });
 
 joystick.addEventListener("pointerup", e => {
-
-  if (e.pointerId === analog.pointerId) {
-    resetAnalog();
-  }
+  joyActive = false;
+  joyX = 0;
+  joyY = 0;
+  stick.style.transform = "translate(0px, 0px)";
 });
 
-joystick.addEventListener("pointercancel", resetAnalog);
+joystick.addEventListener("pointercancel", () => {
+  joyActive = false;
+  joyX = 0;
+  joyY = 0;
+  stick.style.transform = "translate(0px, 0px)";
+});
 
-// ------------------------------------------------
-// WORLD
-// ------------------------------------------------
-
-const roads = [
-
-  {
-    x: 0,
-    y: 800,
-    w: WORLD_W,
-    h: 190
-  },
-
-  {
-    x: 1100,
-    y: 0,
-    w: 190,
-    h: WORLD_H
-  }
-
-];
-
-const buildings = [
-
-  {
-    x: 250,
-    y: 280,
-    w: 340,
-    h: 260,
-    doorX: 420,
-    doorY: 550
-  },
-
-  {
-    x: 720,
-    y: 220,
-    w: 280,
-    h: 300,
-    doorX: 860,
-    doorY: 530
-  },
-
-  {
-    x: 1500,
-    y: 240,
-    w: 340,
-    h: 260,
-    doorX: 1670,
-    doorY: 510
-  },
-
-  {
-    x: 1990,
-    y: 350,
-    w: 300,
-    h: 270,
-    doorX: 2140,
-    doorY: 630
-  },
-
-  {
-    x: 260,
-    y: 1200,
-    w: 310,
-    h: 270,
-    doorX: 415,
-    doorY: 1190
-  },
-
-  {
-    x: 720,
-    y: 1320,
-    w: 300,
-    h: 250,
-    doorX: 870,
-    doorY: 1310
-  },
-
-  {
-    x: 1530,
-    y: 1220,
-    w: 350,
-    h: 280,
-    doorX: 1705,
-    doorY: 1210
-  }
-
-];
-
-// ------------------------------------------------
-// CARS
-// ------------------------------------------------
-
-const cars = [
-
-  {
-    x: 650,
-    y: 875,
-    angle: 0,
-    occupied: false
-  },
-
-  {
-    x: 900,
-    y: 920,
-    angle: 0,
-    occupied: false
-  },
-
-  {
-    x: 1370,
-    y: 875,
-    angle: 0,
-    occupied: false
-  },
-
-  {
-    x: 1660,
-    y: 930,
-    angle: 0,
-    occupied: false
-  },
-
-  {
-    x: 2010,
-    y: 860,
-    angle: 0,
-    occupied: false
-  },
-
-  {
-    x: 1170,
-    y: 1170,
-    angle: 0,
-    occupied: false
-  },
-
-  {
-    x: 1370,
-    y: 1450,
-    angle: 0,
-    occupied: false
-  }
-
-];
-
-// ------------------------------------------------
-// TREES
-// ------------------------------------------------
-
-const trees = [
-
-  [100,180],
-  [180,650],
-  [100,1120],
-  [620,160],
-  [1120,160],
-  [1370,150],
-  [1840,170],
-  [2300,200],
-  [2320,700],
-  [2160,1120],
-  [2290,1510],
-  [1180,1580],
-  [1010,1460],
-  [580,1600],
-  [120,1600],
-  [1370,620],
-  [1830,720],
-  [700,650],
-  [1980,1460],
-  [2100,1250]
-
-].map(([x,y]) => ({
-  x,
-  y,
-  r: 27
-}));
-
-// ------------------------------------------------
-// RUBBLE
-// ------------------------------------------------
-
-const rubble = [
-
-  [650,700],
-  [780,1060],
-  [980,690],
-  [1420,700],
-  [1790,700],
-  [1870,1040],
-  [1160,1320],
-  [1300,500]
-
-].map(([x,y]) => ({
-  x,
-  y,
-  r: 18
-}));
-
-// ------------------------------------------------
-// ZOMBIES
-// ------------------------------------------------
-
-const zombies = [
-
-  [500,720],
-  [680,1080],
-  [920,700],
-  [1100,620],
-  [1330,650],
-  [1530,760],
-  [1770,1080],
-  [2040,760]
-
-].map(([x,y], i) => ({
-
-  x,
-  y,
-
-  radius: 14,
-
-  speed: 42 + i % 3 * 5,
-
-  wander: Math.random() * Math.PI * 2,
-
-  attack: 0
-
-}));
-
-// ------------------------------------------------
-// CAMERA
-// ------------------------------------------------
-
-const camera = {
-
-  x: 0,
-  y: 0,
-
-  smooth: 0.13
-
-};
-
-// ------------------------------------------------
-// COLLISION
-// ------------------------------------------------
-
-function circleRectCollision(cx, cy, r, rect) {
-
-  const nearestX =
-    Math.max(rect.x, Math.min(cx, rect.x + rect.w));
-
-  const nearestY =
-    Math.max(rect.y, Math.min(cy, rect.y + rect.h));
-
-  const dx = cx - nearestX;
-  const dy = cy - nearestY;
-
-  return dx * dx + dy * dy < r * r;
+if (interactBtn) {
+  interactBtn.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    interact();
+  });
 }
 
-function blocked(x, y, radius) {
+// =====================================================
+// FULLSCREEN
+// =====================================================
 
-  for (const b of buildings) {
+if (fullscreenBtn) {
+  fullscreenBtn.addEventListener("click", async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
 
-    if (
-      circleRectCollision(
-        x,
-        y,
-        radius,
-        b
-      )
-    ) {
-      return true;
-    }
-
-  }
-
-  for (const t of trees) {
-
-    const dx = x - t.x;
-    const dy = y - t.y;
-
-    if (
-      dx * dx +
-      dy * dy <
-      (radius + t.r) *
-      (radius + t.r)
-    ) {
-      return true;
-    }
-
-  }
-
-  for (const r of rubble) {
-
-    const dx = x - r.x;
-    const dy = y - r.y;
-
-    if (
-      dx * dx +
-      dy * dy <
-      (radius + r.r) *
-      (radius + r.r)
-    ) {
-      return true;
-    }
-
-  }
-
-  return false;
-}
-
-// ------------------------------------------------
-// MOVEMENT
-// ------------------------------------------------
-
-function movePlayer(dx, dy) {
-
-  const nextX = player.x + dx;
-  const nextY = player.y + dy;
-
-  if (!blocked(nextX, player.y, player.radius)) {
-    player.x = nextX;
-  }
-
-  if (!blocked(player.x, nextY, player.radius)) {
-    player.y = nextY;
-  }
-
-  player.x =
-    Math.max(
-      25,
-      Math.min(
-        WORLD_W - 25,
-        player.x
-      )
-    );
-
-  player.y =
-    Math.max(
-      25,
-      Math.min(
-        WORLD_H - 25,
-        player.y
-      )
-    );
-}
-
-// ------------------------------------------------
-// OUTSIDE UPDATE
-// ------------------------------------------------
-
-function updateOutside(dt) {
-
-  const inputX = analog.x;
-  const inputY = analog.y;
-
-  if (analog.power > 0.05) {
-
-    const length =
-      Math.hypot(inputX, inputY);
-
-    const nx = inputX / length;
-    const ny = inputY / length;
-
-    player.angle =
-      Math.atan2(ny, nx);
-
-    if (player.car) {
-
-      const car = player.car;
-
-      const speed =
-        330 * analog.power;
-
-      const nextX =
-        car.x + nx * speed * dt;
-
-      const nextY =
-        car.y + ny * speed * dt;
-
-      if (!blocked(nextX, nextY, 25)) {
-
-        car.x = nextX;
-        car.y = nextY;
-
-      }
-
-      car.angle =
-        Math.atan2(ny, nx);
-
-      player.x = car.x;
-      player.y = car.y;
-
-    } else {
-
-      const speed =
-        player.speed * analog.power;
-
-      movePlayer(
-        nx * speed * dt,
-        ny * speed * dt
-      );
-
-    }
-
-  }
-}
-
-// ------------------------------------------------
-// ZOMBIES
-// ------------------------------------------------
-
-function updateZombies(dt) {
-
-  if (mode !== "outside") return;
-
-  for (const z of zombies) {
-
-    const dx =
-      player.x - z.x;
-
-    const dy =
-      player.y - z.y;
-
-    const distance =
-      Math.hypot(dx, dy);
-
-    if (
-      distance < 430 &&
-      distance > 40
-    ) {
-
-      const nx = dx / distance;
-      const ny = dy / distance;
-
-      const testX =
-        z.x + nx * z.speed * dt;
-
-      const testY =
-        z.y + ny * z.speed * dt;
-
-      if (!blocked(testX, testY, z.radius)) {
-
-        z.x = testX;
-        z.y = testY;
-
+        if (screen.orientation?.lock) {
+          await screen.orientation.lock("landscape");
+        }
       } else {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      console.log("Fullscreen/orientation:", err);
+    }
+  });
+}
 
-        const sideX = -ny;
-        const sideY = nx;
+// =====================================================
+// INPUT VECTOR
+// =====================================================
 
-        const altX =
-          z.x +
-          sideX *
-          z.speed *
-          dt;
+function getInput() {
+  let x = joyX;
+  let y = joyY;
 
-        const altY =
-          z.y +
-          sideY *
-          z.speed *
-          dt;
+  if (keys["a"] || keys["arrowleft"]) x -= 1;
+  if (keys["d"] || keys["arrowright"]) x += 1;
+  if (keys["w"] || keys["arrowup"]) y -= 1;
+  if (keys["s"] || keys["arrowdown"]) y += 1;
 
-        if (!blocked(altX, altY, z.radius)) {
+  const len = Math.sqrt(x * x + y * y);
 
-          z.x = altX;
-          z.y = altY;
+  if (len > 1) {
+    x /= len;
+    y /= len;
+  }
 
+  return { x, y };
+}
+
+// =====================================================
+// UPDATE
+// =====================================================
+
+function update() {
+  const input = getInput();
+
+  if (player.inCar && player.car) {
+    driveCar(player.car, input.x, input.y);
+  } else {
+    const speed =
+      mode === "interior"
+        ? 2.7
+        : player.speed;
+
+    tryMove(
+      input.x * speed,
+      input.y * speed
+    );
+
+    if (Math.abs(input.x) > 0.05 ||
+        Math.abs(input.y) > 0.05) {
+      player.angle =
+        Math.atan2(input.y, input.x);
+    }
+  }
+
+  // ZOMBIES ONLY OUTSIDE
+  if (mode === "outside" && !player.inCar) {
+    for (const z of zombies) {
+      const dx = player.x - z.x;
+      const dy = player.y - z.y;
+
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist > 1 && dist < 420) {
+        const zx = dx / dist * z.speed;
+        const zy = dy / dist * z.speed;
+
+        if (!exteriorBlocked(
+          z.x + zx,
+          z.y,
+          z.r
+        )) {
+          z.x += zx;
         }
 
+        if (!exteriorBlocked(
+          z.x,
+          z.y + zy,
+          z.r
+        )) {
+          z.y += zy;
+        }
       }
-
-    } else {
-
-      z.wander +=
-        (Math.random() - 0.5) *
-        dt;
-
-      const wx =
-        Math.cos(z.wander);
-
-      const wy =
-        Math.sin(z.wander);
-
-      const nx =
-        z.x +
-        wx *
-        z.speed *
-        0.3 *
-        dt;
-
-      const ny =
-        z.y +
-        wy *
-        z.speed *
-        0.3 *
-        dt;
-
-      if (!blocked(nx, ny, z.radius)) {
-
-        z.x = nx;
-        z.y = ny;
-
-      }
-
     }
-
-    if (
-      distance < 38 &&
-      !player.car
-    ) {
-
-      z.attack -= dt;
-
-      if (z.attack <= 0) {
-
-        player.hp =
-          Math.max(
-            0,
-            player.hp - 4
-          );
-
-        z.attack = 1.2;
-
-        showMessage(
-          "A zombie is nearby!"
-        );
-
-      }
-
-    }
-
   }
 
-}
+  // TIME
+  timeMinutes += 0.04;
 
-// ------------------------------------------------
-// INTERACTION
-// ------------------------------------------------
-
-function nearestCar() {
-
-  let result = null;
-  let best = Infinity;
-
-  for (const car of cars) {
-
-    const distance =
-      Math.hypot(
-        player.x - car.x,
-        player.y - car.y
-      );
-
-    if (
-      distance < best &&
-      distance < 90
-    ) {
-
-      best = distance;
-      result = car;
-
-    }
-
+  if (timeMinutes >= 1440) {
+    timeMinutes = 0;
+    day++;
   }
 
-  return result;
-}
+  hunger -= 0.0008;
 
-function nearestDoor() {
-
-  let result = null;
-  let best = Infinity;
-
-  for (const building of buildings) {
-
-    const distance =
-      Math.hypot(
-        player.x - building.doorX,
-        player.y - building.doorY
-      );
-
-    if (
-      distance < best &&
-      distance < 80
-    ) {
-
-      best = distance;
-      result = building;
-
-    }
-
+  if (hunger < 0) {
+    hunger = 0;
+    hp -= 0.002;
   }
-
-  return result;
 }
 
-function interact() {
-
-  // Inside building
-  if (mode === "inside") {
-
-    exitBuilding();
-
-    return;
-  }
-
-  // Already driving
-  if (player.car) {
-
-    exitCar();
-
-    return;
-  }
-
-  // Vehicle
-  const car =
-    nearestCar();
-
-  if (car) {
-
-    enterCar(car);
-
-    return;
-  }
-
-  // Building
-  const door =
-    nearestDoor();
-
-  if (door) {
-
-    enterBuilding(door);
-
-    return;
-  }
-
-  showMessage(
-    "Nothing nearby"
-  );
-}
-
-function enterCar(car) {
-
-  player.car = car;
-
-  car.occupied = true;
-
-  player.x = car.x;
-  player.y = car.y;
-
-  showMessage(
-    "Vehicle entered"
-  );
-}
-
-function exitCar() {
-
-  const car =
-    player.car;
-
-  if (!car) return;
-
-  player.car = null;
-
-  car.occupied = false;
-
-  const sideX =
-    Math.cos(
-      car.angle + Math.PI / 2
-    );
-
-  const sideY =
-    Math.sin(
-      car.angle + Math.PI / 2
-    );
-
-  const exitX =
-    car.x + sideX * 55;
-
-  const exitY =
-    car.y + sideY * 55;
-
-  if (!blocked(exitX, exitY, 15)) {
-
-    player.x = exitX;
-    player.y = exitY;
-
-  } else {
-
-    player.x =
-      car.x - sideX * 55;
-
-    player.y =
-      car.y - sideY * 55;
-
-  }
-
-  showMessage(
-    "Exited vehicle"
-  );
-}
-
-function enterBuilding(building) {
-
-  currentBuilding =
-    building;
-
-  mode = "inside";
-
-  showMessage(
-    "Entered building"
-  );
-}
-
-function exitBuilding() {
-
-  if (!currentBuilding) return;
-
-  player.x =
-    currentBuilding.doorX;
-
-  player.y =
-    currentBuilding.doorY + 55;
-
-  currentBuilding = null;
-
-  mode = "outside";
-
-  showMessage(
-    "Exited building"
-  );
-}
-
-// ------------------------------------------------
-// INTERIOR
-// ------------------------------------------------
-
-const interiorPlayer = {
-
-  x: 640,
-  y: 580
-
-};
-
-function updateInterior(dt) {
-
-  const inputX =
-    analog.x;
-
-  const inputY =
-    analog.y;
-
-  const power =
-    analog.power;
-
-  if (power > 0.05) {
-
-    interiorPlayer.x +=
-      inputX *
-      180 *
-      power *
-      dt;
-
-    interiorPlayer.y +=
-      inputY *
-      180 *
-      power *
-      dt;
-
-  }
-
-  interiorPlayer.x =
-    Math.max(
-      60,
-      Math.min(
-        VIEW_W - 60,
-        interiorPlayer.x
-      )
-    );
-
-  interiorPlayer.y =
-    Math.max(
-      70,
-      Math.min(
-        VIEW_H - 60,
-        interiorPlayer.y
-      )
-    );
-
-}
-
-// ------------------------------------------------
+// =====================================================
 // CAMERA
-// ------------------------------------------------
+// =====================================================
 
 function updateCamera() {
-
-  if (mode !== "outside") return;
-
-  // Character lower on screen.
-  const targetX =
-    player.x -
-    VIEW_W / 2;
-
-  const targetY =
-    player.y -
-    VIEW_H * 0.68;
+  const targetX = player.x;
+  const targetY = player.y - 100;
 
   camera.x +=
-    (
-      targetX -
-      camera.x
-    ) *
-    camera.smooth;
+    (targetX - canvas.width / 2 - camera.x) * 0.10;
 
   camera.y +=
-    (
-      targetY -
-      camera.y
-    ) *
-    camera.smooth;
+    (targetY - canvas.height * 0.60 - camera.y) * 0.10;
 
-  camera.x =
-    Math.max(
-      0,
-      Math.min(
-        WORLD_W - VIEW_W,
-        camera.x
-      )
-    );
+  camera.x = Math.max(
+    0,
+    Math.min(
+      camera.x,
+      W - canvas.width
+    )
+  );
 
-  camera.y =
-    Math.max(
-      0,
-      Math.min(
-        WORLD_H - VIEW_H,
-        camera.y
-      )
-    );
+  camera.y = Math.max(
+    0,
+    Math.min(
+      camera.y,
+      H - canvas.height
+    )
+  );
 }
 
-// ------------------------------------------------
-// DRAW
-// ------------------------------------------------
+// =====================================================
+// DRAW WORLD
+// =====================================================
 
 function drawGround() {
+  ctx.fillStyle = "#17261b";
+  ctx.fillRect(0, 0, W, H);
 
-  ctx.fillStyle =
-    "#263226";
+  // ROAD
+  ctx.fillStyle = "#36383a";
 
   ctx.fillRect(
     0,
-    0,
-    VIEW_W,
-    VIEW_H
+    220,
+    W,
+    150
   );
 
-  // Ground lines
-  ctx.strokeStyle =
-    "rgba(255,255,255,0.025)";
-
-  ctx.lineWidth = 1;
-
-  const startX =
-    Math.floor(camera.x / 80) * 80;
-
-  const startY =
-    Math.floor(camera.y / 80) * 80;
-
-  for (
-    let x = startX;
-    x < camera.x + VIEW_W + 80;
-    x += 80
-  ) {
-
-    const sx =
-      x - camera.x;
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-      sx,
-      0
-    );
-
-    ctx.lineTo(
-      sx,
-      VIEW_H
-    );
-
-    ctx.stroke();
-
-  }
-
-  for (
-    let y = startY;
-    y < camera.y + VIEW_H + 80;
-    y += 80
-  ) {
-
-    const sy =
-      y - camera.y;
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-      0,
-      sy
-    );
-
-    ctx.lineTo(
-      VIEW_W,
-      sy
-    );
-
-    ctx.stroke();
-
-  }
-
-}
-
-function drawRoads() {
-
-  for (const road of roads) {
-
-    ctx.fillStyle =
-      "#353638";
-
-    ctx.fillRect(
-      road.x - camera.x,
-      road.y - camera.y,
-      road.w,
-      road.h
-    );
-
-    ctx.strokeStyle =
-      "#55575a";
-
-    ctx.lineWidth = 3;
-
-    if (road.w > road.h) {
-
-      ctx.beginPath();
-
-      ctx.moveTo(
-        road.x - camera.x,
-        road.y +
-        road.h / 2 -
-        camera.y
-      );
-
-      ctx.lineTo(
-        road.x +
-        road.w -
-        camera.x,
-        road.y +
-        road.h / 2 -
-        camera.y
-      );
-
-      ctx.stroke();
-
-    } else {
-
-      ctx.beginPath();
-
-      ctx.moveTo(
-        road.x +
-        road.w / 2 -
-        camera.x,
-        road.y -
-        camera.y
-      );
-
-      ctx.lineTo(
-        road.x +
-        road.w / 2 -
-        camera.x,
-        road.y +
-        road.h -
-        camera.y
-      );
-
-      ctx.stroke();
-
-    }
-
-  }
-
-}
-
-function drawBuildings() {
-
-  for (const b of buildings) {
-
-    const x =
-      b.x - camera.x;
-
-    const y =
-      b.y - camera.y;
-
-    if (
-      x > VIEW_W ||
-      y > VIEW_H ||
-      x + b.w < 0 ||
-      y + b.h < 0
-    ) continue;
-
-    // Shadow
-    ctx.fillStyle =
-      "rgba(0,0,0,0.35)";
-
-    ctx.fillRect(
-      x + 12,
-      y + 14,
-      b.w,
-      b.h
-    );
-
-    // Main
-    ctx.fillStyle =
-      "#74726b";
-
-    ctx.fillRect(
-      x,
-      y,
-      b.w,
-      b.h
-    );
-
-    // Roof
-    ctx.fillStyle =
-      "#55534e";
-
-    ctx.fillRect(
-      x + 8,
-      y + 8,
-      b.w - 16,
-      28
-    );
-
-    // Windows
-    ctx.fillStyle =
-      "#293436";
-
-    for (
-      let wx = x + 35;
-      wx < x + b.w - 30;
-      wx += 65
-    ) {
-
-      ctx.fillRect(
-        wx,
-        y + 75,
-        35,
-        42
-      );
-
-    }
-
-    // Door
-    ctx.fillStyle =
-      "#282522";
-
-    ctx.fillRect(
-      b.doorX -
-        camera.x -
-        15,
-
-      b.doorY -
-        camera.y -
-        30,
-
-      30,
-      50
-    );
-
-  }
-
-}
-
-function drawTrees() {
-
-  for (const t of trees) {
-
-    const x =
-      t.x - camera.x;
-
-    const y =
-      t.y - camera.y;
-
-    if (
-      x < -60 ||
-      y < -70 ||
-      x > VIEW_W + 60 ||
-      y > VIEW_H + 70
-    ) continue;
-
-    // Shadow
-    ctx.fillStyle =
-      "rgba(0,0,0,0.35)";
-
-    ctx.beginPath();
-
-    ctx.ellipse(
-      x + 8,
-      y + 18,
-      28,
-      10,
-      0,
-      0,
-      Math.PI * 2
-    );
-
-    ctx.fill();
-
-    // Trunk
-    ctx.fillStyle =
-      "#554333";
-
-    ctx.fillRect(
-      x - 7,
-      y - 2,
-      14,
-      32
-    );
-
-    // Tree
-    ctx.fillStyle =
-      "#27432e";
-
-    ctx.beginPath();
-
-    ctx.arc(
-      x,
-      y - 17,
-      28,
-      0,
-      Math.PI * 2
-    );
-
-    ctx.fill();
-
-    ctx.fillStyle =
-      "#35583a";
-
-    ctx.beginPath();
-
-    ctx.arc(
-      x - 10,
-      y - 27,
-      18,
-      0,
-      Math.PI * 2
-    );
-
-    ctx.fill();
-
-  }
-
-}
-
-function drawRubble() {
-
-  for (const r of rubble) {
-
-    const x =
-      r.x - camera.x;
-
-    const y =
-      r.y - camera.y;
-
-    ctx.fillStyle =
-      "#57534d";
-
-    ctx.beginPath();
-
-    ctx.arc(
-      x,
-      y,
-      r.r,
-      0,
-      Math.PI * 2
-    );
-
-    ctx.fill();
-
-  }
-
-}
-
-function drawCars() {
-
-  for (const car of cars) {
-
-    const x =
-      car.x - camera.x;
-
-    const y =
-      car.y - camera.y;
-
-    ctx.save();
-
-    ctx.translate(
-      x,
-      y
-    );
-
-    ctx.rotate(
-      car.angle
-    );
-
-    // Shadow
-    ctx.fillStyle =
-      "rgba(0,0,0,0.4)";
-
-    ctx.fillRect(
-      -39,
-      -16,
-      78,
-      36
-    );
-
-    // Body
-    ctx.fillStyle =
-      car.occupied
-        ? "#87766f"
-        : "#686c6c";
-
-    ctx.fillRect(
-      -38,
-      -19,
-      76,
-      38
-    );
-
-    // Glass
-    ctx.fillStyle =
-      "#202b2d";
-
-    ctx.fillRect(
-      -15,
-      -15,
-      30,
-      30
-    );
-
-    // Wheels
-    ctx.fillStyle =
-      "#161616";
-
-    ctx.fillRect(
-      -30,
-      -25,
-      16,
-      7
-    );
-
-    ctx.fillRect(
-      14,
-      -25,
-      16,
-      7
-    );
-
-    ctx.fillRect(
-      -30,
-      18,
-      16,
-      7
-    );
-
-    ctx.fillRect(
-      14,
-      18,
-      16,
-      7
-    );
-
-    ctx.restore();
-
-  }
-
-}
-
-function drawZombies() {
-
-  for (const z of zombies) {
-
-    const x =
-      z.x - camera.x;
-
-    const y =
-      z.y - camera.y;
-
-    if (
-      x < -40 ||
-      y < -50 ||
-      x > VIEW_W + 40 ||
-      y > VIEW_H + 50
-    ) continue;
-
-    // Shadow
-    ctx.fillStyle =
-      "rgba(0,0,0,0.3)";
-
-    ctx.beginPath();
-
-    ctx.ellipse(
-      x,
-      y + 14,
-      15,
-      7,
-      0,
-      0,
-      Math.PI * 2
-    );
-
-    ctx.fill();
-
-    // Body
-    ctx.fillStyle =
-      "#69735f";
-
-    ctx.fillRect(
-      x - 10,
-      y - 2,
-      20,
-      27
-    );
-
-    // Head
-    ctx.fillStyle =
-      "#858b70";
-
-    ctx.beginPath();
-
-    ctx.arc(
-      x,
-      y - 14,
-      11,
-      0,
-      Math.PI * 2
-    );
-
-    ctx.fill();
-
-    // Eyes
-    ctx.fillStyle =
-      "#20221e";
-
-    ctx.fillRect(
-      x - 5,
-      y - 16,
-      3,
-      3
-    );
-
-    ctx.fillRect(
-      x + 2,
-      y - 16,
-      3,
-      3
-    );
-
-  }
-
-}
-
-function drawPlayer() {
-
-  if (player.car) return;
-
-  const x =
-    player.x - camera.x;
-
-  const y =
-    player.y - camera.y;
-
-  // Shadow
-  ctx.fillStyle =
-    "rgba(0,0,0,0.45)";
+  ctx.fillRect(
+    1050,
+    0,
+    150,
+    H
+  );
+
+  ctx.fillRect(
+    0,
+    880,
+    W,
+    130
+  );
+
+  // ROAD LINES
+  ctx.strokeStyle = "#686868";
+  ctx.lineWidth = 4;
+
+  ctx.setLineDash([40, 30]);
 
   ctx.beginPath();
-
-  ctx.ellipse(
-    x,
-    y + 20,
-    20,
-    8,
-    0,
-    0,
-    Math.PI * 2
-  );
-
-  ctx.fill();
-
-  // STATIC LEGS
-  ctx.fillStyle =
-    "#24272a";
-
-  ctx.fillRect(
-    x - 10,
-    y + 5,
-    8,
-    27
-  );
-
-  ctx.fillRect(
-    x + 2,
-    y + 5,
-    8,
-    27
-  );
-
-  // Body
-  ctx.fillStyle =
-    "#40515a";
-
-  ctx.fillRect(
-    x - 14,
-    y - 16,
-    28,
-    30
-  );
-
-  // Backpack
-  ctx.fillStyle =
-    "#293136";
-
-  ctx.fillRect(
-    x - 18,
-    y - 12,
-    7,
-    24
-  );
-
-  // Head
-  ctx.fillStyle =
-    "#b58d6d";
+  ctx.moveTo(0, 295);
+  ctx.lineTo(W, 295);
+  ctx.stroke();
 
   ctx.beginPath();
+  ctx.moveTo(1125, 0);
+  ctx.lineTo(1125, H);
+  ctx.stroke();
 
-  ctx.arc(
-    x,
-    y - 27,
-    12,
-    0,
-    Math.PI * 2
+  ctx.setLineDash([]);
+}
+
+function drawBuilding(b) {
+  ctx.fillStyle = "#77756f";
+
+  ctx.fillRect(
+    b.x,
+    b.y,
+    b.w,
+    b.h
   );
 
-  ctx.fill();
+  // roof
+  ctx.fillStyle = "#55534f";
 
-  // Hair
-  ctx.fillStyle =
-    "#24211e";
-
-  ctx.beginPath();
-
-  ctx.arc(
-    x,
-    y - 31,
-    10,
-    Math.PI,
-    Math.PI * 2
+  ctx.fillRect(
+    b.x,
+    b.y,
+    b.w,
+    28
   );
 
-  ctx.fill();
+  // windows
+  ctx.fillStyle = "#26383b";
 
+  for (let x = b.x + 55; x < b.x + b.w - 35; x += 80) {
+    ctx.fillRect(
+      x,
+      b.y + 80,
+      38,
+      48
+    );
+  }
+
+  // door
+  ctx.fillStyle = "#34271f";
+
+  ctx.fillRect(
+    b.door.x,
+    b.door.y - 35,
+    b.door.w,
+    35
+  );
 }
 
 function drawInterior() {
+  const b = currentBuilding;
 
-  ctx.fillStyle =
-    "#151715";
+  ctx.fillStyle = "#6e6a63";
 
   ctx.fillRect(
-    0,
-    0,
-    VIEW_W,
-    VIEW_H
+    b.x,
+    b.y,
+    b.w,
+    b.h
   );
 
-  // Floor
-  ctx.fillStyle =
-    "#4b4943";
+  // FLOOR
+  ctx.fillStyle = "#8b887f";
 
   ctx.fillRect(
-    80,
-    70,
-    VIEW_W - 160,
-    VIEW_H - 140
+    b.x + 22,
+    b.y + 22,
+    b.w - 44,
+    b.h - 44
   );
 
-  // Walls
-  ctx.fillStyle =
-    "#69665e";
+  // WALLS
+  ctx.fillStyle = "#4a4844";
 
   ctx.fillRect(
-    80,
-    70,
-    VIEW_W - 160,
-    25
-  );
-
-  ctx.fillRect(
-    80,
-    70,
-    25,
-    VIEW_H - 140
+    b.x,
+    b.y,
+    b.w,
+    22
   );
 
   ctx.fillRect(
-    VIEW_W - 105,
-    70,
-    25,
-    VIEW_H - 140
+    b.x,
+    b.y,
+    22,
+    b.h
   );
 
   ctx.fillRect(
-    80,
-    VIEW_H - 95,
-    VIEW_W - 160,
-    25
+    b.x + b.w - 22,
+    b.y,
+    22,
+    b.h
   );
 
-  // Furniture
-  ctx.fillStyle =
-    "#35312d";
+  // bottom wall left/right
+  const d = b.door;
 
   ctx.fillRect(
-    170,
-    150,
-    190,
-    65
-  );
-
-  ctx.fillRect(
-    850,
-    155,
-    170,
-    60
+    b.x,
+    b.y + b.h - 22,
+    d.x - b.x,
+    22
   );
 
   ctx.fillRect(
-    490,
-    330,
-    240,
-    65
+    d.x + d.w,
+    b.y + b.h - 22,
+    b.x + b.w - (d.x + d.w),
+    22
   );
 
-  // Player
-  const x =
-    interiorPlayer.x;
+  // FURNITURE
+  const room = getInterior(b);
 
-  const y =
-    interiorPlayer.y;
+  for (const f of room.furniture) {
+    if (f.type === "bed") {
+      ctx.fillStyle = "#51484a";
+      ctx.fillRect(
+        f.x,
+        f.y,
+        f.w,
+        f.h
+      );
 
-  ctx.fillStyle =
-    "rgba(0,0,0,0.4)";
+      ctx.fillStyle = "#aaa5a0";
+      ctx.fillRect(
+        f.x + 8,
+        f.y + 8,
+        f.w - 16,
+        25
+      );
+    }
+
+    if (f.type === "cabinet") {
+      ctx.fillStyle = "#4a3930";
+      ctx.fillRect(
+        f.x,
+        f.y,
+        f.w,
+        f.h
+      );
+    }
+
+    if (f.type === "table") {
+      ctx.fillStyle = "#4b382c";
+      ctx.fillRect(
+        f.x,
+        f.y,
+        f.w,
+        f.h
+      );
+    }
+  }
+
+  // DOOR
+  ctx.fillStyle = "#33251d";
+
+  ctx.fillRect(
+    d.x,
+    b.y + b.h - 22,
+    d.w,
+    22
+  );
+}
+
+function drawTrees() {
+  for (const t of trees) {
+    ctx.fillStyle = "#102318";
+    ctx.beginPath();
+    ctx.arc(
+      t.x + 7,
+      t.y + 10,
+      t.r,
+      0,
+      Math.PI * 2
+    );
+    ctx.fill();
+
+    ctx.fillStyle = "#315c39";
+    ctx.beginPath();
+    ctx.arc(
+      t.x,
+      t.y,
+      t.r,
+      0,
+      Math.PI * 2
+    );
+    ctx.fill();
+
+    ctx.fillStyle = "#624934";
+
+    ctx.fillRect(
+      t.x - 7,
+      t.y + 20,
+      14,
+      28
+    );
+  }
+}
+
+function drawRubble() {
+  for (const r of rubble) {
+    ctx.fillStyle = "#555653";
+
+    ctx.fillRect(
+      r.x,
+      r.y,
+      r.w,
+      r.h
+    );
+
+    ctx.fillStyle = "#777872";
+
+    ctx.fillRect(
+      r.x + 8,
+      r.y + 7,
+      r.w - 18,
+      7
+    );
+  }
+}
+
+function drawCars() {
+  for (const car of cars) {
+    ctx.save();
+
+    ctx.translate(car.x, car.y);
+    ctx.rotate(car.angle);
+
+    ctx.fillStyle =
+      car.occupied
+        ? "#9a7350"
+        : "#6d7475";
+
+    ctx.fillRect(
+      -car.w / 2,
+      -car.h / 2,
+      car.w,
+      car.h
+    );
+
+    ctx.fillStyle = "#27363a";
+
+    ctx.fillRect(
+      -20,
+      -15,
+      40,
+      30
+    );
+
+    ctx.fillStyle = "#171918";
+
+    ctx.fillRect(
+      -car.w / 2 - 5,
+      -car.h / 2,
+      8,
+      12
+    );
+
+    ctx.fillRect(
+      -car.w / 2 - 5,
+      car.h / 2 - 12,
+      8,
+      12
+    );
+
+    ctx.fillRect(
+      car.w / 2 - 3,
+      -car.h / 2,
+      8,
+      12
+    );
+
+    ctx.fillRect(
+      car.w / 2 - 3,
+      car.h / 2 - 12,
+      8,
+      12
+    );
+
+    ctx.restore();
+  }
+}
+
+function drawZombies() {
+  if (mode === "interior") return;
+
+  for (const z of zombies) {
+    ctx.fillStyle = "#514e47";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      z.x,
+      z.y,
+      z.r,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fill();
+
+    ctx.fillStyle = "#292927";
+
+    ctx.fillRect(
+      z.x - 10,
+      z.y + 10,
+      20,
+      22
+    );
+  }
+}
+
+function drawPlayer() {
+  ctx.save();
+
+  ctx.translate(
+    player.x,
+    player.y
+  );
+
+  // shadow
+  ctx.fillStyle = "rgba(0,0,0,.35)";
 
   ctx.beginPath();
-
   ctx.ellipse(
-    x,
-    y + 20,
+    0,
+    17,
     20,
     8,
     0,
     0,
     Math.PI * 2
   );
-
   ctx.fill();
 
-  ctx.fillStyle =
-    "#25272a";
+  // BODY
+  ctx.fillStyle = "#4d6470";
 
   ctx.fillRect(
-    x - 10,
-    y + 5,
-    8,
-    27
-  );
-
-  ctx.fillRect(
-    x + 2,
-    y + 5,
-    8,
-    27
-  );
-
-  ctx.fillStyle =
-    "#40515a";
-
-  ctx.fillRect(
-    x - 14,
-    y - 16,
-    28,
+    -13,
+    -5,
+    26,
     30
   );
 
-  ctx.fillStyle =
-    "#b58d6d";
+  // HEAD
+  ctx.fillStyle = "#b59a83";
 
   ctx.beginPath();
 
   ctx.arc(
-    x,
-    y - 27,
-    12,
+    0,
+    -16,
+    13,
     0,
     Math.PI * 2
   );
 
   ctx.fill();
 
-}
-
-// ------------------------------------------------
-// HUD
-// ------------------------------------------------
-
-function drawHUD() {
-
-  ctx.fillStyle =
-    "rgba(0,0,0,0.62)";
+  // static legs
+  ctx.fillStyle = "#24282a";
 
   ctx.fillRect(
-    20,
-    20,
-    260,
-    112
+    -10,
+    22,
+    8,
+    18
   );
 
-  ctx.fillStyle =
-    "#ffffff";
+  ctx.fillRect(
+    2,
+    22,
+    8,
+    18
+  );
 
-  ctx.font =
-    "bold 23px Arial";
+  ctx.restore();
+}
+
+// =====================================================
+// HUD
+// =====================================================
+
+function drawHUD() {
+  ctx.save();
+
+  ctx.fillStyle = "rgba(0,0,0,.65)";
+
+  ctx.fillRect(
+    18,
+    18,
+    250,
+    105
+  );
+
+  ctx.fillStyle = "#ffffff";
+
+  ctx.font = "bold 22px Arial";
 
   ctx.fillText(
     "VIRELIA: AFTERFALL",
-    35,
-    48
-  );
-
-  ctx.font =
-    "15px Arial";
-
-  ctx.fillText(
-    "HP",
-    35,
-    74
-  );
-
-  ctx.fillStyle =
-    "#303030";
-
-  ctx.fillRect(
-    70,
-    64,
-    170,
-    13
-  );
-
-  ctx.fillStyle =
-    "#c95d55";
-
-  ctx.fillRect(
-    70,
-    64,
-    170 * player.hp / 100,
-    13
-  );
-
-  ctx.fillStyle =
-    "#ffffff";
-
-  ctx.fillText(
-    "HUNGER",
-    35,
-    103
-  );
-
-  ctx.fillStyle =
-    "#303030";
-
-  ctx.fillRect(
-    100,
-    93,
-    140,
-    13
-  );
-
-  ctx.fillStyle =
-    "#b8a04b";
-
-  ctx.fillRect(
-    100,
-    93,
-    140 * player.hunger / 100,
-    13
-  );
-
-  // Time
-  const totalMinutes =
-    Math.floor(
-      elapsed * 2
-    );
-
-  const hours =
-    8 +
-    Math.floor(
-      totalMinutes / 60
-    );
-
-  const minutes =
-    totalMinutes % 60;
-
-  const shownHour =
-    hours % 24;
-
-  const time =
-    String(shownHour)
-      .padStart(2, "0") +
-    ":" +
-    String(minutes)
-      .padStart(2, "0");
-
-  ctx.font =
-    "bold 20px Arial";
-
-  ctx.textAlign =
-    "right";
-
-  ctx.fillText(
-    "DAY 1  " + time,
-    VIEW_W - 30,
+    32,
     45
   );
 
-  ctx.textAlign =
-    "left";
+  ctx.font = "14px Arial";
 
-  // Center objective
-  if (mode === "outside") {
+  ctx.fillText(
+    "HP",
+    32,
+    70
+  );
 
-    ctx.fillStyle =
-      "rgba(0,0,0,0.35)";
+  ctx.fillText(
+    "HUNGER",
+    32,
+    98
+  );
 
-    ctx.font =
-      "bold 30px Arial";
+  ctx.fillStyle = "#333";
 
-    ctx.textAlign =
-      "center";
+  ctx.fillRect(
+    78,
+    59,
+    130,
+    13
+  );
 
-    ctx.fillText(
-      "SURVIVE",
-      VIEW_W / 2,
-      250
-    );
+  ctx.fillRect(
+    78,
+    87,
+    130,
+    13
+  );
 
-    ctx.textAlign =
-      "left";
+  ctx.fillStyle = "#c95757";
 
-  }
+  ctx.fillRect(
+    78,
+    59,
+    130 * Math.max(0, hp / 100),
+    13
+  );
 
-  // Message
-  if (messageTimer > 0) {
+  ctx.fillStyle = "#c5a847";
 
-    ctx.fillStyle =
-      "rgba(0,0,0,0.72)";
+  ctx.fillRect(
+    78,
+    87,
+    130 * Math.max(0, hunger / 100),
+    13
+  );
 
-    ctx.fillRect(
-      VIEW_W / 2 - 180,
-      VIEW_H - 80,
-      360,
-      42
-    );
+  let hour = Math.floor(timeMinutes / 60);
+  let minute = Math.floor(timeMinutes % 60);
 
-    ctx.fillStyle =
-      "#ffffff";
+  const timeText =
+    `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
 
-    ctx.font =
-      "bold 16px Arial";
+  ctx.fillStyle = "#d0b85c";
 
-    ctx.textAlign =
-      "center";
+  ctx.font = "bold 18px Arial";
 
-    ctx.fillText(
-      message,
-      VIEW_W / 2,
-      VIEW_H - 53
-    );
+  ctx.fillText(
+    `DAY ${day}  ${timeText}`,
+    1070,
+    43
+  );
 
-    ctx.textAlign =
-      "left";
-
-  }
-
+  ctx.restore();
 }
 
-// ------------------------------------------------
-// SURVIVAL
-// ------------------------------------------------
+// =====================================================
+// INTERACT PROMPT
+// =====================================================
 
-function updateSurvival(dt) {
+function drawPrompt() {
+  let text = "";
 
-  if (mode !== "outside") return;
+  if (mode === "interior") {
+    const b = currentBuilding;
+    const d = b.door;
 
-  player.hunger -=
-    dt * 0.08;
+    const nearDoor =
+      player.x > d.x - 45 &&
+      player.x < d.x + d.w + 45 &&
+      player.y > b.y + b.h - 100;
 
-  player.hunger =
-    Math.max(
-      0,
-      player.hunger
-    );
-
-  if (
-    player.hunger <= 0
-  ) {
-
-    player.hp -=
-      dt * 1.5;
-
+    if (nearDoor) {
+      text = "INTERACT  •  KELUAR";
+    }
+  } else if (player.inCar) {
+    text = "INTERACT  •  KELUAR MOBIL";
+  } else if (nearCar()) {
+    text = "INTERACT  •  MASUK MOBIL";
+  } else if (nearBuildingDoor()) {
+    text = "INTERACT  •  MASUK";
   }
 
-  player.hp =
-    Math.max(
-      0,
-      player.hp
-    );
+  if (!text) return;
 
-  if (
-    player.hp <= 0
-  ) {
+  ctx.save();
 
-    player.hp = 100;
+  ctx.fillStyle = "rgba(0,0,0,.70)";
 
-    player.hunger = 60;
+  ctx.fillRect(
+    canvas.width / 2 - 145,
+    canvas.height - 65,
+    290,
+    40
+  );
 
-    player.x = 1300;
-    player.y = 980;
+  ctx.fillStyle = "#fff";
 
-    showMessage(
-      "You collapsed..."
-    );
+  ctx.font = "bold 15px Arial";
+  ctx.textAlign = "center";
 
-  }
+  ctx.fillText(
+    text,
+    canvas.width / 2,
+    canvas.height - 39
+  );
 
+  ctx.restore();
 }
 
-// ------------------------------------------------
-// MESSAGE
-// ------------------------------------------------
+// =====================================================
+// RENDER
+// =====================================================
 
-function showMessage(text) {
+function render() {
+  ctx.clearRect(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
 
-  message = text;
+  ctx.save();
 
-  messageTimer = 2;
-
-}
-
-// ------------------------------------------------
-// FULLSCREEN + LANDSCAPE
-// ------------------------------------------------
-
-async function enterFullscreenLandscape() {
-
-  try {
-
-    if (
-      !document.fullscreenElement
-    ) {
-
-      await document.documentElement
-        .requestFullscreen();
-
-    }
-
-  } catch (error) {
-    // Browser may refuse fullscreen.
-  }
-
-  try {
-
-    if (
-      screen.orientation &&
-      screen.orientation.lock
-    ) {
-
-      await screen.orientation
-        .lock("landscape");
-
-    }
-
-  } catch (error) {
-    // Orientation lock is not supported.
-  }
-
-}
-
-fullscreenButton.addEventListener(
-  "click",
-  enterFullscreenLandscape
-);
-
-// Try once after first interaction.
-document.addEventListener(
-  "pointerdown",
-  () => {
-    enterFullscreenLandscape();
-  },
-  {
-    once: true
-  }
-);
-
-// ------------------------------------------------
-// INTERACT BUTTON
-// ------------------------------------------------
-
-interactButton.addEventListener(
-  "pointerdown",
-  e => {
-
-    e.preventDefault();
-
-    interact();
-
-  }
-);
-
-// ------------------------------------------------
-// KEYBOARD
-// ------------------------------------------------
-
-const keyboard = {
-  up: false,
-  down: false,
-  left: false,
-  right: false
-};
-
-window.addEventListener(
-  "keydown",
-  e => {
-
-    const k =
-      e.key.toLowerCase();
-
-    if (
-      k === "w" ||
-      k === "arrowup"
-    ) {
-      keyboard.up = true;
-    }
-
-    if (
-      k === "s" ||
-      k === "arrowdown"
-    ) {
-      keyboard.down = true;
-    }
-
-    if (
-      k === "a" ||
-      k === "arrowleft"
-    ) {
-      keyboard.left = true;
-    }
-
-    if (
-      k === "d" ||
-      k === "arrowright"
-    ) {
-      keyboard.right = true;
-    }
-
-    if (
-      k === "e" ||
-      k === "enter"
-    ) {
-      interact();
-    }
-
-  }
-);
-
-window.addEventListener(
-  "keyup",
-  e => {
-
-    const k =
-      e.key.toLowerCase();
-
-    if (
-      k === "w" ||
-      k === "arrowup"
-    ) {
-      keyboard.up = false;
-    }
-
-    if (
-      k === "s" ||
-      k === "arrowdown"
-    ) {
-      keyboard.down = false;
-    }
-
-    if (
-      k === "a" ||
-      k === "arrowleft"
-    ) {
-      keyboard.left = false;
-    }
-
-    if (
-      k === "d" ||
-      k === "arrowright"
-    ) {
-      keyboard.right = false;
-    }
-
-  }
-);
-
-// Keyboard -> analog
-function updateKeyboardAnalog() {
-
-  if (analog.active) return;
-
-  let x = 0;
-  let y = 0;
-
-  if (keyboard.left) x--;
-  if (keyboard.right) x++;
-
-  if (keyboard.up) y--;
-  if (keyboard.down) y++;
-
-  const length =
-    Math.hypot(x, y);
-
-  if (length > 0) {
-
-    analog.x = x / length;
-    analog.y = y / length;
-    analog.power = 1;
-
-  } else {
-
-    analog.x = 0;
-    analog.y = 0;
-    analog.power = 0;
-
-  }
-
-}
-
-// ------------------------------------------------
-// UPDATE
-// ------------------------------------------------
-
-function update(dt) {
-
-  elapsed += dt;
-
-  if (messageTimer > 0) {
-
-    messageTimer -= dt;
-
-  }
-
-  updateKeyboardAnalog();
+  ctx.translate(
+    -camera.x,
+    -camera.y
+  );
 
   if (mode === "outside") {
-
-    updateOutside(dt);
-
-    updateZombies(dt);
-
-    updateSurvival(dt);
-
-    updateCamera();
-
-  } else {
-
-    updateInterior(dt);
-
-  }
-
-}
-
-// ------------------------------------------------
-// DRAW
-// ------------------------------------------------
-
-function draw() {
-
-  if (mode === "outside") {
-
     drawGround();
-    drawRoads();
-    drawBuildings();
+
+    for (const b of buildings) {
+      drawBuilding(b);
+    }
+
     drawRubble();
     drawTrees();
     drawCars();
     drawZombies();
     drawPlayer();
-    drawHUD();
-
   } else {
-
+    drawGround();
     drawInterior();
-    drawHUD();
-
+    drawPlayer();
   }
 
+  ctx.restore();
+
+  drawHUD();
+  drawPrompt();
 }
 
-// ------------------------------------------------
-// GAME LOOP
-// ------------------------------------------------
+// =====================================================
+// LOOP
+// =====================================================
 
-function loop(now) {
+function loop() {
+  update();
+  updateCamera();
+  render();
 
-  let dt =
-    (now - lastTime) / 1000;
-
-  dt =
-    Math.min(
-      dt,
-      0.05
-    );
-
-  lastTime = now;
-
-  update(dt);
-
-  draw();
-
-  requestAnimationFrame(
-    loop
-  );
-
+  requestAnimationFrame(loop);
 }
 
-showMessage(
-  "Explore the ruined city"
-);
-
-requestAnimationFrame(
-  loop
-);
+loop();
