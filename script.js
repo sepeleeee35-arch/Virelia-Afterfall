@@ -13,13 +13,13 @@ const joy = { x: 0, y: 0, active: false };
 let mode = "outside";
 let insideBuilding = null;
 let furniture = [];
-let lastTime = performance.now();
+let last = performance.now();
 
 const player = {
   x: 2100,
   y: 690,
   r: 14,
-  speed: 3.4,
+  speed: 3.2,
   hp: 100,
   hunger: 100,
   car: null
@@ -40,32 +40,32 @@ const roads = [
 ];
 
 const buildings = [
-  { x: 80, y: 80, w: 380, h: 320 },
-  { x: 950, y: 80, w: 420, h: 320 },
-  { x: 2400, y: 80, w: 420, h: 320 },
-  { x: 3710, y: 80, w: 380, h: 320 },
+  { x: 80, y: 80, w: 380, h: 320, h3: 95 },
+  { x: 950, y: 80, w: 420, h: 320, h3: 110 },
+  { x: 2400, y: 80, w: 420, h: 320, h3: 105 },
+  { x: 3710, y: 80, w: 380, h: 320, h3: 90 },
 
-  { x: 80, y: 820, w: 380, h: 420 },
-  { x: 950, y: 820, w: 420, h: 420 },
-  { x: 2400, y: 820, w: 420, h: 420 },
-  { x: 3710, y: 820, w: 380, h: 420 },
+  { x: 80, y: 820, w: 380, h: 420, h3: 120 },
+  { x: 950, y: 820, w: 420, h: 420, h3: 115 },
+  { x: 2400, y: 820, w: 420, h: 420, h3: 120 },
+  { x: 3710, y: 820, w: 380, h: 420, h3: 105 },
 
-  { x: 80, y: 1720, w: 380, h: 420 },
-  { x: 950, y: 1720, w: 420, h: 420 },
-  { x: 2400, y: 1720, w: 420, h: 420 },
-  { x: 3710, y: 1720, w: 380, h: 420 },
+  { x: 80, y: 1720, w: 380, h: 420, h3: 120 },
+  { x: 950, y: 1720, w: 420, h: 420, h3: 125 },
+  { x: 2400, y: 1720, w: 420, h: 420, h3: 115 },
+  { x: 3710, y: 1720, w: 380, h: 420, h3: 105 },
 
-  { x: 80, y: 2620, w: 380, h: 280 },
-  { x: 950, y: 2620, w: 420, h: 280 },
-  { x: 2400, y: 2620, w: 420, h: 280 },
-  { x: 3710, y: 2620, w: 380, h: 280 }
+  { x: 80, y: 2620, w: 380, h: 280, h3: 90 },
+  { x: 950, y: 2620, w: 420, h: 280, h3: 100 },
+  { x: 2400, y: 2620, w: 420, h: 280, h3: 100 },
+  { x: 3710, y: 2620, w: 380, h3: 90 }
 ];
 
 const buildingColors = [
-  "#6e706b",
-  "#77736a",
-  "#666b68",
-  "#716c63"
+  "#73766f",
+  "#696d68",
+  "#77746c",
+  "#626862"
 ];
 
 buildings.forEach((b, i) => {
@@ -82,15 +82,19 @@ for (const b of buildings) {
     [b.x + b.w + 45, b.y + b.h + 45]
   ];
 
-  for (const [x, y] of spots) {
+  for (const p of spots) {
     if (
-      x > 35 &&
-      y > 35 &&
-      x < W - 35 &&
-      y < H - 35 &&
-      !onRoad(x, y)
+      p[0] > 40 &&
+      p[1] > 40 &&
+      p[0] < W - 40 &&
+      p[1] < H - 40 &&
+      !onRoad(p[0], p[1])
     ) {
-      trees.push({ x, y, r: 25 });
+      trees.push({
+        x: p[0],
+        y: p[1],
+        r: 25
+      });
     }
   }
 }
@@ -98,7 +102,7 @@ for (const b of buildings) {
 const cars = [
   { x: 300, y: 590, color: "#9b3434", angle: 0 },
   { x: 1120, y: 590, color: "#56636b", angle: 0 },
-  { x: 2700, y: 590, color: "#8c7731", angle: 0 },
+  { x: 2700, y: 590, color: "#9a8131", angle: 0 },
   { x: 3900, y: 590, color: "#59656c", angle: 0 },
 
   { x: 690, y: 1050, color: "#59636a", angle: Math.PI / 2 },
@@ -127,11 +131,9 @@ const zombies = [
   { x: 1350, y: 590, r: 13, speed: 0.7 },
   { x: 2900, y: 590, r: 13, speed: 0.65 },
   { x: 4000, y: 590, r: 13, speed: 0.7 },
-
   { x: 900, y: 1490, r: 13, speed: 0.65 },
   { x: 1550, y: 1490, r: 13, speed: 0.7 },
   { x: 3000, y: 1490, r: 13, speed: 0.65 },
-
   { x: 900, y: 2390, r: 13, speed: 0.7 },
   { x: 1550, y: 2390, r: 13, speed: 0.65 },
   { x: 3000, y: 2390, r: 13, speed: 0.7 }
@@ -211,24 +213,23 @@ function movePlayer(dx, dy) {
 }
 
 function moveCar(dx, dy) {
-  const car = player.car;
+  const c = player.car;
 
-  if (!car) return;
+  if (!c) return;
 
-  const nx = car.x + dx;
-  const ny = car.y + dy;
+  const nx = c.x + dx;
+  const ny = c.y + dy;
 
   if (!onRoad(nx, ny)) return;
+  if (blocked(nx, ny, 42, c)) return;
 
-  if (blocked(nx, ny, 42, car)) return;
-
-  car.x = nx;
-  car.y = ny;
+  c.x = nx;
+  c.y = ny;
   player.x = nx;
   player.y = ny;
 
   if (Math.hypot(dx, dy) > 0.2) {
-    car.angle = Math.atan2(dy, dx);
+    c.angle = Math.atan2(dy, dx);
   }
 }
 
@@ -286,29 +287,25 @@ function createFurniture(b) {
       x: b.x + 35,
       y: b.y + 35,
       w: 105,
-      h: 55,
-      type: "bed"
+      h: 55
     },
     {
       x: b.x + b.w - 140,
       y: b.y + 35,
       w: 105,
-      h: 55,
-      type: "cabinet"
+      h: 55
     },
     {
       x: b.x + 35,
       y: b.y + 140,
       w: 90,
-      h: 55,
-      type: "table"
+      h: 55
     },
     {
       x: b.x + b.w - 140,
       y: b.y + 140,
       w: 105,
-      h: 55,
-      type: "sofa"
+      h: 55
     }
   ];
 }
@@ -342,7 +339,7 @@ function enterBuilding(b) {
   mode = "interior";
 
   player.x = b.x + b.w / 2;
-  player.y = b.y + b.h - 28;
+  player.y = b.y + b.h - 30;
 }
 
 function exitBuilding() {
@@ -352,55 +349,53 @@ function exitBuilding() {
 
   const d = getDoor(b);
 
-  const nearDoor =
+  const near =
     Math.hypot(
       player.x - d.x,
       player.y - (b.y + b.h - 30)
     ) < 70;
 
-  if (!nearDoor) return;
+  if (!near) return;
 
-  const outsideX = d.x;
-  const outsideY = b.y + b.h + 55;
+  const x = d.x;
+  const y = b.y + b.h + 55;
 
-  if (blocked(outsideX, outsideY, player.r)) {
-    return;
-  }
+  if (blocked(x, y, player.r)) return;
 
-  player.x = outsideX;
-  player.y = outsideY;
+  player.x = x;
+  player.y = y;
 
   insideBuilding = null;
   furniture = [];
   mode = "outside";
 }
 
-function enterCar(car) {
-  if (!car) return;
+function enterCar(c) {
+  if (!c) return;
 
-  car.occupied = true;
-  player.car = car;
-  player.x = car.x;
-  player.y = car.y;
+  c.occupied = true;
+  player.car = c;
+  player.x = c.x;
+  player.y = c.y;
 }
 
 function exitCar() {
-  const car = player.car;
+  const c = player.car;
 
-  if (!car) return;
+  if (!c) return;
 
   const spots = [
-    [car.x + 70, car.y],
-    [car.x - 70, car.y],
-    [car.x, car.y + 70],
-    [car.x, car.y - 70]
+    [c.x + 70, c.y],
+    [c.x - 70, c.y],
+    [c.x, c.y + 70],
+    [c.x, c.y - 70]
   ];
 
-  for (const [x, y] of spots) {
-    if (!blocked(x, y, player.r, car)) {
-      player.x = x;
-      player.y = y;
-      car.occupied = false;
+  for (const p of spots) {
+    if (!blocked(p[0], p[1], player.r, c)) {
+      player.x = p[0];
+      player.y = p[1];
+      c.occupied = false;
       player.car = null;
       return;
     }
@@ -418,10 +413,10 @@ function interact() {
     return;
   }
 
-  const car = nearestCar();
+  const c = nearestCar();
 
-  if (car) {
-    enterCar(car);
+  if (c) {
+    enterCar(c);
     return;
   }
 
@@ -457,18 +452,18 @@ function updateJoystick(e) {
   let dy = e.clientY - cy;
 
   const max = r.width * 0.32;
-  const length = Math.hypot(dx, dy);
+  const len = Math.hypot(dx, dy);
 
-  if (length > max) {
-    dx = dx / length * max;
-    dy = dy / length * max;
+  if (len > max) {
+    dx = dx / len * max;
+    dy = dy / len * max;
   }
 
   joy.x = dx / max;
   joy.y = dy / max;
 
   stick.style.transform =
-    `translate(${dx}px, ${dy}px)`;
+    `translate(${dx}px,${dy}px)`;
 }
 
 function resetJoystick() {
@@ -485,9 +480,7 @@ joystick.addEventListener("pointerdown", e => {
 });
 
 joystick.addEventListener("pointermove", e => {
-  if (joy.active) {
-    updateJoystick(e);
-  }
+  if (joy.active) updateJoystick(e);
 });
 
 joystick.addEventListener("pointerup", resetJoystick);
@@ -516,11 +509,11 @@ function getInput() {
   if (keys.a || keys.arrowleft) x -= 1;
   if (keys.d || keys.arrowright) x += 1;
 
-  const length = Math.hypot(x, y);
+  const len = Math.hypot(x, y);
 
-  if (length > 1) {
-    x /= length;
-    y /= length;
+  if (len > 1) {
+    x /= len;
+    y /= len;
   }
 
   return { x, y };
@@ -529,261 +522,345 @@ function getInput() {
 function updateZombies() {
   if (mode !== "outside") return;
 
-  const targetX = player.car
-    ? player.car.x
-    : player.x;
-
-  const targetY = player.car
-    ? player.car.y
-    : player.y;
+  const tx = player.car ? player.car.x : player.x;
+  const ty = player.car ? player.car.y : player.y;
 
   for (const z of zombies) {
-    const dx = targetX - z.x;
-    const dy = targetY - z.y;
-    const distance = Math.hypot(dx, dy);
+    const dx = tx - z.x;
+    const dy = ty - z.y;
+    const d = Math.hypot(dx, dy);
 
-    if (distance > 650 || distance < 1) {
-      continue;
-    }
+    if (d > 650 || d < 1) continue;
 
-    const vx = dx / distance * z.speed;
-    const vy = dy / distance * z.speed;
+    const vx = dx / d * z.speed;
+    const vy = dy / d * z.speed;
 
-    if (
-      !blocked(
-        z.x + vx,
-        z.y + vy,
-        z.r
-      )
-    ) {
+    if (!blocked(z.x + vx, z.y + vy, z.r)) {
       z.x += vx;
       z.y += vy;
-      continue;
-    }
-
-    if (
-      !blocked(
-        z.x + vx,
-        z.y,
-        z.r
-      )
-    ) {
+    } else if (!blocked(z.x + vx, z.y, z.r)) {
       z.x += vx;
-    }
-
-    if (
-      !blocked(
-        z.x,
-        z.y + vy,
-        z.r
-      )
-    ) {
+    } else if (!blocked(z.x, z.y + vy, z.r)) {
       z.y += vy;
     }
   }
 }
 
 function updateCamera() {
-  const targetX = player.x;
-  const targetY = player.y - 90;
+  const lookX = player.x;
+  const lookY = player.y - 140;
 
-  camera.x +=
-    (targetX - camera.x) * 0.1;
-
-  camera.y +=
-    (targetY - camera.y) * 0.1;
+  camera.x += (lookX - camera.x) * 0.08;
+  camera.y += (lookY - camera.y) * 0.08;
 
   camera.x = clamp(
     camera.x,
-    canvas.width / 2,
-    W - canvas.width / 2
+    500,
+    W - 500
   );
 
   camera.y = clamp(
     camera.y,
-    canvas.height * 0.38,
-    H - canvas.height * 0.62
+    250,
+    H - 400
   );
 }
 
-function drawGround() {
-  ctx.fillStyle = "#3f513d";
-  ctx.fillRect(0, 0, W, H);
+function project(x, y) {
+  const dx = x - camera.x;
+  const dy = y - camera.y;
+
+  const depth = clamp(
+    1 - dy / 1500,
+    0.48,
+    1.25
+  );
+
+  return {
+    x: canvas.width / 2 + dx * depth,
+    y: canvas.height * 0.58 + dy * depth * 0.68,
+    s: depth
+  };
 }
 
-function drawRoads() {
-  for (const r of roads) {
-    ctx.fillStyle = "#303236";
-    ctx.fillRect(r.x, r.y, r.w, r.h);
+function poly(points, fill) {
+  ctx.fillStyle = fill;
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, points[0].y);
 
-    ctx.strokeStyle = "#c8b85f";
-    ctx.lineWidth = 4;
-    ctx.setLineDash([40, 32]);
+  for (let i = 1; i < points.length; i++) {
+    ctx.lineTo(points[i].x, points[i].y);
+  }
 
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawGround() {
+  ctx.fillStyle = "#354734";
+  ctx.fillRect(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+}
+
+function drawRoad(r) {
+  const a = project(r.x, r.y);
+  const b = project(r.x + r.w, r.y);
+  const c = project(r.x + r.w, r.y + r.h);
+  const d = project(r.x, r.y + r.h);
+
+  poly(
+    [a, b, c, d],
+    "#303236"
+  );
+
+  ctx.strokeStyle = "#c8b85f";
+  ctx.lineWidth = 3;
+
+  if (r.w > r.h) {
+    const p1 = project(
+      r.x,
+      r.y + r.h / 2
+    );
+
+    const p2 = project(
+      r.x + r.w,
+      r.y + r.h / 2
+    );
+
+    ctx.setLineDash([35, 28]);
     ctx.beginPath();
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  } else {
+    const p1 = project(
+      r.x + r.w / 2,
+      r.y
+    );
 
-    if (r.w > r.h) {
-      ctx.moveTo(
-        r.x,
-        r.y + r.h / 2
-      );
+    const p2 = project(
+      r.x + r.w / 2,
+      r.y + r.h
+    );
 
-      ctx.lineTo(
-        r.x + r.w,
-        r.y + r.h / 2
-      );
-    } else {
-      ctx.moveTo(
-        r.x + r.w / 2,
-        r.y
-      );
-
-      ctx.lineTo(
-        r.x + r.w / 2,
-        r.y + r.h
-      );
-    }
-
+    ctx.setLineDash([35, 28]);
+    ctx.beginPath();
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
     ctx.stroke();
     ctx.setLineDash([]);
   }
 }
 
 function drawBuilding(b) {
-  ctx.fillStyle = "rgba(0,0,0,.3)";
-  ctx.fillRect(
-    b.x + 12,
-    b.y + 14,
-    b.w,
-    b.h
+  const p1 = project(b.x, b.y);
+  const p2 = project(b.x + b.w, b.y);
+  const p3 = project(
+    b.x + b.w,
+    b.y + b.h
   );
-
-  ctx.fillStyle = b.color;
-  ctx.fillRect(
+  const p4 = project(
     b.x,
-    b.y,
-    b.w,
-    b.h
+    b.y + b.h
   );
 
-  ctx.fillStyle = "#343633";
-  ctx.fillRect(
-    b.x - 6,
-    b.y - 8,
-    b.w + 12,
-    14
+  const lift = b.h3 * p4.s;
+
+  poly(
+    [
+      p1,
+      p2,
+      { x: p2.x, y: p2.y - lift },
+      { x: p1.x, y: p1.y - lift }
+    ],
+    "#50534f"
   );
 
-  ctx.fillStyle = "#263a3d";
+  poly(
+    [
+      p2,
+      p3,
+      { x: p3.x, y: p3.y - lift },
+      { x: p2.x, y: p2.y - lift }
+    ],
+    "#454944"
+  );
 
-  for (
-    let x = b.x + 35;
-    x < b.x + b.w - 25;
-    x += 82
-  ) {
-    ctx.fillRect(
-      x,
-      b.y + 32,
-      34,
-      45
-    );
-  }
+  poly(
+    [
+      p1,
+      p2,
+      p3,
+      p4
+    ],
+    b.color
+  );
 
-  const d = getDoor(b);
+  const door = getDoor(b);
+  const dp = project(door.x, door.y);
+  const ds = 24 * dp.s;
 
   ctx.fillStyle = "#3b2b20";
   ctx.fillRect(
-    d.x - 23,
-    b.y + b.h - 55,
-    46,
-    55
+    dp.x - ds / 2,
+    dp.y - ds * 1.7,
+    ds,
+    ds * 1.7
   );
+
+  const windows = 4;
+
+  for (let i = 0; i < windows; i++) {
+    const wx =
+      b.x + 55 + i * ((b.w - 110) / 3);
+
+    const wp = project(
+      wx,
+      b.y + 55
+    );
+
+    const size = 25 * wp.s;
+
+    ctx.fillStyle = "#24383b";
+    ctx.fillRect(
+      wp.x - size / 2,
+      wp.y - size / 2 - b.h3 * wp.s,
+      size,
+      size
+    );
+  }
 }
 
 function drawTree(t) {
+  const p = project(t.x, t.y);
+  const s = p.s;
+
   ctx.fillStyle = "#5b432d";
+
   ctx.fillRect(
-    t.x - 7,
-    t.y,
-    14,
-    30
+    p.x - 6 * s,
+    p.y - 35 * s,
+    12 * s,
+    35 * s
   );
 
   ctx.fillStyle = "#315637";
+
   ctx.beginPath();
+
   ctx.arc(
-    t.x,
-    t.y - 14,
-    t.r,
+    p.x,
+    p.y - 48 * s,
+    t.r * s,
     0,
     Math.PI * 2
   );
+
   ctx.fill();
 }
 
 function drawCar(c) {
+  const p = project(c.x, c.y);
+  const s = p.s;
+
   ctx.save();
 
-  ctx.translate(c.x, c.y);
+  ctx.translate(p.x, p.y);
   ctx.rotate(c.angle);
+
+  const w = c.w * s;
+  const h = c.h * s;
 
   ctx.fillStyle = "rgba(0,0,0,.3)";
   ctx.fillRect(
-    -c.w / 2 + 6,
-    -c.h / 2 + 7,
-    c.w,
-    c.h
+    -w / 2 + 5 * s,
+    -h / 2 + 6 * s,
+    w,
+    h
   );
 
   ctx.fillStyle = c.color;
   ctx.fillRect(
-    -c.w / 2,
-    -c.h / 2,
-    c.w,
-    c.h
+    -w / 2,
+    -h / 2,
+    w,
+    h
   );
 
-  ctx.fillStyle = "#172225";
-  ctx.fillRect(
-    -19,
-    -15,
-    38,
-    14
-  );
-
-  ctx.fillStyle = "#d8c875";
-  ctx.fillRect(
-    c.w / 2 - 9,
-    -c.h / 2 + 6,
-    5,
-    9
-  );
+  ctx.fillStyle = "#182427";
 
   ctx.fillRect(
-    c.w / 2 - 9,
-    c.h / 2 - 15,
-    5,
-    9
+    -19 * s,
+    -15 * s,
+    38 * s,
+    14 * s
+  );
+
+  ctx.fillStyle = "#ddd078";
+
+  ctx.fillRect(
+    w / 2 - 9 * s,
+    -h / 2 + 5 * s,
+    5 * s,
+    9 * s
+  );
+
+  ctx.fillRect(
+    w / 2 - 9 * s,
+    h / 2 - 14 * s,
+    5 * s,
+    9 * s
   );
 
   ctx.fillStyle = "#171717";
 
-  ctx.fillRect(-31, -24, 18, 7);
-  ctx.fillRect(-31, 17, 18, 7);
-  ctx.fillRect(13, -24, 18, 7);
-  ctx.fillRect(13, 17, 18, 7);
+  ctx.fillRect(
+    -31 * s,
+    -24 * s,
+    18 * s,
+    7 * s
+  );
+
+  ctx.fillRect(
+    -31 * s,
+    17 * s,
+    18 * s,
+    7 * s
+  );
+
+  ctx.fillRect(
+    13 * s,
+    -24 * s,
+    18 * s,
+    7 * s
+  );
+
+  ctx.fillRect(
+    13 * s,
+    17 * s,
+    18 * s,
+    7 * s
+  );
 
   ctx.restore();
 }
 
 function drawZombie(z) {
+  const p = project(z.x, z.y);
+  const s = p.s;
+
   ctx.fillStyle = "#586852";
 
   ctx.fillRect(
-    z.x - 8,
-    z.y - 3,
-    16,
-    22
+    p.x - 8 * s,
+    p.y - 3 * s,
+    16 * s,
+    22 * s
   );
 
   ctx.fillStyle = "#89927b";
@@ -791,9 +868,9 @@ function drawZombie(z) {
   ctx.beginPath();
 
   ctx.arc(
-    z.x,
-    z.y - 13,
-    9,
+    p.x,
+    p.y - 15 * s,
+    9 * s,
     0,
     Math.PI * 2
   );
@@ -804,25 +881,49 @@ function drawZombie(z) {
 function drawPlayer() {
   if (player.car) return;
 
+  const x = canvas.width / 2;
+  const y = canvas.height * 0.72;
+
   ctx.save();
 
-  ctx.translate(
-    player.x,
-    player.y
+  ctx.translate(x, y);
+
+  ctx.fillStyle = "rgba(0,0,0,.3)";
+  ctx.beginPath();
+  ctx.ellipse(
+    0,
+    18,
+    25,
+    9,
+    0,
+    0,
+    Math.PI * 2
   );
+  ctx.fill();
 
   ctx.fillStyle = "#1d2525";
 
-  ctx.fillRect(-8, 3, 6, 18);
-  ctx.fillRect(2, 3, 6, 18);
+  ctx.fillRect(
+    -11,
+    0,
+    8,
+    30
+  );
+
+  ctx.fillRect(
+    3,
+    0,
+    8,
+    30
+  );
 
   ctx.fillStyle = "#394345";
 
   ctx.fillRect(
-    -11,
-    -13,
-    22,
-    22
+    -16,
+    -28,
+    32,
+    30
   );
 
   ctx.fillStyle = "#b99c7e";
@@ -831,8 +932,8 @@ function drawPlayer() {
 
   ctx.arc(
     0,
-    -22,
-    9,
+    -40,
+    13,
     0,
     Math.PI * 2
   );
@@ -842,58 +943,147 @@ function drawPlayer() {
   ctx.restore();
 }
 
+function drawWorld() {
+  drawGround();
+
+  for (const r of roads) {
+    drawRoad(r);
+  }
+
+  const objects = [];
+
+  for (const b of buildings) {
+    objects.push({
+      y: b.y + b.h,
+      type: "building",
+      obj: b
+    });
+  }
+
+  for (const t of trees) {
+    objects.push({
+      y: t.y,
+      type: "tree",
+      obj: t
+    });
+  }
+
+  for (const c of cars) {
+    objects.push({
+      y: c.y,
+      type: "car",
+      obj: c
+    });
+  }
+
+  for (const z of zombies) {
+    objects.push({
+      y: z.y,
+      type: "zombie",
+      obj: z
+    });
+  }
+
+  objects.sort((a, b) => a.y - b.y);
+
+  for (const item of objects) {
+    if (item.type === "building") {
+      drawBuilding(item.obj);
+    } else if (item.type === "tree") {
+      drawTree(item.obj);
+    } else if (item.type === "car") {
+      drawCar(item.obj);
+    } else {
+      drawZombie(item.obj);
+    }
+  }
+
+  drawPlayer();
+}
+
 function drawInterior() {
   const b = insideBuilding;
 
   ctx.fillStyle = "#615b50";
   ctx.fillRect(
-    b.x,
-    b.y,
-    b.w,
-    b.h
+    0,
+    0,
+    canvas.width,
+    canvas.height
   );
 
   ctx.strokeStyle = "#292a28";
-  ctx.lineWidth = 18;
+  ctx.lineWidth = 20;
 
   ctx.strokeRect(
-    b.x,
-    b.y,
-    b.w,
-    b.h
+    120,
+    90,
+    1040,
+    540
   );
 
   for (const f of furniture) {
-    if (f.type === "bed") {
-      ctx.fillStyle = "#40322b";
-    } else if (f.type === "cabinet") {
-      ctx.fillStyle = "#302720";
-    } else if (f.type === "table") {
-      ctx.fillStyle = "#4b3727";
-    } else {
-      ctx.fillStyle = "#4b4e4b";
-    }
+    const x =
+      120 +
+      ((f.x - b.x) / b.w) * 1040;
 
-    ctx.fillRect(
-      f.x,
-      f.y,
-      f.w,
-      f.h
-    );
+    const y =
+      90 +
+      ((f.y - b.y) / b.h) * 540;
+
+    const w =
+      (f.w / b.w) * 1040;
+
+    const h =
+      (f.h / b.h) * 540;
+
+    ctx.fillStyle = "#40352c";
+    ctx.fillRect(x, y, w, h);
   }
 
   ctx.fillStyle = "#b59b5b";
 
   ctx.fillRect(
-    b.x + b.w / 2 - 28,
-    b.y + b.h - 12,
-    56,
-    22
+    610,
+    580,
+    60,
+    25
   );
+
+  ctx.fillStyle = "#1d2525";
+
+  ctx.fillRect(
+    626,
+    535,
+    10,
+    35
+  );
+
+  ctx.fillRect(
+    644,
+    535,
+    10,
+    35
+  );
+
+  ctx.fillStyle = "#b99c7e";
+
+  ctx.beginPath();
+
+  ctx.arc(
+    640,
+    510,
+    13,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fill();
 }
 
 function drawHUD() {
-  ctx.fillStyle = "rgba(0,0,0,.65)";
+  ctx.fillStyle = "rgba(0,0,0,.68)";
+
   ctx.fillRect(
     18,
     18,
@@ -947,13 +1137,12 @@ function drawPrompt() {
     const b = insideBuilding;
     const d = getDoor(b);
 
-    const near =
+    if (
       Math.hypot(
         player.x - d.x,
         player.y - (b.y + b.h - 30)
-      ) < 70;
-
-    if (near) {
+      ) < 70
+    ) {
       text = "INTERACT  •  EXIT";
     }
   } else if (player.car) {
@@ -966,12 +1155,12 @@ function drawPrompt() {
 
   if (!text) return;
 
-  ctx.fillStyle = "rgba(0,0,0,.75)";
+  ctx.fillStyle = "rgba(0,0,0,.78)";
 
   ctx.fillRect(
-    450,
+    430,
     650,
-    380,
+    420,
     38
   );
 
@@ -1012,21 +1201,11 @@ function update(dt) {
     const ny =
       player.y + v.y * player.speed;
 
-    if (
-      !interiorBlocked(
-        nx,
-        player.y
-      )
-    ) {
+    if (!interiorBlocked(nx, player.y)) {
       player.x = nx;
     }
 
-    if (
-      !interiorBlocked(
-        player.x,
-        ny
-      )
-    ) {
+    if (!interiorBlocked(player.x, ny)) {
       player.y = ny;
     }
   }
@@ -1054,41 +1233,11 @@ function draw() {
     canvas.height
   );
 
-  ctx.save();
-
-  ctx.translate(
-    canvas.width / 2 - camera.x,
-    canvas.height * 0.62 - camera.y
-  );
-
   if (mode === "outside") {
-    drawGround();
-    drawRoads();
-
-    for (const b of buildings) {
-      drawBuilding(b);
-    }
-
-    for (const t of trees) {
-      drawTree(t);
-    }
-
-    for (const c of cars) {
-      drawCar(c);
-    }
-
-    for (const z of zombies) {
-      drawZombie(z);
-    }
-
-    drawPlayer();
+    drawWorld();
   } else {
-    drawGround();
     drawInterior();
-    drawPlayer();
   }
-
-  ctx.restore();
 
   drawHUD();
   drawPrompt();
@@ -1097,10 +1246,10 @@ function draw() {
 function loop(now) {
   const dt = Math.min(
     50,
-    now - lastTime
+    now - last
   );
 
-  lastTime = now;
+  last = now;
 
   update(dt);
   draw();
