@@ -10,12 +10,11 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#111}
 body{font-family:Arial,sans-serif;touch-action:none}
 #game{position:fixed;inset:0;width:100%;height:100%;display:block}
 #hud{position:fixed;top:14px;left:14px;color:white;font-weight:bold;font-size:14px;z-index:5;text-shadow:0 2px 5px #000}
-#prompt{position:fixed;top:12%;left:50%;transform:translateX(-50%);color:white;font-weight:bold;text-shadow:0 2px 5px #000;z-index:5}
-#cameraHint{position:fixed;top:14px;right:14px;color:#ddd;font-size:12px;text-shadow:0 2px 4px #000;z-index:5}
-#joystick{position:fixed;left:24px;bottom:24px;width:130px;height:130px;border-radius:50%;background:#0008;border:2px solid #fff3;z-index:10;touch-action:none}
+#prompt{position:fixed;top:13%;left:50%;transform:translateX(-50%);color:white;font-weight:bold;text-shadow:0 2px 5px #000;z-index:5}
+#joystick{position:fixed;left:24px;bottom:24px;width:130px;height:130px;border-radius:50%;background:#0008;border:2px solid #fff3;z-index:10}
 #stick{position:absolute;width:58px;height:58px;left:34px;top:34px;border-radius:50%;background:#aaa9}
-#actions{position:fixed;right:24px;bottom:24px;z-index:10;display:flex;gap:12px}
-button{width:82px;height:82px;border-radius:50%;border:2px solid #fff3;background:#111b;color:white;font-weight:bold}
+#actions{position:fixed;right:24px;bottom:24px;display:flex;gap:12px;z-index:10}
+button{width:82px;height:82px;border-radius:50%;border:2px solid #fff3;background:#111c;color:white;font-weight:bold}
 #error{position:fixed;inset:0;background:#090b09;color:white;display:none;align-items:center;justify-content:center;text-align:center;padding:30px;z-index:100}
 </style>
 </head>
@@ -25,11 +24,8 @@ button{width:82px;height:82px;border-radius:50%;border:2px solid #fff3;backgroun
 
 <div id="hud">HP 100<br>HUNGER 100<br>DAY 1</div>
 <div id="prompt"></div>
-<div id="cameraHint">GESER SISI KANAN = KAMERA</div>
 
-<div id="joystick">
-<div id="stick"></div>
-</div>
+<div id="joystick"><div id="stick"></div></div>
 
 <div id="actions">
 <button id="interact">INTERACT</button>
@@ -55,10 +51,10 @@ try{
 const THREE=await import("https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js");
 
 const canvas=document.getElementById("game");
-const scene=new THREE.Scene();
 
+const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x202820);
-scene.fog=new THREE.Fog(0x202820,70,260);
+scene.fog=new THREE.Fog(0x202820,65,260);
 
 const camera=new THREE.PerspectiveCamera(
 68,
@@ -75,15 +71,18 @@ antialias:true
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
 renderer.setSize(innerWidth,innerHeight);
 
-scene.add(new THREE.HemisphereLight(0xffffff,0x263326,2.2));
+scene.add(new THREE.HemisphereLight(0xffffff,0x263326,2.4));
 
-const sun=new THREE.DirectionalLight(0xffffff,2.4);
+const sun=new THREE.DirectionalLight(0xffffff,2.5);
 sun.position.set(40,80,30);
 scene.add(sun);
 
 const ground=new THREE.Mesh(
-new THREE.PlaneGeometry(260,200),
-new THREE.MeshStandardMaterial({color:0x394638,roughness:1})
+new THREE.PlaneGeometry(280,220),
+new THREE.MeshStandardMaterial({
+color:0x394638,
+roughness:1
+})
 );
 
 ground.rotation.x=-Math.PI/2;
@@ -93,65 +92,70 @@ const buildings=[];
 const trees=[];
 const cars=[];
 
-function building(x,z,w,d,h,color){
+function box(w,h,d,color){
 
-const mesh=new THREE.Mesh(
+return new THREE.Mesh(
 new THREE.BoxGeometry(w,h,d),
 new THREE.MeshStandardMaterial({
 color,
-roughness:.9
+roughness:.85
 })
 );
 
-mesh.position.set(x,h/2,z);
-scene.add(mesh);
+}
 
-buildings.push({
-x,
-z,
-w,
-d
-});
+function building(x,z,w,d,h,color){
 
-const roof=new THREE.Mesh(
-new THREE.BoxGeometry(w+.3,.25,d+.3),
-new THREE.MeshStandardMaterial({color:0x333333})
-);
+const g=new THREE.Group();
 
-roof.position.set(x,h+.12,z);
-scene.add(roof);
+const body=box(w,h,d,color);
+body.position.y=h/2;
+g.add(body);
+
+const roof=box(w+.4,.3,d+.4,0x303030);
+roof.position.y=h+.15;
+g.add(roof);
+
+g.position.set(x,0,z);
+scene.add(g);
+
+buildings.push({x,z,w,d});
 
 }
 
 for(const x of [-55,25]){
 for(const z of [-82,-42,22,62]){
-building(x,z,28,22,10,0x77736a);
+building(x,z,28,22,10,0x706d66);
 }
 }
 
-for(const x of [-105,105]){
-for(const z of [-30,30]){
-building(x,z,22,26,10,0x666c65);
-}
-}
+building(-105,-30,22,26,10,0x626860);
+building(-105,30,22,26,10,0x626860);
+building(105,-30,22,26,10,0x626860);
+building(105,30,22,26,10,0x626860);
 
 function makeTree(x,z){
 
+const g=new THREE.Group();
+
 const trunk=new THREE.Mesh(
-new THREE.CylinderGeometry(0.8,1,4,8),
+new THREE.CylinderGeometry(.8,1,4,8),
 new THREE.MeshStandardMaterial({color:0x60472d})
 );
 
-trunk.position.set(x,2,z);
-scene.add(trunk);
+trunk.position.y=2;
+g.add(trunk);
 
 const crown=new THREE.Mesh(
 new THREE.SphereGeometry(4.5,14,14),
 new THREE.MeshStandardMaterial({color:0x315c32})
 );
 
-crown.position.set(x,6,z);
-scene.add(crown);
+crown.position.y=6;
+g.add(crown);
+
+g.position.set(x,0,z);
+scene.add(g);
 
 trees.push({x,z,r:5});
 
@@ -168,37 +172,18 @@ function makeCar(x,z,color){
 
 const g=new THREE.Group();
 
-const body=new THREE.Mesh(
-new THREE.BoxGeometry(5,1.4,8),
-new THREE.MeshStandardMaterial({
-color,
-roughness:.7
-})
-);
-
+const body=box(5,1.4,8,color);
 body.position.y=1.1;
 g.add(body);
 
-const cabin=new THREE.Mesh(
-new THREE.BoxGeometry(3.8,1.2,4),
-new THREE.MeshStandardMaterial({
-color:0x20252a,
-roughness:.5
-})
-);
-
+const cabin=box(3.8,1.2,4,0x20252a);
 cabin.position.y=2.2;
 g.add(cabin);
 
 g.position.set(x,0,z);
 scene.add(g);
 
-cars.push({
-mesh:g,
-x,
-z,
-r:4
-});
+cars.push({mesh:g,x,z,r:4});
 
 }
 
@@ -210,86 +195,117 @@ makeCar(80,20,0x777777);
 const player=new THREE.Group();
 
 const skin=new THREE.MeshStandardMaterial({
-color:0xc58d68,
+color:0xb97855,
 roughness:.8
 });
 
-const shirt=new THREE.MeshStandardMaterial({
-color:0x30485c,
+const armor=new THREE.MeshStandardMaterial({
+color:0x252a2c,
+metalness:.65,
+roughness:.55
+});
+
+const leather=new THREE.MeshStandardMaterial({
+color:0x4a3425,
 roughness:.9
 });
 
-const pants=new THREE.MeshStandardMaterial({
-color:0x202631,
-roughness:.9
+const cloth=new THREE.MeshStandardMaterial({
+color:0x171c22,
+roughness:1
 });
 
-const shoes=new THREE.MeshStandardMaterial({
-color:0x111317,
-roughness:.8
-});
+function addPart(geometry,material,x,y,z){
 
-const torso=new THREE.Mesh(
-new THREE.CapsuleGeometry(.72,1.35,6,12),
-shirt
-);
-
-torso.position.y=2.25;
-player.add(torso);
-
-const head=new THREE.Mesh(
-new THREE.SphereGeometry(.62,20,20),
-skin
-);
-
-head.position.y=3.95;
-player.add(head);
-
-const hair=new THREE.Mesh(
-new THREE.SphereGeometry(.64,16,16),
-new THREE.MeshStandardMaterial({color:0x202020,roughness:1})
-);
-
-hair.scale.set(1,0.55,1);
-hair.position.set(0,4.28,0);
-player.add(hair);
-
-function limb(w,h,d,material,x,y,z){
-
-const m=new THREE.Mesh(
-new THREE.CapsuleGeometry(Math.min(w,d)/2,h*.55,5,8),
-material
-);
-
-m.scale.x=w/Math.min(w,d);
-m.scale.z=d/Math.min(w,d);
+const m=new THREE.Mesh(geometry,material);
 m.position.set(x,y,z);
 player.add(m);
+return m;
 
 }
 
-limb(.38,1.6,.38,skin,-.98,2.35,0);
-limb(.38,1.6,.38,skin,.98,2.35,0);
-
-limb(.48,1.8,.48,pants,-.38,.75,0);
-limb(.48,1.8,.48,pants,.38,.75,0);
-
-const shoe1=new THREE.Mesh(
-new THREE.BoxGeometry(.55,.25,.9),
-shoes
+addPart(
+new THREE.CapsuleGeometry(.72,1.25,8,16),
+armor,
+0,2.35,0
 );
 
-shoe1.position.set(-.38,.05,-.12);
-player.add(shoe1);
+addPart(
+new THREE.SphereGeometry(.63,24,24),
+skin,
+0,3.95,0
+);
 
-const shoe2=shoe1.clone();
-shoe2.position.x=.38;
-player.add(shoe2);
+const hair=addPart(
+new THREE.SphereGeometry(.67,20,20),
+cloth,
+0,4.28,0
+);
+
+hair.scale.set(1,.58,1);
+
+addPart(
+new THREE.TorusGeometry(.72,.13,8,24),
+cloth,
+0,3.48,0
+);
+
+const shoulderL=addPart(
+new THREE.SphereGeometry(.5,16,16),
+armor,
+-.83,2.95,0
+);
+
+shoulderL.scale.set(1,.55,1.2);
+
+const shoulderR=shoulderL.clone();
+shoulderR.position.x=.83;
+player.add(shoulderR);
+
+addPart(
+new THREE.BoxGeometry(.42,1.65,.42),
+armor,
+-.96,2.15,0
+);
+
+addPart(
+new THREE.BoxGeometry(.42,1.65,.42),
+armor,
+.96,2.15,0
+);
+
+addPart(
+new THREE.BoxGeometry(1.75,.25,.55),
+leather,
+0,1.72,0
+);
+
+addPart(
+new THREE.BoxGeometry(.65,1.8,.55),
+cloth,
+-.4,.72,0
+);
+
+addPart(
+new THREE.BoxGeometry(.65,1.8,.55),
+cloth,
+.4,.72,0
+);
+
+addPart(
+new THREE.BoxGeometry(.7,.28,1),
+leather,
+-.4,.05,-.12
+);
+
+addPart(
+new THREE.BoxGeometry(.7,.28,1),
+leather,
+.4,.05,-.12
+);
 
 player.position.set(0,0,20);
 scene.add(player);
-
-const playerRadius=1.1;
 
 const zombies=[];
 
@@ -298,7 +314,7 @@ for(let i=0;i<6;i++){
 const z=new THREE.Group();
 
 const body=new THREE.Mesh(
-new THREE.CapsuleGeometry(.55,1.2,5,10),
+new THREE.CapsuleGeometry(.55,1.2,6,12),
 new THREE.MeshStandardMaterial({color:0x596556})
 );
 
@@ -306,7 +322,7 @@ body.position.y=1.7;
 z.add(body);
 
 const head=new THREE.Mesh(
-new THREE.SphereGeometry(.48,14,14),
+new THREE.SphereGeometry(.48,16,16),
 new THREE.MeshStandardMaterial({color:0x78806d})
 );
 
@@ -324,17 +340,19 @@ zombies.push(z);
 
 }
 
+const playerRadius=1.05;
+
 function blocked(x,z){
 
-if(x<-124||x>124||z<-94||z>94)return true;
+if(x<-134||x>134||z<-104||z>104)return true;
 
 for(const b of buildings){
 
 if(
-x> b.x-b.w/2-playerRadius &&
-x< b.x+b.w/2+playerRadius &&
-z> b.z-b.d/2-playerRadius &&
-z< b.z+b.d/2+playerRadius
+x>b.x-b.w/2-playerRadius &&
+x<b.x+b.w/2+playerRadius &&
+z>b.z-b.d/2-playerRadius &&
+z<b.z+b.d/2+playerRadius
 )return true;
 
 }
@@ -410,19 +428,19 @@ joyY=0;
 stick.style.transform="translate(0,0)";
 });
 
-let cameraYaw=0;
-let cameraPitch=.35;
+let yaw=0;
+let pitch=.35;
 
-let cameraPointer=null;
+let camTouch=null;
 
 canvas.addEventListener("pointerdown",e=>{
 
-if(e.clientX<innerWidth*.45)return;
+if(e.clientX<innerWidth*.42)return;
 
-cameraPointer={
-id:e.pointerId,
+camTouch={
 x:e.clientX,
-y:e.clientY
+y:e.clientY,
+id:e.pointerId
 };
 
 canvas.setPointerCapture(e.pointerId);
@@ -431,28 +449,28 @@ canvas.setPointerCapture(e.pointerId);
 
 canvas.addEventListener("pointermove",e=>{
 
-if(!cameraPointer)return;
-if(e.pointerId!==cameraPointer.id)return;
+if(!camTouch)return;
+if(e.pointerId!==camTouch.id)return;
 
-const dx=e.clientX-cameraPointer.x;
-const dy=e.clientY-cameraPointer.y;
+const dx=e.clientX-camTouch.x;
+const dy=e.clientY-camTouch.y;
 
-cameraYaw-=dx*.006;
-cameraPitch-=dy*.004;
+yaw-=dx*.008;
+pitch-=dy*.006;
 
-cameraPitch=Math.max(.12,Math.min(.75,cameraPitch));
+pitch=Math.max(-.65,Math.min(1.05,pitch));
 
-cameraPointer.x=e.clientX;
-cameraPointer.y=e.clientY;
+camTouch.x=e.clientX;
+camTouch.y=e.clientY;
 
 });
 
 canvas.addEventListener("pointerup",()=>{
-cameraPointer=null;
+camTouch=null;
 });
 
 canvas.addEventListener("pointercancel",()=>{
-cameraPointer=null;
+camTouch=null;
 });
 
 document.getElementById("full").onclick=()=>{
@@ -462,47 +480,42 @@ document.documentElement.requestFullscreen();
 
 function movePlayer(){
 
-let inputX=joyX;
-let inputY=joyY;
+let ix=joyX;
+let iy=joyY;
 
-if(keys.w||keys.arrowup)inputY=-1;
-if(keys.s||keys.arrowdown)inputY=1;
-if(keys.a||keys.arrowleft)inputX=-1;
-if(keys.d||keys.arrowright)inputX=1;
+if(keys.w||keys.arrowup)iy=-1;
+if(keys.s||keys.arrowdown)iy=1;
+if(keys.a||keys.arrowleft)ix=-1;
+if(keys.d||keys.arrowright)ix=1;
 
-const length=Math.hypot(inputX,inputY);
+const len=Math.hypot(ix,iy);
 
-if(length<.05)return;
+if(len<.05)return;
 
-inputX/=length;
-inputY/=length;
+ix/=len;
+iy/=len;
+
+const forwardX=-Math.sin(yaw);
+const forwardZ=-Math.cos(yaw);
+
+const rightX=Math.cos(yaw);
+const rightZ=-Math.sin(yaw);
+
+const mx=forwardX*(-iy)+rightX*ix;
+const mz=forwardZ*(-iy)+rightZ*ix;
 
 const speed=.18;
 
-const forwardX=-Math.sin(cameraYaw);
-const forwardZ=-Math.cos(cameraYaw);
+const nx=player.position.x+mx*speed;
+const nz=player.position.z+mz*speed;
 
-const rightX=Math.cos(cameraYaw);
-const rightZ=-Math.sin(cameraYaw);
+if(!blocked(nx,player.position.z))
+player.position.x=nx;
 
-const moveX=
-forwardX*(-inputY)+
-rightX*inputX;
+if(!blocked(player.position.x,nz))
+player.position.z=nz;
 
-const moveZ=
-forwardZ*(-inputY)+
-rightZ*inputX;
-
-const nextX=player.position.x+moveX*speed;
-const nextZ=player.position.z+moveZ*speed;
-
-if(!blocked(nextX,player.position.z))
-player.position.x=nextX;
-
-if(!blocked(player.position.x,nextZ))
-player.position.z=nextZ;
-
-player.rotation.y=Math.atan2(moveX,moveZ);
+player.rotation.y=Math.atan2(mx,mz);
 
 }
 
@@ -516,8 +529,8 @@ const d=Math.hypot(dx,dz);
 
 if(d<3||d>100)continue;
 
-const nx=z.position.x+(dx/d)*.025;
-const nz=z.position.z+(dz/d)*.025;
+const nx=z.position.x+dx/d*.025;
+const nz=z.position.z+dz/d*.025;
 
 if(!blocked(nx,nz)){
 z.position.x=nx;
@@ -533,25 +546,33 @@ z.rotation.y=Math.atan2(dx,dz);
 function updateCamera(){
 
 const distance=8;
-const height=4.8;
+const targetY=2.1;
 
-const targetX=player.position.x;
-const targetY=player.position.y+2.1;
-const targetZ=player.position.z;
+const horizontal=Math.cos(pitch)*distance;
 
-const offsetX=Math.sin(cameraYaw)*distance;
-const offsetZ=Math.cos(cameraYaw)*distance;
+const desiredX=
+player.position.x+
+Math.sin(yaw)*horizontal;
 
-const desiredX=targetX+offsetX;
-const desiredZ=targetZ+offsetZ;
+const desiredZ=
+player.position.z+
+Math.cos(yaw)*horizontal;
 
-const desiredY=targetY+height+cameraPitch*3;
+const desiredY=
+player.position.y+
+targetY+
+Math.sin(pitch)*distance+
+2.2;
 
 camera.position.x+=(desiredX-camera.position.x)*.12;
 camera.position.y+=(desiredY-camera.position.y)*.12;
 camera.position.z+=(desiredZ-camera.position.z)*.12;
 
-camera.lookAt(targetX,targetY,targetZ);
+camera.lookAt(
+player.position.x,
+player.position.y+targetY,
+player.position.z
+);
 
 }
 
