@@ -7,10 +7,9 @@ canvas.height = 720;
 const W = 3600;
 const H = 2600;
 
+let lastTime = performance.now();
 let mode = "outside";
 let currentBuilding = null;
-let interiorFurniture = [];
-let lastTime = performance.now();
 
 const keys = {};
 
@@ -20,16 +19,24 @@ const joystick = {
   y: 0
 };
 
+/* =========================================================
+   PLAYER
+========================================================= */
+
 const player = {
   x: 900,
-  y: 500,
+  y: 520,
   r: 15,
-  speed: 3.2,
+  speed: 3.4,
   hp: 100,
   hunger: 100,
   inCar: false,
   car: null
 };
+
+/* =========================================================
+   CAMERA
+========================================================= */
 
 const camera = {
   x: player.x,
@@ -38,23 +45,25 @@ const camera = {
 
 /* =========================================================
    ROADS
+   Semua jalan ditentukan dulu.
 ========================================================= */
 
 const roads = [
-  { x: 0, y: 400, w: W, h: 190 },
-  { x: 0, y: 1120, w: W, h: 190 },
-  { x: 0, y: 1840, w: W, h: 190 },
+  // horizontal
+  { x: 0, y: 380, w: W, h: 210 },
+  { x: 0, y: 1120, w: W, h: 210 },
+  { x: 0, y: 1860, w: W, h: 210 },
 
-  { x: 500, y: 0, w: 190, h: H },
-  { x: 1680, y: 0, w: 190, h: H },
-  { x: 2860, y: 0, w: 190, h: H }
+  // vertical
+  { x: 480, y: 0, w: 210, h: H },
+  { x: 1695, y: 0, w: 210, h: H },
+  { x: 2910, y: 0, w: 210, h: H }
 ];
 
 /* =========================================================
    BUILDINGS
-   MANUAL LAYOUT
-   Tidak ada generator yang bisa menaruh bangunan
-   di tengah jalan atau menimpa bangunan lain.
+   MANUAL LAYOUT.
+   Tidak ada auto-generate yang bisa numpuk.
 ========================================================= */
 
 const buildings = [];
@@ -67,205 +76,183 @@ function addBuilding(x, y, w, h, type = "house") {
     h,
     type,
     color: [
-      "#77746c",
-      "#686b65",
-      "#716e67",
-      "#626660",
-      "#7a756c"
+      "#77756d",
+      "#696c67",
+      "#817b70",
+      "#626762",
+      "#706d66"
     ][buildings.length % 5]
   });
 }
 
 /*
-  BLOK KIRI ATAS
+  BLOCK 1
 */
-addBuilding(70, 80, 300, 240, "house");
+
+addBuilding(55, 55, 300, 240, "house");
 
 /*
-  BLOK TENGAH ATAS
+  BLOCK 2
 */
-addBuilding(760, 75, 330, 250, "house");
-addBuilding(1210, 110, 320, 210, "house");
+
+addBuilding(750, 55, 350, 250, "house");
+addBuilding(1190, 70, 380, 230, "shop");
 
 /*
-  BLOK KANAN ATAS
+  BLOCK 3
 */
-addBuilding(1960, 80, 350, 230, "house");
-addBuilding(2440, 110, 280, 200, "house");
+
+addBuilding(1950, 55, 350, 250, "house");
+addBuilding(2420, 70, 350, 230, "house");
 
 /*
-  BLOK PALING KANAN
+  BLOCK 4
 */
-addBuilding(3160, 85, 300, 230, "house");
+
+addBuilding(3135, 60, 350, 240, "house");
 
 /*
-  BLOK KIRI TENGAH
+  BLOCK 5
 */
-addBuilding(70, 690, 300, 300, "house");
+
+addBuilding(60, 650, 330, 340, "house");
 
 /*
-  BLOK TENGAH TENGAH
+  BLOCK 6
 */
-addBuilding(760, 690, 360, 300, "house");
-addBuilding(1240, 750, 300, 250, "house");
+
+addBuilding(750, 650, 350, 300, "house");
+addBuilding(1200, 680, 360, 300, "shop");
 
 /*
-  BLOK KANAN TENGAH
-   LARGE BUILDING KHUSUS.
-   Tidak ada bangunan lain di area ini.
+  BLOCK 7
+   SATU bangunan besar.
+   Tidak ada bangunan lain di kavling ini.
 */
-addBuilding(1990, 690, 650, 300, "large");
+
+addBuilding(1980, 660, 690, 340, "large");
 
 /*
-  BLOK PALING KANAN TENGAH
+  BLOCK 8
 */
-addBuilding(3160, 700, 300, 300, "house");
+
+addBuilding(3140, 660, 330, 300, "house");
 
 /*
-  BLOK KIRI BAWAH-TENGAH
+  BLOCK 9
 */
-addBuilding(75, 1420, 290, 300, "house");
+
+addBuilding(60, 1390, 330, 330, "house");
 
 /*
-  BLOK TENGAH BAWAH-TENGAH
+  BLOCK 10
 */
-addBuilding(760, 1410, 350, 300, "house");
-addBuilding(1250, 1470, 290, 240, "house");
+
+addBuilding(750, 1390, 370, 300, "house");
+addBuilding(1200, 1420, 350, 280, "shop");
 
 /*
-  BLOK KANAN BAWAH-TENGAH
+  BLOCK 11
 */
-addBuilding(1980, 1410, 350, 300, "house");
-addBuilding(2470, 1460, 280, 250, "house");
+
+addBuilding(1960, 1390, 350, 300, "house");
+addBuilding(2440, 1410, 340, 290, "house");
 
 /*
-  BLOK PALING KANAN
+  BLOCK 12
 */
-addBuilding(3160, 1420, 300, 300, "house");
+
+addBuilding(3140, 1390, 330, 300, "house");
 
 /*
-  BLOK PALING BAWAH
+  BLOCK 13
 */
-addBuilding(70, 2150, 300, 300, "house");
 
-addBuilding(760, 2150, 360, 300, "house");
-addBuilding(1240, 2200, 300, 250, "house");
+addBuilding(60, 2150, 330, 320, "house");
 
-addBuilding(1980, 2150, 350, 300, "house");
-addBuilding(2470, 2200, 280, 250, "house");
+/*
+  BLOCK 14
+*/
 
-addBuilding(3160, 2150, 300, 300, "house");
+addBuilding(750, 2140, 380, 320, "house");
+addBuilding(1210, 2160, 340, 290, "shop");
+
+/*
+  BLOCK 15
+*/
+
+addBuilding(1960, 2140, 370, 320, "house");
+addBuilding(2450, 2160, 330, 290, "house");
+
+/*
+  BLOCK 16
+*/
+
+addBuilding(3140, 2140, 330, 320, "house");
 
 /* =========================================================
-   GEOMETRY SAFETY
+   GEOMETRY HELPERS
 ========================================================= */
+
+function clamp(v, min, max) {
+  return Math.max(min, Math.min(max, v));
+}
 
 function rectOverlap(a, b, padding = 0) {
   return !(
-    a.x + a.w + padding <= b.x ||
-    a.x - padding >= b.x + b.w ||
-    a.y + a.h + padding <= b.y ||
-    a.y - padding >= b.y + b.h
+    a.x + a.w + padding < b.x ||
+    a.x - padding > b.x + b.w ||
+    a.y + a.h + padding < b.y ||
+    a.y - padding > b.y + b.h
   );
 }
 
-function pointInRoad(x, y) {
+function rectHitsRoad(rect, padding = 0) {
   return roads.some(r =>
-    x >= r.x &&
-    x <= r.x + r.w &&
-    y >= r.y &&
-    y <= r.y + r.h
+    rectOverlap(rect, r, padding)
   );
 }
 
 /*
-  Kalau developer nanti menambah bangunan secara manual
-  dan salah posisi, console akan memberitahu.
+  Safety check.
+  Kalau ada kesalahan layout, bangunan akan dibuang.
 */
-for (let i = 0; i < buildings.length; i++) {
-  const b = buildings[i];
 
-  for (const r of roads) {
-    if (rectOverlap(b, r)) {
-      console.warn("BUILDING ON ROAD:", b);
+const safeBuildings = [];
+
+for (const b of buildings) {
+  let bad = false;
+
+  if (rectHitsRoad(b, 8)) {
+    bad = true;
+  }
+
+  for (const other of safeBuildings) {
+    if (rectOverlap(b, other, 15)) {
+      bad = true;
+      break;
     }
   }
 
-  for (let j = i + 1; j < buildings.length; j++) {
-    if (rectOverlap(b, buildings[j], 4)) {
-      console.warn(
-        "BUILDINGS OVERLAP:",
-        b,
-        buildings[j]
-      );
-    }
+  if (!bad) {
+    safeBuildings.push(b);
   }
 }
 
+buildings.length = 0;
+buildings.push(...safeBuildings);
+
 /* =========================================================
    DOORS
-   Satu pintu di bagian bawah setiap bangunan.
 ========================================================= */
 
 function getDoor(b) {
   return {
     x: b.x + b.w / 2,
     y: b.y + b.h,
-    w: 60,
-    h: 16
+    w: 58,
+    h: 12
   };
-}
-
-function nearDoor() {
-  if (mode !== "outside") return null;
-
-  let nearest = null;
-  let best = 55;
-
-  for (const b of buildings) {
-    const d = getDoor(b);
-
-    const distance = Math.hypot(
-      player.x - d.x,
-      player.y - (d.y + 22)
-    );
-
-    if (distance < best) {
-      best = distance;
-      nearest = b;
-    }
-  }
-
-  return nearest;
-}
-
-/* =========================================================
-   CARS
-========================================================= */
-
-const cars = [
-  { x: 280, y: 495, w: 86, h: 44, color: "#8b2929", angle: 0 },
-  { x: 950, y: 495, w: 86, h: 44, color: "#38434a", angle: 0 },
-  { x: 2200, y: 495, w: 86, h: 44, color: "#9b8b35", angle: 0 },
-  { x: 3270, y: 495, w: 86, h: 44, color: "#53616b", angle: 0 },
-
-  { x: 595, y: 850, w: 86, h: 44, color: "#7d3030", angle: Math.PI / 2 },
-  { x: 1775, y: 900, w: 86, h: 44, color: "#444d53", angle: Math.PI / 2 },
-  { x: 2955, y: 900, w: 86, h: 44, color: "#777344", angle: Math.PI / 2 },
-
-  { x: 1080, y: 1210, w: 86, h: 44, color: "#55636a", angle: 0 },
-  { x: 2380, y: 1210, w: 86, h: 44, color: "#833737", angle: 0 },
-
-  { x: 595, y: 1660, w: 86, h: 44, color: "#454b50", angle: Math.PI / 2 },
-  { x: 1775, y: 1660, w: 86, h: 44, color: "#806e38", angle: Math.PI / 2 },
-  { x: 2955, y: 1660, w: 86, h: 44, color: "#6a4545", angle: Math.PI / 2 },
-
-  { x: 1050, y: 1935, w: 86, h: 44, color: "#59666d", angle: 0 },
-  { x: 2380, y: 1935, w: 86, h: 44, color: "#7d3434", angle: 0 }
-];
-
-for (const car of cars) {
-  car.occupied = false;
 }
 
 /* =========================================================
@@ -275,15 +262,27 @@ for (const car of cars) {
 const trees = [];
 
 function addTree(x, y) {
-  if (pointInRoad(x, y)) return;
+  if (x < 40 || y < 40 || x > W - 40 || y > H - 40) {
+    return;
+  }
+
+  if (roads.some(r => circleRect(x, y, 28, r))) {
+    return;
+  }
 
   for (const b of buildings) {
-    if (
-      x > b.x - 60 &&
-      x < b.x + b.w + 60 &&
-      y > b.y - 60 &&
-      y < b.y + b.h + 60
-    ) {
+    if (circleRect(x, y, 28, {
+      x: b.x - 35,
+      y: b.y - 35,
+      w: b.w + 70,
+      h: b.h + 70
+    })) {
+      return;
+    }
+  }
+
+  for (const t of trees) {
+    if (Math.hypot(x - t.x, y - t.y) < 70) {
       return;
     }
   }
@@ -296,96 +295,127 @@ function addTree(x, y) {
 }
 
 /*
-  Trees di area yang memang kosong.
+  Pohon di ruang kosong.
 */
-[
-  [420, 80],
-  [420, 330],
-  [730, 330],
-  [1130, 350],
+
+const treePositions = [
+  [430, 80],
+  [430, 300],
+  [720, 90],
+  [1130, 320],
   [1580, 330],
 
-  [420, 650],
-  [420, 1050],
-  [730, 1050],
-  [1600, 1040],
+  [420, 700],
+  [420, 1020],
+  [720, 1020],
+  [1140, 1040],
+  [1600, 1020],
 
-  [420, 1380],
-  [420, 1770],
-  [730, 1770],
-  [1600, 1770],
+  [420, 1430],
+  [420, 1720],
+  [720, 1740],
+  [1140, 1730],
+  [1580, 1750],
 
-  [420, 2100],
-  [420, 2550],
-  [730, 2550],
-  [1600, 2550],
+  [420, 2190],
+  [420, 2460],
+  [720, 2480],
+  [1140, 2500],
+  [1600, 2480],
 
-  [1900, 330],
-  [2780, 330],
-  [1900, 1050],
-  [2780, 1050],
+  [1900, 350],
+  [2700, 340],
+  [3200, 350],
+  [3500, 340],
 
-  [1900, 1780],
-  [2780, 1780],
-  [1900, 2550],
-  [2780, 2550],
+  [1900, 1030],
+  [2700, 1030],
+  [3200, 1030],
+  [3500, 1030],
 
-  [3090, 350],
-  [3550, 350],
-  [3090, 1050],
-  [3550, 1050],
-  [3090, 1780],
-  [3550, 1780],
-  [3090, 2550],
-  [3550, 2550]
-].forEach(p => addTree(p[0], p[1]));
+  [1900, 1740],
+  [2700, 1740],
+  [3200, 1740],
+  [3500, 1740],
+
+  [1900, 2500],
+  [2700, 2500],
+  [3200, 2500],
+  [3500, 2500]
+];
+
+for (const [x, y] of treePositions) {
+  addTree(x, y);
+}
+
+/* =========================================================
+   CARS
+   angle = arah DEPAN mobil.
+========================================================= */
+
+const cars = [
+  // horizontal road
+  { x: 280, y: 485, w: 86, h: 44, color: "#9b3030", angle: 0 },
+  { x: 950, y: 485, w: 86, h: 44, color: "#3f4b54", angle: Math.PI },
+  { x: 2220, y: 485, w: 86, h: 44, color: "#b09b3d", angle: 0 },
+  { x: 3350, y: 485, w: 86, h: 44, color: "#56636d", angle: Math.PI },
+
+  // vertical road
+  { x: 585, y: 820, w: 86, h: 44, color: "#7e3333", angle: Math.PI / 2 },
+  { x: 1800, y: 900, w: 86, h: 44, color: "#4b555a", angle: -Math.PI / 2 },
+  { x: 3015, y: 850, w: 86, h: 44, color: "#807541", angle: Math.PI / 2 },
+
+  // horizontal
+  { x: 1000, y: 1225, w: 86, h: 44, color: "#53636a", angle: 0 },
+  { x: 2350, y: 1225, w: 86, h: 44, color: "#863939", angle: Math.PI },
+
+  // vertical
+  { x: 585, y: 1580, w: 86, h: 44, color: "#454d53", angle: -Math.PI / 2 },
+  { x: 1800, y: 1600, w: 86, h: 44, color: "#877239", angle: Math.PI / 2 },
+  { x: 3015, y: 1580, w: 86, h: 44, color: "#704747", angle: -Math.PI / 2 },
+
+  // bottom road
+  { x: 1000, y: 1965, w: 86, h: 44, color: "#5a686e", angle: 0 },
+  { x: 2380, y: 1965, w: 86, h: 44, color: "#823737", angle: Math.PI }
+];
+
+for (const car of cars) {
+  car.occupied = false;
+}
 
 /* =========================================================
    ZOMBIES
 ========================================================= */
 
 const zombies = [
-  { x: 300, y: 500, r: 14, speed: 0.65 },
-  { x: 1050, y: 500, r: 14, speed: 0.7 },
-  { x: 2200, y: 500, r: 14, speed: 0.65 },
-  { x: 3300, y: 500, r: 14, speed: 0.7 },
+  { x: 250, y: 485, r: 14, speed: 0.65 },
+  { x: 1050, y: 485, r: 14, speed: 0.70 },
+  { x: 2250, y: 485, r: 14, speed: 0.65 },
+  { x: 3300, y: 485, r: 14, speed: 0.68 },
 
-  { x: 1100, y: 1210, r: 14, speed: 0.65 },
-  { x: 2300, y: 1210, r: 14, speed: 0.7 },
+  { x: 1000, y: 1225, r: 14, speed: 0.65 },
+  { x: 2350, y: 1225, r: 14, speed: 0.70 },
 
-  { x: 1050, y: 1935, r: 14, speed: 0.68 },
-  { x: 2400, y: 1935, r: 14, speed: 0.65 }
+  { x: 1000, y: 1965, r: 14, speed: 0.68 },
+  { x: 2400, y: 1965, r: 14, speed: 0.65 }
 ];
 
 /* =========================================================
    COLLISION
 ========================================================= */
 
-function clamp(v, a, b) {
-  return Math.max(a, Math.min(b, v));
-}
-
 function circleRect(cx, cy, radius, rect) {
-  const x = clamp(
-    cx,
-    rect.x,
-    rect.x + rect.w
-  );
-
-  const y = clamp(
-    cy,
-    rect.y,
-    rect.y + rect.h
-  );
+  const x = clamp(cx, rect.x, rect.x + rect.w);
+  const y = clamp(cy, rect.y, rect.y + rect.h);
 
   const dx = cx - x;
   const dy = cy - y;
 
-  return (
-    dx * dx +
-    dy * dy <
-    radius * radius
-  );
+  return dx * dx + dy * dy < radius * radius;
+}
+
+function circleCircle(x1, y1, r1, x2, y2, r2) {
+  return Math.hypot(x1 - x2, y1 - y2) < r1 + r2;
 }
 
 function buildingCollision(x, y, r) {
@@ -401,10 +431,14 @@ function buildingCollision(x, y, r) {
 function treeCollision(x, y, r) {
   for (const t of trees) {
     if (
-      Math.hypot(
-        x - t.x,
-        y - t.y
-      ) < r + t.r * 0.65
+      circleCircle(
+        x,
+        y,
+        r,
+        t.x,
+        t.y,
+        t.r * 0.65
+      )
     ) {
       return true;
     }
@@ -413,25 +447,24 @@ function treeCollision(x, y, r) {
   return false;
 }
 
-function carCollision(
-  x,
-  y,
-  r,
-  ignore = null
-) {
+/*
+  Mobil dianggap lingkaran collision.
+  Ini sengaja supaya mobil tidak bisa menembus mobil lain.
+*/
+
+function carCollision(x, y, r, ignore = null) {
   for (const car of cars) {
     if (car === ignore) continue;
 
-    /*
-      Radius cukup besar supaya kendaraan
-      tidak bisa saling menembus.
-    */
     if (
-      Math.hypot(
-        x - car.x,
-        y - car.y
-      ) <
-      r + 45
+      circleCircle(
+        x,
+        y,
+        r,
+        car.x,
+        car.y,
+        43
+      )
     ) {
       return true;
     }
@@ -440,12 +473,7 @@ function carCollision(
   return false;
 }
 
-function outsideBlocked(
-  x,
-  y,
-  r,
-  ignoreCar = null
-) {
+function outsideBlocked(x, y, r, ignoreCar = null) {
   if (
     x < r ||
     y < r ||
@@ -463,14 +491,7 @@ function outsideBlocked(
     return true;
   }
 
-  if (
-    carCollision(
-      x,
-      y,
-      r,
-      ignoreCar
-    )
-  ) {
+  if (carCollision(x, y, r, ignoreCar)) {
     return true;
   }
 
@@ -490,7 +511,7 @@ function movePlayer(dx, dy) {
       nx,
       player.y,
       player.r,
-      player.car
+      null
     )
   ) {
     player.x = nx;
@@ -501,7 +522,7 @@ function movePlayer(dx, dy) {
       player.x,
       ny,
       player.r,
-      player.car
+      null
     )
   ) {
     player.y = ny;
@@ -517,113 +538,181 @@ function moveCar(dx, dy) {
 
   if (!car) return;
 
+  const len = Math.hypot(dx, dy);
+
+  if (len < 0.01) return;
+
   const nx = car.x + dx;
   const ny = car.y + dy;
 
   /*
-    FULL COLLISION:
-    - batas dunia
-    - bangunan
-    - pohon
-    - mobil lain
+    Mobil tidak bisa keluar map.
   */
+
   if (
-    outsideBlocked(
-      nx,
-      ny,
-      48,
-      car
-    )
+    nx < 55 ||
+    ny < 55 ||
+    nx > W - 55 ||
+    ny > H - 55
   ) {
+    return;
+  }
+
+  /*
+    Mobil tidak bisa masuk bangunan/pohon/mobil.
+  */
+
+  if (buildingCollision(nx, ny, 45)) {
+    return;
+  }
+
+  if (treeCollision(nx, ny, 45)) {
+    return;
+  }
+
+  if (carCollision(nx, ny, 45, car)) {
     return;
   }
 
   car.x = nx;
   car.y = ny;
 
-  player.x = nx;
-  player.y = ny;
+  /*
+    Depan mobil selalu menghadap arah gerakan.
+  */
+
+  car.angle = Math.atan2(dy, dx);
+
+  player.x = car.x;
+  player.y = car.y;
+
+  /*
+    Zombie yang terlalu dekat terdorong.
+  */
+
+  for (const z of zombies) {
+    const dist = Math.hypot(
+      z.x - car.x,
+      z.y - car.y
+    );
+
+    if (dist < 65) {
+      const pushX =
+        (z.x - car.x) / Math.max(dist, 1);
+
+      const pushY =
+        (z.y - car.y) / Math.max(dist, 1);
+
+      const px = z.x + pushX * 18;
+      const py = z.y + pushY * 18;
+
+      if (
+        !zombieBlocked(
+          px,
+          py,
+          z.r
+        )
+      ) {
+        z.x = px;
+        z.y = py;
+      }
+    }
+  }
 }
 
 /* =========================================================
    INTERIOR
 ========================================================= */
 
+let interiorFurniture = [];
+
 function createInterior(b) {
-  const door = getDoor(b);
+  const doorX = b.x + b.w / 2;
+
+  const furniture = [];
 
   /*
-    Furniture memakai koordinat RELATIF terhadap bangunan.
-    Lorong pintu bawah selalu kosong.
+    Furniture tidak boleh berada
+    di jalur pintu.
   */
 
-  const furniture = [
+  const candidates = [
     {
       x: b.x + 35,
-      y: b.y + 35,
+      y: b.y + 40,
       w: 110,
       h: 55,
       type: "bed"
     },
-
     {
       x: b.x + b.w - 145,
-      y: b.y + 35,
-      w: 105,
+      y: b.y + 40,
+      w: 110,
       h: 55,
       type: "cabinet"
     },
-
     {
       x: b.x + 35,
-      y: b.y + 125,
-      w: 90,
-      h: 60,
+      y: b.y + 140,
+      w: 100,
+      h: 65,
       type: "table"
     },
-
     {
-      x: b.x + b.w - 135,
-      y: b.y + 125,
-      w: 95,
-      h: 60,
+      x: b.x + b.w - 140,
+      y: b.y + 140,
+      w: 105,
+      h: 65,
       type: "sofa"
     },
-
     {
       x: b.x + b.w / 2 - 45,
       y: b.y + 45,
       w: 90,
       h: 45,
-      type: "crate"
+      type: "shelf"
     }
   ];
 
   /*
-    Jangan pernah taruh furniture di:
-    - lorong bawah
-    - area pintu
+    Khusus bangunan besar,
+    tambah furniture supaya terasa seperti ruangan.
   */
-  interiorFurniture = furniture.filter(f => {
-    const furnitureBottom =
-      f.y + f.h;
 
-    const doorCorridorTop =
-      b.y + b.h - 105;
+  if (b.type === "large") {
+    candidates.push(
+      {
+        x: b.x + 220,
+        y: b.y + 120,
+        w: 130,
+        h: 60,
+        type: "table"
+      },
+      {
+        x: b.x + b.w - 350,
+        y: b.y + 120,
+        w: 130,
+        h: 60,
+        type: "sofa"
+      }
+    );
+  }
 
-    const corridorLeft =
-      door.x - 85;
+  for (const f of candidates) {
+    const centerX = f.x + f.w / 2;
+    const centerY = f.y + f.h / 2;
 
-    const corridorRight =
-      door.x + 85;
+    const doorDistance = Math.hypot(
+      centerX - doorX,
+      centerY - (b.y + b.h)
+    );
 
-    const overlapsCorridor =
-      f.x < corridorRight &&
-      f.x + f.w > corridorLeft &&
-      furnitureBottom > doorCorridorTop;
+    if (doorDistance > 125) {
+      furniture.push(f);
+    }
+  }
 
-    return !overlapsCorridor;
-  });
+  interiorFurniture = furniture;
 }
 
 function interiorBlocked(x, y, r) {
@@ -632,26 +721,21 @@ function interiorBlocked(x, y, r) {
   if (!b) return true;
 
   /*
-    Player tetap berada di dalam ruangan.
+    Dinding.
+    Tidak ada celah keluar dari samping/belakang.
   */
+
   if (
-    x < b.x + 25 + r ||
-    x > b.x + b.w - 25 - r ||
-    y < b.y + 25 + r ||
-    y > b.y + b.h - 25 - r
+    x < b.x + 18 + r ||
+    x > b.x + b.w - 18 - r ||
+    y < b.y + 18 + r ||
+    y > b.y + b.h - 18 - r
   ) {
     return true;
   }
 
   for (const f of interiorFurniture) {
-    if (
-      circleRect(
-        x,
-        y,
-        r,
-        f
-      )
-    ) {
+    if (circleRect(x, y, r, f)) {
       return true;
     }
   }
@@ -685,8 +769,29 @@ function moveInterior(dx, dy) {
 }
 
 /* =========================================================
-   ENTER BUILDING
+   BUILDING INTERACTION
 ========================================================= */
+
+function nearDoor() {
+  if (mode !== "outside") {
+    return null;
+  }
+
+  for (const b of buildings) {
+    const d = getDoor(b);
+
+    const dist = Math.hypot(
+      player.x - d.x,
+      player.y - (d.y + 15)
+    );
+
+    if (dist < 72) {
+      return b;
+    }
+  }
+
+  return null;
+}
 
 function enterBuilding(b) {
   if (!b) return;
@@ -700,11 +805,17 @@ function enterBuilding(b) {
   mode = "interior";
 
   /*
-    SPAWN DI DALAM,
-    TAPI TIDAK DI DEPAN MEJA.
+    Spawn di area bawah dalam ruangan.
+    Bukan di pintu.
   */
+
   player.x = d.x;
-  player.y = b.y + b.h - 55;
+  player.y = b.y + b.h - 70;
+
+  /*
+    Kalau furniture somehow menghalangi,
+    geser ke tengah bawah.
+  */
 
   if (
     interiorBlocked(
@@ -717,54 +828,50 @@ function enterBuilding(b) {
       b.x + b.w / 2;
 
     player.y =
-      b.y + b.h - 80;
+      b.y + b.h - 60;
   }
 }
 
-/* =========================================================
-   EXIT BUILDING
-   HANYA BOLEH DARI PINTU
-========================================================= */
+function nearInteriorDoor() {
+  if (!currentBuilding) {
+    return false;
+  }
+
+  const b = currentBuilding;
+
+  const doorX =
+    b.x + b.w / 2;
+
+  const doorY =
+    b.y + b.h - 30;
+
+  return (
+    Math.hypot(
+      player.x - doorX,
+      player.y - doorY
+    ) < 48
+  );
+}
 
 function exitBuilding() {
   if (!currentBuilding) return;
 
-  const b = currentBuilding;
-  const d = getDoor(b);
-
   /*
-    Pusat area pintu.
+    WAJIB dekat pintu.
   */
-  const doorX = d.x;
-  const doorY =
-    b.y + b.h - 35;
 
-  const distance =
-    Math.hypot(
-      player.x - doorX,
-      player.y - doorY
-    );
-
-  /*
-    Kalau tidak dekat pintu,
-    INTERACT TIDAK MELAKUKAN APA-APA.
-  */
-  if (distance > 55) {
+  if (!nearInteriorDoor()) {
     return;
   }
 
-  /*
-    Titik keluar berada di luar bangunan.
-  */
+  const b = currentBuilding;
+
   const outsideX =
-    d.x;
+    b.x + b.w / 2;
 
   const outsideY =
-    b.y + b.h + 42;
+    b.y + b.h + 58;
 
-  /*
-    Pastikan titik keluar aman.
-  */
   if (
     outsideBlocked(
       outsideX,
@@ -784,25 +891,20 @@ function exitBuilding() {
 }
 
 /* =========================================================
-   CARS
+   CAR INTERACTION
 ========================================================= */
 
 function nearestCar() {
-  if (mode !== "outside") {
-    return null;
-  }
-
   let result = null;
-  let best = 65;
+  let best = 75;
 
   for (const car of cars) {
     if (car.occupied) continue;
 
-    const d =
-      Math.hypot(
-        player.x - car.x,
-        player.y - car.y
-      );
+    const d = Math.hypot(
+      player.x - car.x,
+      player.y - car.y
+    );
 
     if (d < best) {
       best = d;
@@ -815,19 +917,6 @@ function nearestCar() {
 
 function enterCar(car) {
   if (!car) return;
-
-  /*
-    Pastikan player benar-benar dekat.
-  */
-  const distance =
-    Math.hypot(
-      player.x - car.x,
-      player.y - car.y
-    );
-
-  if (distance > 65) {
-    return;
-  }
 
   car.occupied = true;
 
@@ -844,13 +933,21 @@ function exitCar() {
   if (!car) return;
 
   /*
-    Coba keluar ke beberapa posisi.
+    Keluar dari sisi mobil,
+    bukan spawn random.
   */
+
+  const side = Math.PI / 2;
+
   const spots = [
-    { x: car.x + 65, y: car.y },
-    { x: car.x - 65, y: car.y },
-    { x: car.x, y: car.y + 65 },
-    { x: car.x, y: car.y - 65 }
+    {
+      x: car.x + Math.cos(car.angle + side) * 65,
+      y: car.y + Math.sin(car.angle + side) * 65
+    },
+    {
+      x: car.x + Math.cos(car.angle - side) * 65,
+      y: car.y + Math.sin(car.angle - side) * 65
+    }
   ];
 
   for (const p of spots) {
@@ -881,6 +978,9 @@ function exitCar() {
 
 function interact() {
   if (mode === "interior") {
+    /*
+      Tidak bisa keluar dari sembarang tempat.
+    */
     exitBuilding();
     return;
   }
@@ -908,55 +1008,46 @@ function interact() {
    KEYBOARD
 ========================================================= */
 
-window.addEventListener(
-  "keydown",
-  e => {
-    keys[e.key.toLowerCase()] = true;
+window.addEventListener("keydown", e => {
+  keys[e.key.toLowerCase()] = true;
 
-    if (
-      e.key === "e" ||
-      e.key === "Enter"
-    ) {
-      interact();
-    }
+  if (
+    e.key.toLowerCase() === "e" ||
+    e.key === "Enter"
+  ) {
+    interact();
   }
-);
+});
 
-window.addEventListener(
-  "keyup",
-  e => {
-    keys[e.key.toLowerCase()] = false;
-  }
-);
+window.addEventListener("keyup", e => {
+  keys[e.key.toLowerCase()] = false;
+});
 
 /* =========================================================
    JOYSTICK
 ========================================================= */
 
 const joystickEl =
-  document.getElementById(
-    "joystick"
-  );
+  document.getElementById("joystick");
 
 const stickEl =
-  document.getElementById(
-    "joystick-stick"
-  );
+  document.getElementById("joystick-stick");
 
-function updateJoystick(x, y) {
+function updateJoystick(clientX, clientY) {
   const rect =
     joystickEl.getBoundingClientRect();
 
-  const cx =
-    rect.left +
-    rect.width / 2;
+  const centerX =
+    rect.left + rect.width / 2;
 
-  const cy =
-    rect.top +
-    rect.height / 2;
+  const centerY =
+    rect.top + rect.height / 2;
 
-  let dx = x - cx;
-  let dy = y - cy;
+  let dx =
+    clientX - centerX;
+
+  let dy =
+    clientY - centerY;
 
   const max =
     rect.width * 0.32;
@@ -984,7 +1075,6 @@ function updateJoystick(x, y) {
 
 function resetJoystick() {
   joystick.active = false;
-
   joystick.x = 0;
   joystick.y = 0;
 
@@ -995,6 +1085,8 @@ function resetJoystick() {
 joystickEl.addEventListener(
   "pointerdown",
   e => {
+    e.preventDefault();
+
     joystick.active = true;
 
     try {
@@ -1038,7 +1130,7 @@ joystickEl.addEventListener(
 );
 
 /* =========================================================
-   BUTTON
+   BUTTONS
 ========================================================= */
 
 document
@@ -1107,12 +1199,12 @@ function getInput() {
     x += 1;
   }
 
-  const len =
+  const length =
     Math.hypot(x, y);
 
-  if (len > 1) {
-    x /= len;
-    y /= len;
+  if (length > 1) {
+    x /= length;
+    y /= length;
   }
 
   return { x, y };
@@ -1126,7 +1218,8 @@ function zombieBlocked(x, y, r) {
   return outsideBlocked(
     x,
     y,
-    r
+    r,
+    null
   );
 }
 
@@ -1134,67 +1227,92 @@ function updateZombies() {
   if (mode !== "outside") return;
 
   for (const z of zombies) {
+    /*
+      Kalau player di mobil,
+      zombie tetap mengejar tapi
+      tidak bisa menembus mobil.
+    */
+
+    const targetX =
+      player.inCar
+        ? player.car.x
+        : player.x;
+
+    const targetY =
+      player.inCar
+        ? player.car.y
+        : player.y;
+
     const dx =
-      player.x - z.x;
+      targetX - z.x;
 
     const dy =
-      player.y - z.y;
+      targetY - z.y;
 
-    const d =
+    const distance =
       Math.hypot(dx, dy);
 
     if (
-      d > 550 ||
-      d < 1
+      distance > 650 ||
+      distance < 1
     ) {
       continue;
     }
 
-    const vx =
-      dx / d * z.speed;
+    let vx =
+      dx / distance * z.speed;
 
-    const vy =
-      dy / d * z.speed;
+    let vy =
+      dy / distance * z.speed;
 
     /*
-      Coba lurus.
+      Kalau ada mobil di depan,
+      zombie coba mengitari.
     */
-    if (
-      !zombieBlocked(
+
+    const directBlocked =
+      zombieBlocked(
         z.x + vx,
         z.y + vy,
         z.r
-      )
-    ) {
+      );
+
+    if (!directBlocked) {
       z.x += vx;
       z.y += vy;
       continue;
     }
 
     /*
-      Kalau mentok, coba X.
+      Coba samping kanan.
     */
+
     if (
       !zombieBlocked(
-        z.x + vx,
-        z.y,
+        z.x - vy * 2,
+        z.y + vx * 2,
         z.r
       )
     ) {
-      z.x += vx;
+      z.x -= vy * 2;
+      z.y += vx * 2;
+      continue;
     }
 
     /*
-      Lalu coba Y.
+      Coba samping kiri.
     */
+
     if (
       !zombieBlocked(
-        z.x,
-        z.y + vy,
+        z.x + vy * 2,
+        z.y - vx * 2,
         z.r
       )
     ) {
-      z.y += vy;
+      z.x += vy * 2;
+      z.y -= vx * 2;
+      continue;
     }
   }
 }
@@ -1204,13 +1322,22 @@ function updateZombies() {
 ========================================================= */
 
 function updateCamera() {
+  /*
+    Karakter berada agak bawah layar,
+    supaya pandangan lebih banyak ke depan.
+  */
+
+  const targetX =
+    player.x;
+
+  const targetY =
+    player.y - 100;
+
   camera.x +=
-    (player.x - camera.x) *
-    0.08;
+    (targetX - camera.x) * 0.10;
 
   camera.y +=
-    (player.y - camera.y) *
-    0.08;
+    (targetY - camera.y) * 0.10;
 
   camera.x = clamp(
     camera.x,
@@ -1230,8 +1357,7 @@ function updateCamera() {
 ========================================================= */
 
 function drawGround() {
-  ctx.fillStyle =
-    "#3e513c";
+  ctx.fillStyle = "#3d503b";
 
   ctx.fillRect(
     0,
@@ -1240,34 +1366,29 @@ function drawGround() {
     H
   );
 
-  ctx.strokeStyle =
-    "rgba(20,30,20,0.14)";
+  /*
+    Rumput / tanah.
+  */
 
-  ctx.lineWidth = 1;
+  ctx.fillStyle =
+    "rgba(30,40,28,0.16)";
 
   for (
     let x = 0;
     x < W;
-    x += 70
+    x += 55
   ) {
     for (
       let y = 0;
       y < H;
-      y += 70
+      y += 55
     ) {
-      ctx.beginPath();
-
-      ctx.moveTo(
-        x,
-        y
+      ctx.fillRect(
+        x + 12,
+        y + 15,
+        2,
+        2
       );
-
-      ctx.lineTo(
-        x + 8,
-        y + 4
-      );
-
-      ctx.stroke();
     }
   }
 }
@@ -1278,8 +1399,7 @@ function drawGround() {
 
 function drawRoads() {
   for (const r of roads) {
-    ctx.fillStyle =
-      "#303235";
+    ctx.fillStyle = "#2f3134";
 
     ctx.fillRect(
       r.x,
@@ -1288,8 +1408,11 @@ function drawRoads() {
       r.h
     );
 
-    ctx.fillStyle =
-      "#55575a";
+    /*
+      Road edge.
+    */
+
+    ctx.fillStyle = "#55585b";
 
     if (r.w > r.h) {
       ctx.fillRect(
@@ -1306,14 +1429,11 @@ function drawRoads() {
         8
       );
 
-      ctx.strokeStyle =
-        "#c5b969";
-
+      ctx.strokeStyle = "#d0c568";
       ctx.lineWidth = 5;
-
       ctx.setLineDash([
-        36,
-        30
+        42,
+        32
       ]);
 
       ctx.beginPath();
@@ -1346,14 +1466,11 @@ function drawRoads() {
         r.h
       );
 
-      ctx.strokeStyle =
-        "#c5b969";
-
+      ctx.strokeStyle = "#d0c568";
       ctx.lineWidth = 5;
-
       ctx.setLineDash([
-        36,
-        30
+        42,
+        32
       ]);
 
       ctx.beginPath();
@@ -1380,15 +1497,23 @@ function drawRoads() {
 ========================================================= */
 
 function drawBuilding(b) {
+  /*
+    shadow
+  */
+
   ctx.fillStyle =
     "rgba(0,0,0,0.32)";
 
   ctx.fillRect(
-    b.x + 12,
-    b.y + 14,
+    b.x + 15,
+    b.y + 17,
     b.w,
     b.h
   );
+
+  /*
+    building
+  */
 
   ctx.fillStyle =
     b.color;
@@ -1401,32 +1526,28 @@ function drawBuilding(b) {
   );
 
   /*
-    LARGE BUILDING punya atap sedikit lebih tinggi.
+    roof
   */
-  ctx.fillStyle =
-    b.type === "large"
-      ? "#292d2a"
-      : "#353835";
+
+  ctx.fillStyle = "#343735";
 
   ctx.fillRect(
-    b.x - 8,
+    b.x - 7,
     b.y - 10,
-    b.w + 16,
+    b.w + 14,
     18
   );
 
   /*
-    Windows.
+    windows
   */
-  ctx.fillStyle =
-    "#26383a";
+
+  ctx.fillStyle = "#25383a";
 
   const cols =
     Math.max(
       2,
-      Math.floor(
-        b.w / 90
-      )
+      Math.floor(b.w / 95)
     );
 
   const spacing =
@@ -1438,39 +1559,45 @@ function drawBuilding(b) {
     i++
   ) {
     ctx.fillRect(
-      b.x +
-        spacing * i -
-        17,
+      b.x + spacing * i - 16,
       b.y + 35,
-      34,
+      32,
       42
     );
+
+    if (b.h > 280) {
+      ctx.fillRect(
+        b.x + spacing * i - 16,
+        b.y + 105,
+        32,
+        42
+      );
+    }
   }
 
   /*
-    Pintu.
+    door.
   */
+
   const d =
     getDoor(b);
 
-  ctx.fillStyle =
-    "#34271e";
+  ctx.fillStyle = "#34271f";
 
   ctx.fillRect(
-    d.x - 20,
-    b.y + b.h - 54,
-    40,
-    54
+    d.x - 21,
+    b.y + b.h - 55,
+    42,
+    55
   );
 
-  ctx.fillStyle =
-    "#b29b5d";
+  ctx.fillStyle = "#d2b867";
 
   ctx.beginPath();
 
   ctx.arc(
-    d.x + 11,
-    b.y + b.h - 27,
+    d.x + 12,
+    b.y + b.h - 28,
     3,
     0,
     Math.PI * 2
@@ -1485,14 +1612,14 @@ function drawBuilding(b) {
 
 function drawTree(t) {
   ctx.fillStyle =
-    "rgba(0,0,0,0.30)";
+    "rgba(0,0,0,0.3)";
 
   ctx.beginPath();
 
   ctx.ellipse(
     t.x,
-    t.y + 22,
-    27,
+    t.y + 25,
+    28,
     10,
     0,
     0,
@@ -1501,18 +1628,16 @@ function drawTree(t) {
 
   ctx.fill();
 
-  ctx.fillStyle =
-    "#59432d";
+  ctx.fillStyle = "#58422d";
 
   ctx.fillRect(
     t.x - 7,
-    t.y - 2,
+    t.y - 5,
     14,
-    32
+    34
   );
 
-  ctx.fillStyle =
-    "#29472f";
+  ctx.fillStyle = "#28482f";
 
   ctx.beginPath();
 
@@ -1526,13 +1651,12 @@ function drawTree(t) {
 
   ctx.fill();
 
-  ctx.fillStyle =
-    "#365c3b";
+  ctx.fillStyle = "#365b3b";
 
   ctx.beginPath();
 
   ctx.arc(
-    t.x - 13,
+    t.x - 14,
     t.y - 10,
     19,
     0,
@@ -1544,8 +1668,8 @@ function drawTree(t) {
   ctx.beginPath();
 
   ctx.arc(
-    t.x + 13,
-    t.y - 11,
+    t.x + 14,
+    t.y - 10,
     19,
     0,
     Math.PI * 2
@@ -1570,6 +1694,10 @@ function drawCar(car) {
     car.angle
   );
 
+  /*
+    shadow
+  */
+
   ctx.fillStyle =
     "rgba(0,0,0,0.35)";
 
@@ -1579,6 +1707,10 @@ function drawCar(car) {
     car.w,
     car.h
   );
+
+  /*
+    body
+  */
 
   ctx.fillStyle =
     car.color;
@@ -1590,18 +1722,25 @@ function drawCar(car) {
     car.h
   );
 
-  ctx.fillStyle =
-    "#1b2528";
+  /*
+    cabin
+  */
+
+  ctx.fillStyle = "#1d292d";
 
   ctx.fillRect(
-    -18,
+    -16,
     -car.h / 2 + 5,
-    36,
+    32,
     14
   );
 
-  ctx.fillStyle =
-    "#ddd39d";
+  /*
+    FRONT bumper.
+    Ini bikin arah mobil lebih jelas.
+  */
+
+  ctx.fillStyle = "#d8d29b";
 
   ctx.fillRect(
     car.w / 2 - 7,
@@ -1617,8 +1756,31 @@ function drawCar(car) {
     9
   );
 
-  ctx.fillStyle =
-    "#151515";
+  /*
+    belakang
+  */
+
+  ctx.fillStyle = "#631e1e";
+
+  ctx.fillRect(
+    -car.w / 2 + 2,
+    -car.h / 2 + 6,
+    5,
+    9
+  );
+
+  ctx.fillRect(
+    -car.w / 2 + 2,
+    car.h / 2 - 15,
+    5,
+    9
+  );
+
+  /*
+    wheels
+  */
+
+  ctx.fillStyle = "#151515";
 
   ctx.fillRect(
     -car.w / 2 + 12,
@@ -1670,7 +1832,7 @@ function drawZombie(z) {
 
   ctx.ellipse(
     0,
-    14,
+    15,
     13,
     6,
     0,
@@ -1680,8 +1842,7 @@ function drawZombie(z) {
 
   ctx.fill();
 
-  ctx.fillStyle =
-    "#596954";
+  ctx.fillStyle = "#596953";
 
   ctx.fillRect(
     -9,
@@ -1690,8 +1851,7 @@ function drawZombie(z) {
     24
   );
 
-  ctx.fillStyle =
-    "#89927b";
+  ctx.fillStyle = "#8a947d";
 
   ctx.beginPath();
 
@@ -1705,8 +1865,7 @@ function drawZombie(z) {
 
   ctx.fill();
 
-  ctx.fillStyle =
-    "#1b1e1a";
+  ctx.fillStyle = "#1b1d1b";
 
   ctx.fillRect(
     -5,
@@ -1726,7 +1885,7 @@ function drawZombie(z) {
 }
 
 /* =========================================================
-   PLAYER
+   PLAYER DRAW
 ========================================================= */
 
 function drawPlayer() {
@@ -1738,6 +1897,10 @@ function drawPlayer() {
     player.x,
     player.y
   );
+
+  /*
+    shadow
+  */
 
   ctx.fillStyle =
     "rgba(0,0,0,0.4)";
@@ -1757,10 +1920,10 @@ function drawPlayer() {
   ctx.fill();
 
   /*
-    STATIC LEGS.
+    static legs
   */
-  ctx.fillStyle =
-    "#1c2525";
+
+  ctx.fillStyle = "#1b2525";
 
   ctx.fillRect(
     -9,
@@ -1776,8 +1939,11 @@ function drawPlayer() {
     18
   );
 
-  ctx.fillStyle =
-    "#394345";
+  /*
+    body
+  */
+
+  ctx.fillStyle = "#3d4949";
 
   ctx.fillRect(
     -11,
@@ -1786,8 +1952,11 @@ function drawPlayer() {
     23
   );
 
-  ctx.fillStyle =
-    "#222b28";
+  /*
+    backpack
+  */
+
+  ctx.fillStyle = "#222a28";
 
   ctx.fillRect(
     -14,
@@ -1796,8 +1965,11 @@ function drawPlayer() {
     19
   );
 
-  ctx.fillStyle =
-    "#b99c7e";
+  /*
+    head
+  */
+
+  ctx.fillStyle = "#b99b7d";
 
   ctx.beginPath();
 
@@ -1811,8 +1983,11 @@ function drawPlayer() {
 
   ctx.fill();
 
-  ctx.fillStyle =
-    "#252322";
+  /*
+    hair
+  */
+
+  ctx.fillStyle = "#252321";
 
   ctx.beginPath();
 
@@ -1834,17 +2009,11 @@ function drawPlayer() {
 ========================================================= */
 
 function drawInterior() {
-  const b =
-    currentBuilding;
+  const b = currentBuilding;
 
   if (!b) return;
 
-  /*
-    Interior dibuat lebih terang
-    supaya jelas bahwa kita masuk gedung.
-  */
-  ctx.fillStyle =
-    "#5b564d";
+  ctx.fillStyle = "#605b50";
 
   ctx.fillRect(
     b.x,
@@ -1854,27 +2023,59 @@ function drawInterior() {
   );
 
   /*
-    lantai.
+    floor tiles
   */
-  ctx.fillStyle =
-    "rgba(90,80,65,0.35)";
+
+  ctx.strokeStyle =
+    "rgba(40,40,35,0.18)";
+
+  ctx.lineWidth = 2;
 
   for (
     let x = b.x;
     x < b.x + b.w;
     x += 45
   ) {
-    ctx.fillRect(
+    ctx.beginPath();
+
+    ctx.moveTo(
       x,
-      b.y,
-      2,
-      b.h
+      b.y
     );
+
+    ctx.lineTo(
+      x,
+      b.y + b.h
+    );
+
+    ctx.stroke();
   }
 
-  ctx.strokeStyle =
-    "#292b28";
+  for (
+    let y = b.y;
+    y < b.y + b.h;
+    y += 45
+  ) {
+    ctx.beginPath();
 
+    ctx.moveTo(
+      b.x,
+      y
+    );
+
+    ctx.lineTo(
+      b.x + b.w,
+      y
+    );
+
+    ctx.stroke();
+  }
+
+  /*
+    walls
+  */
+
+  ctx.strokeStyle = "#292b28";
   ctx.lineWidth = 18;
 
   ctx.strokeRect(
@@ -1885,12 +2086,12 @@ function drawInterior() {
   );
 
   /*
-    Furniture.
+    furniture
   */
+
   for (const f of interiorFurniture) {
     if (f.type === "bed") {
-      ctx.fillStyle =
-        "#392f28";
+      ctx.fillStyle = "#3c3028";
 
       ctx.fillRect(
         f.x,
@@ -1899,8 +2100,7 @@ function drawInterior() {
         f.h
       );
 
-      ctx.fillStyle =
-        "#8a8274";
+      ctx.fillStyle = "#91897b";
 
       ctx.fillRect(
         f.x + 8,
@@ -1911,8 +2111,7 @@ function drawInterior() {
     }
 
     if (f.type === "cabinet") {
-      ctx.fillStyle =
-        "#332a23";
+      ctx.fillStyle = "#342b23";
 
       ctx.fillRect(
         f.x,
@@ -1921,42 +2120,29 @@ function drawInterior() {
         f.h
       );
 
-      ctx.strokeStyle =
-        "#59473a";
+      ctx.fillStyle = "#695342";
 
-      ctx.strokeRect(
-        f.x + 8,
-        f.y + 8,
-        f.w - 16,
-        f.h - 16
+      ctx.fillRect(
+        f.x + 10,
+        f.y + 10,
+        f.w - 20,
+        5
       );
     }
 
     if (f.type === "table") {
-      ctx.fillStyle =
-        "#4b3627";
+      ctx.fillStyle = "#4d3829";
 
       ctx.fillRect(
         f.x,
         f.y,
         f.w,
         f.h
-      );
-
-      ctx.fillStyle =
-        "#76604c";
-
-      ctx.fillRect(
-        f.x + 12,
-        f.y + 12,
-        f.w - 24,
-        8
       );
     }
 
     if (f.type === "sofa") {
-      ctx.fillStyle =
-        "#484b47";
+      ctx.fillStyle = "#454b47";
 
       ctx.fillRect(
         f.x,
@@ -1965,20 +2151,18 @@ function drawInterior() {
         f.h
       );
 
-      ctx.fillStyle =
-        "#656963";
+      ctx.fillStyle = "#626963";
 
       ctx.fillRect(
-        f.x + 7,
-        f.y + 7,
-        f.w - 14,
-        20
+        f.x + 8,
+        f.y + 8,
+        f.w - 16,
+        15
       );
     }
 
-    if (f.type === "crate") {
-      ctx.fillStyle =
-        "#654a31";
+    if (f.type === "shelf") {
+      ctx.fillStyle = "#403329";
 
       ctx.fillRect(
         f.x,
@@ -1987,46 +2171,34 @@ function drawInterior() {
         f.h
       );
 
-      ctx.strokeStyle =
-        "#392a1d";
+      ctx.fillStyle = "#80634b";
 
-      ctx.strokeRect(
-        f.x + 5,
-        f.y + 5,
-        f.w - 10,
-        f.h - 10
-      );
+      for (
+        let i = 0;
+        i < 3;
+        i++
+      ) {
+        ctx.fillRect(
+          f.x + 10,
+          f.y + 10 + i * 11,
+          f.w - 20,
+          5
+        );
+      }
     }
   }
 
   /*
-    DOOR.
-    Selalu terlihat di bagian bawah.
+    pintu
   */
-  const d =
-    getDoor(b);
 
-  ctx.fillStyle =
-    "#aa8d55";
+  ctx.fillStyle = "#b49558";
 
   ctx.fillRect(
-    d.x - 25,
+    b.x + b.w / 2 - 25,
     b.y + b.h - 10,
     50,
     20
-  );
-
-  /*
-    Area pintu.
-  */
-  ctx.fillStyle =
-    "rgba(220,190,100,0.15)";
-
-  ctx.fillRect(
-    d.x - 42,
-    b.y + b.h - 65,
-    84,
-    60
   );
 }
 
@@ -2034,21 +2206,30 @@ function drawInterior() {
    HUD
 ========================================================= */
 
+let gameTime = 9 * 60;
+
+function updateGameTime(dt) {
+  gameTime += dt * 0.02;
+
+  if (gameTime >= 1440) {
+    gameTime = 0;
+  }
+}
+
 function drawHUD() {
   ctx.save();
 
   ctx.fillStyle =
-    "rgba(0,0,0,0.62)";
+    "rgba(0,0,0,0.66)";
 
   ctx.fillRect(
     18,
     18,
-    285,
-    108
+    300,
+    112
   );
 
-  ctx.fillStyle =
-    "#fff";
+  ctx.fillStyle = "#fff";
 
   ctx.font =
     "bold 20px Arial";
@@ -2062,8 +2243,7 @@ function drawHUD() {
   ctx.font =
     "bold 15px Arial";
 
-  ctx.fillStyle =
-    "#d34c4c";
+  ctx.fillStyle = "#db5555";
 
   ctx.fillText(
     `HP ${Math.round(player.hp)}`,
@@ -2071,8 +2251,7 @@ function drawHUD() {
     72
   );
 
-  ctx.fillStyle =
-    "#d1b84e";
+  ctx.fillStyle = "#d3bb50";
 
   ctx.fillText(
     `HUNGER ${Math.round(player.hunger)}`,
@@ -2080,23 +2259,13 @@ function drawHUD() {
     96
   );
 
-  const totalMinutes =
-    Math.floor(
-      performance.now() /
-      1000 /
-      4
-    ) % 1440;
-
   const hour =
-    Math.floor(
-      totalMinutes / 60
-    );
+    Math.floor(gameTime / 60);
 
   const minute =
-    totalMinutes % 60;
+    Math.floor(gameTime % 60);
 
-  ctx.fillStyle =
-    "#fff";
+  ctx.fillStyle = "#fff";
 
   ctx.fillText(
     `DAY 1   ${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`,
@@ -2104,8 +2273,7 @@ function drawHUD() {
     118
   );
 
-  ctx.textAlign =
-    "right";
+  ctx.textAlign = "right";
 
   if (player.inCar) {
     ctx.fillText(
@@ -2134,24 +2302,9 @@ function drawPrompt() {
   let text = "";
 
   if (mode === "interior") {
-    const b =
-      currentBuilding;
-
-    if (b) {
-      const d =
-        getDoor(b);
-
-      const distance =
-        Math.hypot(
-          player.x - d.x,
-          player.y -
-            (b.y + b.h - 35)
-        );
-
-      if (distance < 60) {
-        text =
-          "INTERACT  •  EXIT";
-      }
+    if (nearInteriorDoor()) {
+      text =
+        "INTERACT  •  EXIT";
     }
   } else if (player.inCar) {
     text =
@@ -2174,23 +2327,21 @@ function drawPrompt() {
   ctx.save();
 
   ctx.fillStyle =
-    "rgba(0,0,0,0.72)";
+    "rgba(0,0,0,0.76)";
 
   ctx.fillRect(
-    canvas.width / 2 - 150,
+    canvas.width / 2 - 165,
     canvas.height - 62,
-    300,
+    330,
     40
   );
 
-  ctx.fillStyle =
-    "#fff";
+  ctx.fillStyle = "#fff";
 
   ctx.font =
     "bold 14px Arial";
 
-  ctx.textAlign =
-    "center";
+  ctx.textAlign = "center";
 
   ctx.fillText(
     text,
@@ -2211,56 +2362,42 @@ function update(dt) {
 
   if (mode === "outside") {
     if (player.inCar) {
-      const speed = 5.2;
+      const speed = 5.5;
 
       moveCar(
         input.x * speed,
         input.y * speed
       );
-
-      if (
-        Math.hypot(
-          input.x,
-          input.y
-        ) > 0.15
-      ) {
-        player.car.angle =
-          Math.atan2(
-            input.y,
-            input.x
-          );
-      }
     } else {
       movePlayer(
-        input.x *
-          player.speed,
-        input.y *
-          player.speed
+        input.x * player.speed,
+        input.y * player.speed
       );
     }
 
     updateZombies();
   } else {
     moveInterior(
-      input.x *
-        player.speed,
-      input.y *
-        player.speed
+      input.x * player.speed,
+      input.y * player.speed
     );
   }
+
+  /*
+    Hunger.
+  */
 
   player.hunger -=
     dt * 0.0007;
 
-  if (
-    player.hunger < 0
-  ) {
-    player.hunger = 0;
-  }
+  player.hunger =
+    clamp(
+      player.hunger,
+      0,
+      100
+    );
 
-  if (
-    player.hunger <= 0
-  ) {
+  if (player.hunger <= 0) {
     player.hp -=
       dt * 0.0015;
   }
@@ -2272,6 +2409,7 @@ function update(dt) {
       100
     );
 
+  updateGameTime(dt);
   updateCamera();
 }
 
@@ -2291,42 +2429,30 @@ function draw() {
 
   ctx.translate(
     Math.round(
-      canvas.width / 2 -
-      camera.x
+      canvas.width / 2 - camera.x
     ),
     Math.round(
-      canvas.height / 2 -
-      camera.y
+      canvas.height / 2 - camera.y
     )
   );
 
-  if (
-    mode === "outside"
-  ) {
+  if (mode === "outside") {
     drawGround();
     drawRoads();
 
-    for (
-      const b of buildings
-    ) {
+    for (const b of buildings) {
       drawBuilding(b);
     }
 
-    for (
-      const t of trees
-    ) {
+    for (const t of trees) {
       drawTree(t);
     }
 
-    for (
-      const car of cars
-    ) {
+    for (const car of cars) {
       drawCar(car);
     }
 
-    for (
-      const z of zombies
-    ) {
+    for (const z of zombies) {
       drawZombie(z);
     }
 
@@ -2359,11 +2485,7 @@ function loop(now) {
   update(dt);
   draw();
 
-  requestAnimationFrame(
-    loop
-  );
+  requestAnimationFrame(loop);
 }
 
-requestAnimationFrame(
-  loop
-);
+requestAnimationFrame(loop);
