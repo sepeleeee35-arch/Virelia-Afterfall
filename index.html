@@ -1,48 +1,280 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Virelia: Afterfall</title>
-    <link rel="stylesheet" href="style.css?v=5">
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  >
+
+  <meta name="theme-color" content="#111111">
+
+  <title>Virelia: Afterfall</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #090b09;
+      font-family: Arial, sans-serif;
+      touch-action: none;
+    }
+
+    #game-wrapper {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: #090b09;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    #game {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #202820;
+    }
+
+    /* PORTRAIT WARNING */
+
+    #rotate-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: white;
+      background: #0a0d0a;
+      padding: 30px;
+    }
+
+    #rotate-screen .rotate-box {
+      max-width: 330px;
+    }
+
+    #rotate-screen .phone {
+      font-size: 64px;
+      margin-bottom: 15px;
+    }
+
+    #rotate-screen h2 {
+      margin: 0 0 10px;
+      font-size: 24px;
+    }
+
+    #rotate-screen p {
+      margin: 0;
+      color: #b9b9b9;
+      line-height: 1.5;
+    }
+
+    @media (orientation: portrait) {
+      #rotate-screen {
+        display: flex;
+      }
+
+      #game {
+        visibility: hidden;
+      }
+    }
+
+    /* MOBILE ANALOG */
+
+    #controls {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    #joystick {
+      position: absolute;
+      left: 28px;
+      bottom: 28px;
+
+      width: 138px;
+      height: 138px;
+
+      border-radius: 50%;
+
+      background: rgba(15, 15, 15, 0.45);
+      border: 2px solid rgba(255,255,255,0.18);
+
+      pointer-events: auto;
+      touch-action: none;
+    }
+
+    #joystick-stick {
+      position: absolute;
+
+      left: 50%;
+      top: 50%;
+
+      width: 62px;
+      height: 62px;
+
+      margin-left: -31px;
+      margin-top: -31px;
+
+      border-radius: 50%;
+
+      background: rgba(210,210,210,0.55);
+      border: 2px solid rgba(255,255,255,0.25);
+
+      box-shadow: 0 3px 12px rgba(0,0,0,0.35);
+
+      pointer-events: none;
+    }
+
+    /* RIGHT BUTTONS */
+
+    #action-area {
+      position: absolute;
+      right: 25px;
+      bottom: 25px;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+
+      pointer-events: auto;
+    }
+
+    .action-button {
+      width: 82px;
+      height: 82px;
+
+      border-radius: 50%;
+
+      border: 2px solid rgba(255,255,255,0.2);
+
+      background: rgba(20,20,20,0.62);
+
+      color: white;
+
+      font-size: 14px;
+      font-weight: bold;
+
+      touch-action: manipulation;
+
+      user-select: none;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .action-button:active {
+      background: rgba(255,255,255,0.25);
+      transform: scale(0.94);
+    }
+
+    #interact {
+      width: 92px;
+      height: 92px;
+      font-size: 13px;
+    }
+
+    #fullscreen {
+      width: 55px;
+      height: 55px;
+      font-size: 20px;
+    }
+
+    @media (max-height: 500px) {
+      #joystick {
+        left: 20px;
+        bottom: 18px;
+        width: 120px;
+        height: 120px;
+      }
+
+      #joystick-stick {
+        width: 56px;
+        height: 56px;
+        margin-left: -28px;
+        margin-top: -28px;
+      }
+
+      #action-area {
+        right: 18px;
+        bottom: 18px;
+      }
+
+      #interact {
+        width: 78px;
+        height: 78px;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
-<div id="game-wrapper">
+  <div id="game-wrapper">
 
     <canvas id="game"></canvas>
 
-    <div id="hud">
-        <div class="title">VIRELIA: AFTERFALL</div>
-
-        <div class="stats">
-            <div>♥ HP: <span id="hp">100</span></div>
-            <div>🍗 Hunger: <span id="hunger">100</span></div>
-        </div>
-
-        <div id="time">DAY 1 • 08:00</div>
+    <div id="rotate-screen">
+      <div class="rotate-box">
+        <div class="phone">📱↔️</div>
+        <h2>Rotate Your Phone</h2>
+        <p>
+          Virelia: Afterfall is designed for landscape mode.
+          Put your phone sideways to continue.
+        </p>
+      </div>
     </div>
-
-    <div id="message">SURVIVE</div>
-
-    <button id="interact" type="button">INTERACT</button>
 
     <div id="controls">
 
-        <button id="up" type="button">▲</button>
+      <div id="joystick">
+        <div id="joystick-stick"></div>
+      </div>
 
-        <div class="middle-controls">
-            <button id="left" type="button">◀</button>
-            <button id="down" type="button">▼</button>
-            <button id="right" type="button">▶</button>
-        </div>
+      <div id="action-area">
+
+        <button
+          id="interact"
+          class="action-button"
+          type="button"
+        >
+          INTERACT
+        </button>
+
+        <button
+          id="fullscreen"
+          class="action-button"
+          type="button"
+        >
+          ⛶
+        </button>
+
+      </div>
 
     </div>
 
-</div>
+  </div>
 
-<script src="script.js?v=5"></script>
+  <script src="script.js"></script>
 
 </body>
 </html>
