@@ -1,247 +1,123 @@
 * {
     box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+    -webkit-tap-highlight-color: transparent;
 }
 
 html,
 body {
+    margin: 0;
+    padding: 0;
     width: 100%;
     height: 100%;
     overflow: hidden;
     background: #111;
     font-family: Arial, sans-serif;
-}
-
-#game {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    background: #252525;
-}
-
-/* Dunia game */
-
-#world {
-    position: absolute;
-    width: 2000px;
-    height: 1400px;
-
-    background-color: #566052;
-
-    background-image:
-        radial-gradient(#68715f 2px, transparent 2px),
-        radial-gradient(#454d42 2px, transparent 2px);
-
-    background-size: 80px 80px;
-}
-
-/* Jalan */
-
-.road {
-    position: absolute;
-    background: #303030;
-}
-
-.road-horizontal {
-    width: 2000px;
-    height: 180px;
-    top: 600px;
-    left: 0;
-}
-
-.road-vertical {
-    width: 180px;
-    height: 1400px;
-    left: 900px;
-    top: 0;
-}
-
-/* Bangunan */
-
-.building {
-    position: absolute;
-
-    width: 190px;
-    height: 150px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    font-size: 70px;
-
-    background: #3d3d3d;
-    border: 8px solid #292929;
-
-    box-shadow:
-        inset 0 0 0 5px #555,
-        8px 8px 0 rgba(0, 0, 0, 0.25);
-
-    filter: grayscale(0.7);
-}
-
-.b1 {
-    left: 180px;
-    top: 180px;
-}
-
-.b2 {
-    left: 1250px;
-    top: 180px;
-}
-
-.b3 {
-    left: 150px;
-    top: 900px;
-}
-
-.b4 {
-    left: 1250px;
-    top: 900px;
-}
-
-/* Mobil */
-
-.car {
-    position: absolute;
-    font-size: 55px;
-    filter: grayscale(0.8);
-}
-
-.car1 {
-    left: 600px;
-    top: 655px;
-}
-
-.car2 {
-    left: 1050px;
-    top: 550px;
-}
-
-.car3 {
-    left: 760px;
-    top: 670px;
-}
-
-/* Pohon */
-
-.tree {
-    position: absolute;
-    font-size: 55px;
-}
-
-.t1 {
-    left: 80px;
-    top: 430px;
-}
-
-.t2 {
-    left: 1550px;
-    top: 430px;
-}
-
-.t3 {
-    left: 500px;
-    top: 1000px;
-}
-
-.t4 {
-    left: 1650px;
-    top: 1050px;
-}
-
-/* Player */
-
-#player {
-    position: absolute;
-
-    width: 55px;
-    height: 55px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    font-size: 42px;
-
-    left: 950px;
-    top: 675px;
-
-    z-index: 20;
-
-    filter: drop-shadow(0 4px 3px rgba(0, 0, 0, 0.6));
-}
-
-/* HUD */
-
-#hud {
-    position: fixed;
-    top: 15px;
-    left: 15px;
-
-    z-index: 100;
-
-    color: white;
-}
-
-.title {
-    font-size: 18px;
-    font-weight: bold;
-
-    margin-bottom: 8px;
-
-    text-shadow: 2px 2px #000;
-}
-
-.status {
-    display: inline-block;
-
-    margin-right: 6px;
-    padding: 7px 10px;
-
-    background: rgba(0, 0, 0, 0.7);
-
-    border-radius: 8px;
-
-    font-size: 14px;
-}
-
-/* Kontrol */
-
-#controls {
-    position: fixed;
-
-    bottom: 25px;
-    left: 50%;
-
-    transform: translateX(-50%);
-
-    z-index: 100;
-
-    text-align: center;
-}
-
-#controls button {
-    width: 55px;
-    height: 55px;
-
-    margin: 3px;
-
-    border: 2px solid #777;
-    border-radius: 12px;
-
-    background: rgba(20, 20, 20, 0.8);
-
-    color: white;
-
-    font-size: 22px;
-
     touch-action: none;
 }
 
+#game-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #20251f;
+}
+
+#game {
+    display: block;
+    width: 100%;
+    height: 100%;
+    image-rendering: auto;
+}
+
+#hud {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    z-index: 5;
+    color: white;
+    pointer-events: none;
+    text-shadow: 2px 2px 3px #000;
+}
+
+.title {
+    font-size: 22px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.stats {
+    display: flex;
+    gap: 8px;
+}
+
+.stats div {
+    background: rgba(0, 0, 0, 0.72);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 15px;
+}
+
+#time {
+    margin-top: 8px;
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+#message {
+    position: absolute;
+    top: 48%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 28px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    text-shadow: 2px 2px 5px #000;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+#controls {
+    position: absolute;
+    left: 50%;
+    bottom: 22px;
+    transform: translateX(-50%);
+    z-index: 10;
+    user-select: none;
+}
+
+#controls button {
+    width: 62px;
+    height: 62px;
+    margin: 4px;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 13px;
+    background: rgba(15,15,15,0.72);
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+}
+
 #controls button:active {
-    background: #555;
-    transform: scale(0.95);
+    background: rgba(100,100,100,0.85);
+    transform: scale(0.94);
+}
+
+#up {
+    display: block;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.middle-controls {
+    display: flex;
+    justify-content: center;
+}
+
+@media (min-width: 800px) {
+    #controls {
+        opacity: 0.65;
+    }
 }
