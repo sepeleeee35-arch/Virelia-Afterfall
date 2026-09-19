@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="id">
 <head>
@@ -202,9 +203,7 @@ innerHeight
 );
 
 renderer.shadowMap.enabled=true;
-
-renderer.shadowMap.type=
-THREE.PCFSoftShadowMap;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 
 document
 .getElementById("game")
@@ -264,7 +263,6 @@ material(0x506849)
 );
 
 ground.rotation.x=-Math.PI/2;
-
 ground.receiveShadow=true;
 
 scene.add(ground);
@@ -284,6 +282,11 @@ const verticalRoads=[
 const horizontalRoads=[
 -90,-45,0,45,90
 ];
+
+const colliders=[];
+const cameraMeshes=[];
+const buildings=[];
+const traversalObjects=[];
 
 function box(
 w,h,d,
@@ -374,10 +377,6 @@ z
 }
 
 }
-
-const colliders=[];
-const buildings=[];
-const cameraMeshes=[];
 
 function addBuilding(
 x,z,w,d,h=10
@@ -576,9 +575,7 @@ furniture,
 inside:false
 };
 
-buildings.push(
-building
-);
+buildings.push(building);
 
 colliders.push({
 type:"building",
@@ -663,7 +660,6 @@ treeTrunk
 );
 
 trunk.position.y=1.6;
-
 trunk.castShadow=true;
 
 group.add(trunk);
@@ -679,7 +675,6 @@ treeLeaves
 );
 
 crown.position.y=4.5;
-
 crown.castShadow=true;
 
 group.add(crown);
@@ -716,6 +711,344 @@ p=>addTree(
 p[0],
 p[1]
 )
+);
+
+function addLowObstacle(
+x,z,w,d,h,
+type="low"
+){
+
+const group=
+new THREE.Group();
+
+group.position.set(
+x,
+0,
+z
+);
+
+scene.add(group);
+
+const mat=
+material(0x625447);
+
+box(
+w,
+h,
+d,
+mat,
+0,
+h/2,
+0,
+group
+);
+
+traversalObjects.push({
+type,
+x,
+z,
+w,
+d,
+height:h,
+group
+});
+
+colliders.push({
+type:"traversal",
+object:
+traversalObjects[
+traversalObjects.length-1
+]
+});
+
+cameraMeshes.push(
+...group.children
+);
+
+}
+
+addLowObstacle(
+-72,
+-40,
+5,
+1.2,
+.75
+);
+
+addLowObstacle(
+72,
+40,
+5,
+1.2,
+.75
+);
+
+addLowObstacle(
+-35,
+40,
+4,
+1.4,
+1.0
+);
+
+addLowObstacle(
+35,
+-40,
+4,
+1.4,
+1.0
+);
+
+function addFallenLog(
+x,z,rotation
+){
+
+const group=
+new THREE.Group();
+
+group.position.set(
+x,
+0,
+z
+);
+
+group.rotation.y=
+rotation;
+
+scene.add(group);
+
+const log=
+new THREE.Mesh(
+new THREE.CylinderGeometry(
+.6,
+.7,
+5,
+10
+),
+treeTrunk
+);
+
+log.rotation.z=
+Math.PI/2;
+
+log.position.y=.65;
+
+log.castShadow=true;
+
+group.add(log);
+
+const obj={
+type:"low",
+x,
+z,
+w:5,
+d:1.4,
+height:1.3,
+group
+};
+
+traversalObjects.push(obj);
+
+colliders.push({
+type:"traversal",
+object:obj
+});
+
+cameraMeshes.push(log);
+
+}
+
+addFallenLog(
+-105,
+30,
+.15
+);
+
+addFallenLog(
+105,
+-30,
+-.2
+);
+
+function addLowFence(
+x,z,rotation
+){
+
+const group=
+new THREE.Group();
+
+group.position.set(
+x,
+0,
+z
+);
+
+group.rotation.y=
+rotation;
+
+scene.add(group);
+
+const mat=
+material(0x50453d);
+
+for(
+const px of[-2.5,0,2.5]
+){
+
+box(
+.35,
+.9,
+.35,
+mat,
+px,
+.45,
+0,
+group
+);
+
+}
+
+box(
+5.4,
+.22,
+.22,
+mat,
+0,
+.78,
+0,
+group
+);
+
+const obj={
+type:"low",
+x,
+z,
+w:5.5,
+d:1.1,
+height:.9,
+group
+};
+
+traversalObjects.push(obj);
+
+colliders.push({
+type:"traversal",
+object:obj
+});
+
+cameraMeshes.push(
+...group.children
+);
+
+}
+
+addLowFence(
+-45,
+-8,
+0
+);
+
+addLowFence(
+45,
+8,
+0
+);
+
+function addCrouchGap(
+x,z,w,d,
+clearance
+){
+
+const group=
+new THREE.Group();
+
+group.position.set(
+x,
+0,
+z
+);
+
+scene.add(group);
+
+const mat=
+material(0x3e403d);
+
+const postH=
+clearance;
+
+box(
+.55,
+postH,
+d,
+mat,
+-w/2,
+postH/2,
+0,
+group
+);
+
+box(
+.55,
+postH,
+d,
+mat,
+w/2,
+postH/2,
+0,
+group
+);
+
+const beamHeight=
+clearance+.35;
+
+box(
+w+.55,
+.45,
+d,
+mat,
+0,
+beamHeight,
+0,
+group
+);
+
+const obj={
+type:"overhead",
+x,
+z,
+w,
+d,
+clearance,
+group
+};
+
+traversalObjects.push(obj);
+
+colliders.push({
+type:"traversal",
+object:obj
+});
+
+cameraMeshes.push(
+...group.children
+);
+
+}
+
+addCrouchGap(
+-20,
+-105,
+4.8,
+3,
+2.65
+);
+
+addCrouchGap(
+20,
+105,
+4.8,
+3,
+2.65
 );
 
 const cars=[];
@@ -844,8 +1177,9 @@ car
 
 group.traverse(
 o=>{
-if(o.isMesh)
+if(o.isMesh){
 cameraMeshes.push(o);
+}
 }
 );
 
@@ -909,7 +1243,6 @@ material(0x181a1d);
 const leather=
 material(0x3d2b20);
 
-const torso=
 box(
 1.55,
 2.0,
@@ -1134,7 +1467,6 @@ material(0x202426);
 const shoe=
 material(0x181919);
 
-const torso=
 box(
 1.15,
 1.65,
@@ -1157,8 +1489,7 @@ new THREE.CylinderGeometry(
 skin
 );
 
-neck.position.y=
-2.95;
+neck.position.y=2.95;
 
 group.add(neck);
 
@@ -1172,8 +1503,7 @@ new THREE.SphereGeometry(
 skin
 );
 
-head.position.y=
-3.5;
+head.position.y=3.5;
 
 group.add(head);
 
@@ -1197,9 +1527,6 @@ side*.78,
 2.15,
 0
 );
-
-arm.rotation.z=
-side*.08;
 
 group.add(arm);
 
@@ -1393,6 +1720,103 @@ p[1]
 let insideBuilding=null;
 let activeCar=null;
 
+let verticalVelocity=0;
+let grounded=true;
+let crouching=false;
+
+const STANDING_HEIGHT=3.15;
+const CROUCH_HEIGHT=2.55;
+const PLAYER_RADIUS=.52;
+
+function currentPlayerHeight(){
+
+return crouching
+?CROUCH_HEIGHT
+:STANDING_HEIGHT;
+
+}
+
+function circleRect(
+x,z,
+rx,rz,
+cx,cz,
+w,d
+){
+
+const nearestX=
+Math.max(
+cx-w/2,
+Math.min(
+x,
+cx+w/2
+)
+);
+
+const nearestZ=
+Math.max(
+cz-d/2,
+Math.min(
+z,
+cz+d/2
+)
+);
+
+return Math.hypot(
+x-nearestX,
+z-nearestZ
+)<rx;
+}
+
+function canPassTraversal(
+obj,
+x,z,
+isMoving=true
+){
+
+if(
+!circleRect(
+x,
+z,
+PLAYER_RADIUS,
+PLAYER_RADIUS,
+obj.x,
+obj.z,
+obj.w,
+obj.d
+)
+){
+return true;
+}
+
+if(
+obj.type==="low"
+){
+
+if(
+!grounded
+&&
+player.position.y>
+obj.height+.18
+){
+return true;
+}
+
+return false;
+}
+
+if(
+obj.type==="overhead"
+){
+
+return currentPlayerHeight()<=
+obj.clearance;
+
+}
+
+return false;
+
+}
+
 function blockedOutside(
 x,z,
 ignoreCar=null
@@ -1411,7 +1835,9 @@ for(
 const c of colliders
 ){
 
-if(c.type==="building"){
+if(
+c.type==="building"
+){
 
 const b=c.building;
 
@@ -1423,33 +1849,55 @@ z<b.z+b.d/2+1.0
 ){
 
 const doorX=b.x;
-const doorZ=b.z-b.d/2;
+
+const doorZ=
+b.z-b.d/2;
 
 const nearDoor=
 Math.abs(x-doorX)<2.5 &&
 Math.abs(z-doorZ)<2.8;
 
-if(!nearDoor)
+if(!nearDoor){
 return true;
-
 }
 
 }
 
-if(c.type==="tree"){
+}
+
+if(
+c.type==="tree"
+){
 
 if(
 Math.hypot(
 x-c.x,
 z-c.z
-)<c.r+.8
+)<c.r+PLAYER_RADIUS
 ){
 return true;
 }
 
 }
 
-if(c.type==="car"){
+if(
+c.type==="traversal"
+){
+
+if(
+!canPassTraversal(
+c.object,
+x,z
+)
+){
+return true;
+}
+
+}
+
+if(
+c.type==="car"
+){
 
 const car=c.car;
 
@@ -1470,6 +1918,7 @@ return true;
 }
 
 return false;
+
 }
 
 function blockedInside(
@@ -1519,6 +1968,7 @@ return true;
 }
 
 return false;
+
 }
 
 function blocked(
@@ -1526,15 +1976,17 @@ x,z,
 ignoreCar=null
 ){
 
-if(insideBuilding)
+if(insideBuilding){
 return blockedInside(
 x,z
 );
+}
 
 return blockedOutside(
 x,z,
 ignoreCar
 );
+
 }
 
 let joyX=0;
@@ -1597,7 +2049,9 @@ e.clientY
 joy.addEventListener(
 "pointermove",
 e=>{
-if(e.pointerId===joyPointer){
+if(
+e.pointerId===joyPointer
+){
 updateJoystick(
 e.clientX,
 e.clientY
@@ -1744,7 +2198,9 @@ keys[
 e.key.toLowerCase()
 ]=true;
 
-if(e.code==="Space"){
+if(
+e.code==="Space"
+){
 
 e.preventDefault();
 
@@ -1813,10 +2269,6 @@ return{x,y};
 
 }
 
-let verticalVelocity=0;
-let grounded=true;
-let crouching=false;
-
 function jump(){
 
 if(
@@ -1828,7 +2280,12 @@ return;
 }
 
 verticalVelocity=7.2;
+
 grounded=false;
+
+showMessage(
+"Lompat"
+);
 
 }
 
@@ -1903,8 +2360,11 @@ input.x,
 input.y
 );
 
-if(magnitude<.05)
+if(
+magnitude<.05
+){
 return;
+}
 
 const forward=
 new THREE.Vector3(
@@ -1922,9 +2382,13 @@ Math.cos(yaw),
 
 const direction=
 forward
-.multiplyScalar(-input.y)
+.multiplyScalar(
+-input.y
+)
 .add(
-right.multiplyScalar(input.x)
+right.multiplyScalar(
+input.x
+)
 );
 
 direction.normalize();
@@ -1934,16 +2398,21 @@ insideBuilding
 ?5.8
 :8;
 
-if(crouching)
+if(crouching){
 speed*=.52;
+}
 
 const nx=
 player.position.x+
-direction.x*speed*dt;
+direction.x*
+speed*
+dt;
 
 const nz=
 player.position.z+
-direction.z*speed*dt;
+direction.z*
+speed*
+dt;
 
 if(
 !blocked(
@@ -1951,7 +2420,10 @@ nx,
 player.position.z
 )
 ){
-player.position.x=nx;
+
+player.position.x=
+nx;
+
 }
 
 if(
@@ -1960,7 +2432,10 @@ player.position.x,
 nz
 )
 ){
-player.position.z=nz;
+
+player.position.z=
+nz;
+
 }
 
 player.rotation.y=
@@ -1989,7 +2464,9 @@ const steering=
 input.x;
 
 car.speed+=
-throttle*20*dt;
+throttle*
+20*
+dt;
 
 car.speed*=
 Math.pow(
@@ -2040,8 +2517,11 @@ car
 )
 ){
 
-car.group.position.x=nx;
-car.group.position.z=nz;
+car.group.position.x=
+nx;
+
+car.group.position.z=
+nz;
 
 }else{
 
@@ -2296,7 +2776,8 @@ t*Math.PI
 
 }else{
 
-playerArmR.rotation.z=-.15;
+playerArmR.rotation.z=
+-.15;
 
 }
 
@@ -2432,14 +2913,10 @@ return false;
 const b=
 insideBuilding;
 
-const doorX=b.x;
-
-const doorZ=
-b.z-b.d/2+2.2;
-
 return Math.hypot(
-player.position.x-doorX,
-player.position.z-doorZ
+player.position.x-b.x,
+player.position.z-
+(b.z-b.d/2+2.2)
 )<3;
 
 }
@@ -2533,6 +3010,7 @@ z
 player.visible=true;
 
 car.driving=false;
+
 car.speed=0;
 
 activeCar=null;
@@ -2906,15 +3384,18 @@ cp*
 distance
 );
 
-const direction=
-desired.clone()
-.sub(
+const lookOrigin=
 new THREE.Vector3(
 target.x,
 target.y+
 focusHeight,
 target.z
-)
+);
+
+const direction=
+desired.clone()
+.sub(
+lookOrigin
 );
 
 const wantedDistance=
@@ -2923,12 +3404,7 @@ direction.length();
 direction.normalize();
 
 raycaster.set(
-new THREE.Vector3(
-target.x,
-target.y+
-focusHeight,
-target.z
-),
+lookOrigin,
 direction
 );
 
@@ -2966,12 +3442,7 @@ break;
 }
 
 const safePosition=
-new THREE.Vector3(
-target.x,
-target.y+
-focusHeight,
-target.z
-)
+lookOrigin.clone()
 .add(
 direction.multiplyScalar(
 finalDistance
@@ -2992,16 +3463,8 @@ dt
 )
 );
 
-const lookAt=
-new THREE.Vector3(
-target.x,
-target.y+
-focusHeight,
-target.z
-);
-
 camera.lookAt(
-lookAt
+lookOrigin
 );
 
 }
