@@ -2,68 +2,47 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Virelia: Afterfall</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <div id="game">
-        <div id="world">
+<div id="game-wrapper">
 
-            <!-- Jalan utama kota -->
-            <div class="road road-horizontal"></div>
-            <div class="road road-vertical"></div>
+    <canvas id="game"></canvas>
 
-            <!-- Bangunan kota -->
-            <div class="building b1">🏢</div>
-            <div class="building b2">🏚️</div>
-            <div class="building b3">🏬</div>
-            <div class="building b4">🏭</div>
+    <div id="hud">
+        <div class="title">VIRELIA: AFTERFALL</div>
 
-            <!-- Mobil terbengkalai -->
-            <div class="car car1">🚗</div>
-            <div class="car car2">🚙</div>
-            <div class="car car3">🚕</div>
-
-            <!-- Pohon -->
-            <div class="tree t1">🌳</div>
-            <div class="tree t2">🌲</div>
-            <div class="tree t3">🌳</div>
-            <div class="tree t4">🌲</div>
-
-            <!-- Player -->
-            <div id="player">🧍</div>
-
+        <div class="stats">
+            <div>♥ HP: <span id="hp">100</span></div>
+            <div>🍗 Hunger: <span id="hunger">100</span></div>
         </div>
 
-        <!-- UI -->
-        <div id="hud">
-            <div class="title">VIRELIA: AFTERFALL</div>
-
-            <div class="status">
-                ❤️ HP: <span id="hp">100</span>
-            </div>
-
-            <div class="status">
-                🍗 Hunger: <span id="hunger">100</span>
-            </div>
-        </div>
-
-        <!-- Kontrol -->
-        <div id="controls">
-            <button data-key="up">▲</button>
-
-            <div>
-                <button data-key="left">◀</button>
-                <button data-key="down">▼</button>
-                <button data-key="right">▶</button>
-            </div>
-        </div>
+        <div id="time">DAY 1 • 08:00</div>
     </div>
 
-    <script src="script.js"></script>
+    <div id="message">
+        SURVIVE
+    </div>
+
+    <div id="controls">
+
+        <button id="up">▲</button>
+
+        <div class="middle-controls">
+            <button id="left">◀</button>
+            <button id="down">▼</button>
+            <button id="right">▶</button>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="script.js"></script>
 
 </body>
 </html>
