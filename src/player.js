@@ -1,144 +1,80 @@
 import { input } from "./input.js";
+import { world } from "./world.js";
 
 export const player = {
+  x: 0,
+  y: 0,
 
-  x: 6000,
-  y: 5200,
-
-  radius: 18,
+  speed: 260,
 
   hp: 100,
   stamina: 100,
 
-  baseSpeed: 230,
-
-  equipment: {
-    helmet: false,
-    vest: false,
-    backpack: false,
-    shoes: false
-  },
-
-  inventory: {
-    food: 0,
-    medkit: 0
-  }
+  crouch: false
 };
 
-export function updatePlayer(dt, world){
-
-  let dx = input.x;
-  let dy = input.y;
+export function updatePlayer(dt) {
+  let x = input.x;
+  let y = input.y;
 
   const length =
-    Math.hypot(dx,dy);
+    Math.hypot(x, y);
 
-  if(length > 1){
-
-    dx /= length;
-    dy /= length;
+  if (length > 1) {
+    x /= length;
+    y /= length;
   }
 
-  const moving =
-    Math.abs(dx) +
-    Math.abs(dy) >
-    0.05;
+  let speed = player.speed;
 
-  let speed =
-    player.baseSpeed;
+  player.crouch =
+    input.crouch;
 
-  if(input.crouch)
+  if (player.crouch) {
     speed *= 0.55;
-
-  if(
-    input.run &&
-    moving &&
-    player.stamina > 0
-  ){
-
-    speed *= 1.55;
-
-    player.stamina -=
-      25 * dt;
-
-  }else{
-
-    player.stamina +=
-      18 * dt;
   }
 
-  player.stamina =
-    Math.max(
-      0,
+  if (
+    input.run &&
+    !player.crouch &&
+    player.stamina > 0
+  ) {
+    speed *= 1.5;
+
+    player.stamina =
+      Math.max(
+        0,
+        player.stamina - 25 * dt
+      );
+  } else {
+    player.stamina =
       Math.min(
         100,
-        player.stamina
+        player.stamina + 15 * dt
+      );
+  }
+
+  player.x +=
+    x * speed * dt;
+
+  player.y +=
+    y * speed * dt;
+
+  player.x =
+    Math.max(
+      30,
+      Math.min(
+        world.width - 30,
+        player.x
       )
     );
 
-  if(!moving)
-    return;
-
-  const mx =
-    dx * speed * dt;
-
-  const my =
-    dy * speed * dt;
-
-  movePlayer(
-    mx,
-    my,
-    world
-  );
-}
-
-function movePlayer(
-  dx,
-  dy,
-  world
-){
-
-  const nx =
-    player.x + dx;
-
-  if(
-    !world.isBlocked(
-      nx,
-      player.y,
-      player.radius
-    )
-  ){
-    player.x = nx;
-  }
-
-  const ny =
-    player.y + dy;
-
-  if(
-    !world.isBlocked(
-      player.x,
-      ny,
-      player.radius
-    )
-  ){
-    player.y = ny;
-  }
-}
-
-export function damagePlayer(amount){
-
-  player.hp =
+  player.y =
     Math.max(
-      0,
-      player.hp - amount
-    );
-}
-
-export function healPlayer(amount){
-
-  player.hp =
-    Math.min(
-      100,
-      player.hp + amount
+      30,
+      Math.min(
+        world.height - 30,
+        player.y
+      )
     );
 }
