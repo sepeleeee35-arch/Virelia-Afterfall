@@ -4,7 +4,7 @@ import { player } from "./player.js";
 import { world, createWorld, getZoneState, getNearbyInteraction } from "./world.js";
 import { bots, createBots, updateBots } from "./bots.js";
 
-const VERSION="1.1.0";
+const VERSION="1.2.0";
 
 const canvas=document.getElementById("game");
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:"high-performance"});
@@ -153,6 +153,7 @@ function updateHud(dt){
 }
 
 function update(dt){
+  yaw=input.cameraYaw;
   updatePlayer3D(dt);
   updateBots(dt);
   playerGroup.position.set(player.x,0,player.y);
