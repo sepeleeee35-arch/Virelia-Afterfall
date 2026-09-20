@@ -44,7 +44,7 @@ export function createBots(scene){
 
     bots.push({
       x,z,hp:100,targetX:x,targetZ:z,timer:Math.random()*2,
-      state:"roam",mesh:group
+      state:"roam",mesh:group,dead:false
     });
   }
 }
@@ -68,9 +68,20 @@ function chooseTarget(bot){
   bot.targetZ=bot.z+Math.sin(a)*d;
 }
 
+export function damageBot(bot, amount){
+  if(!bot || bot.hp<=0) return false;
+  bot.hp=Math.max(0,bot.hp-amount);
+  if(bot.hp===0){
+    bot.dead=true;
+    bot.state="dead";
+    bot.mesh.visible=false;
+  }
+  return true;
+}
+
 export function updateBots(dt){
   for(const bot of bots){
-    if(bot.hp<=0) continue;
+    if(bot.hp<=0 || bot.dead) continue;
     bot.timer-=dt;
     if(bot.timer<=0){
       bot.timer=1.2+Math.random()*2.8;
