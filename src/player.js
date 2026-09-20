@@ -9,7 +9,8 @@ export class Player{
     this.input=input;
     this.world=world;
 
-    this.group=new THREE.Group();
+    this.group=
+      new THREE.Group();
 
     scene.add(this.group);
 
@@ -17,7 +18,6 @@ export class Player{
     this.stamina=100;
 
     this.velocityY=0;
-
     this.grounded=true;
 
     this.walkSpeed=3.5;
@@ -28,10 +28,6 @@ export class Player{
     this.gravity=25;
 
     this.dodgeTimer=0;
-    this.dodgeDuration=.32;
-    this.dodgeSpeed=9;
-    this.dodgeDirection=
-      new THREE.Vector3();
 
     this.cameraSystem=null;
 
@@ -43,13 +39,12 @@ export class Player{
     );
 
     this.mixer=null;
-
     this.actions={};
-
     this.activeAction=null;
 
-    this.createFallback();
+    this.driving=false;
 
+    this.createFallback();
     this.loadGLB();
   }
 
@@ -192,28 +187,6 @@ export class Player{
 
     bootR.position.x=.16;
 
-    const eyeMat=
-      new THREE.MeshBasicMaterial({
-        color:0x101010
-      });
-
-    const eyeL=
-      new THREE.Mesh(
-        new THREE.SphereGeometry(
-          .032,8,8
-        ),
-        eyeMat
-      );
-
-    eyeL.position.set(
-      -.08,1.63,-.225
-    );
-
-    const eyeR=
-      eyeL.clone();
-
-    eyeR.position.x=.08;
-
     root.add(
       torso,
       head,
@@ -225,15 +198,12 @@ export class Player{
       legL,
       legR,
       bootL,
-      bootR,
-      eyeL,
-      eyeR
+      bootR
     );
 
     root.traverse(o=>{
 
       if(o.isMesh){
-
         o.castShadow=true;
         o.receiveShadow=true;
       }
@@ -276,56 +246,40 @@ export class Player{
           new THREE.Vector3()
         );
 
-      const scale=
-        1.76/size.y;
-
       model.scale.setScalar(
-        scale
+        1.76/size.y
       );
 
-      const scaledBox=
+      const fixedBox=
         new THREE.Box3()
           .setFromObject(model);
 
       const center=
-        scaledBox.getCenter(
+        fixedBox.getCenter(
           new THREE.Vector3()
         );
 
-      model.position.x=
-        -center.x;
+      model.position.x=-center.x;
+      model.position.z=-center.z;
+      model.position.y=-fixedBox.min.y;
 
-      model.position.z=
-        -center.z;
+      model.rotation.y=Math.PI;
 
-      model.position.y=
-        -scaledBox.min.y;
-
-      model.rotation.y=
-        Math.PI;
-
-      this.modelRoot.add(
-        model
-      );
+      this.modelRoot.add(model);
 
       this.fallback.visible=false;
 
       this.mixer=
-        new THREE.AnimationMixer(
-          model
-        );
+        new THREE.AnimationMixer(model);
 
       for(
         const clip of gltf.animations
       ){
 
-        const name=
-          clip.name.toLowerCase();
-
-        this.actions[name]=
-          this.mixer.clipAction(
-            clip
-          );
+        this.actions[
+          clip.name.toLowerCase()
+        ]=
+          this.mixer.clipAction(clip);
       }
 
       this.playAnimation("idle");
@@ -333,7 +287,7 @@ export class Player{
     }catch(error){
 
       console.warn(
-        "GLB tidak tersedia, memakai karakter fallback.",
+        "Fallback character aktif.",
         error
       );
     }
@@ -342,32 +296,11 @@ export class Player{
   findAnimation(type){
 
     const names=
-      Object.keys(
-        this.actions
-      );
+      Object.keys(this.actions);
 
-    if(type==="idle"){
-
-      return names.find(
-        n=>n.includes("idle")
-      );
-    }
-
-    if(type==="walk"){
-
-      return names.find(
-        n=>n.includes("walk")
-      );
-    }
-
-    if(type==="run"){
-
-      return names.find(
-        n=>n.includes("run")
-      );
-    }
-
-    return null;
+    return names.find(
+      n=>n.includes(type)
+    );
   }
 
   playAnimation(type){
@@ -387,13 +320,12 @@ export class Player{
       this.actions[name];
 
     if(
-      this.activeAction===next
+      next===this.activeAction
     ){
       return;
     }
 
     if(this.activeAction){
-
       this.activeAction
         .fadeOut(.12);
     }
@@ -408,8 +340,8 @@ export class Player{
 
   getCameraHeight(){
 
-    if(this.dodgeTimer>0){
-      return .78;
+    if(this.driving){
+      return 1.45;
     }
 
     if(this.input.state.crouch){
@@ -432,155 +364,16 @@ export class Player{
       );
   }
 
-  startDodge(){
-
-    if(
-      this.dodgeTimer>0 ||
-      this.stamina<25 ||
-      !this.grounded
-    ){
-      return;
-    }
-
-    const input=
-      this.input.state;
-
-    const yaw=
-      this.cameraSystem
-        ? this.cameraSystem.getYaw()
-        : 0;
-
-    const forward=
-      new THREE.Vector3(
-        -Math.sin(yaw),
-        0,
-        -Math.cos(yaw)
-      );
-
-    const right=
-      new THREE.Vector3(
-        Math.cos(yaw),
-        0,
-        -Math.sin(yaw)
-      );
-
-    this.dodgeDirection.set(0,0,0);
-
-    this.dodgeDirection
-      .addScaledVector(
-        right,
-        input.moveX
-      );
-
-    this.dodgeDirection
-      .addScaledVector(
-        forward,
-        -input.moveY
-      );
-
-    if(
-      this.dodgeDirection.lengthSq()<.01
-    ){
-      this.dodgeDirection.copy(
-        forward
-      );
-    }
-
-    this.dodgeDirection.normalize();
-
-    this.dodgeTimer=
-      this.dodgeDuration;
-
-    this.stamina-=25;
-  }
-
   update(dt){
 
     this.input.update();
 
-    const input=
-      this.input.state;
-
-    if(
-      this.input.consumeAction()
-    ){
-
-      this.world.playerAction(
-        this
-      );
-    }
-
-    if(
-      this.input.consumeJump()
-    ){
-
-      if(
-        input.crouch &&
-        this.grounded
-      ){
-
-        this.startDodge();
-
-      }else if(
-        this.grounded &&
-        !input.crouch
-      ){
-
-        this.velocityY=
-          this.jumpPower;
-
-        this.grounded=false;
-      }
-    }
-
-    if(this.dodgeTimer>0){
-
-      this.dodgeTimer-=dt;
-
-      const amount=
-        this.dodgeSpeed*dt;
-
-      const nextX=
-        this.group.position.x+
-        this.dodgeDirection.x*
-        amount;
-
-      const nextZ=
-        this.group.position.z+
-        this.dodgeDirection.z*
-        amount;
-
-      if(
-        !this.world.isBlocked(
-          nextX,
-          this.group.position.z,
-          .35
-        )
-      ){
-
-        this.group.position.x=
-          nextX;
-      }
-
-      if(
-        !this.world.isBlocked(
-          this.group.position.x,
-          nextZ,
-          .35
-        )
-      ){
-
-        this.group.position.z=
-          nextZ;
-      }
-
-      this.updateAnimation(
-        false,
-        false
-      );
-
+    if(this.driving){
       return;
     }
+
+    const input=
+      this.input.state;
 
     const yaw=
       this.cameraSystem
@@ -614,32 +407,23 @@ export class Player{
       -input.moveY
     );
 
-    if(
-      movement.lengthSq()>1
-    ){
-
+    if(movement.lengthSq()>1){
       movement.normalize();
     }
 
     const moving=
       movement.lengthSq()>.001;
 
-    let speed=
-      this.walkSpeed;
+    let speed=this.walkSpeed;
 
     if(input.crouch){
-
-      speed=
-        this.crouchSpeed;
-
+      speed=this.crouchSpeed;
     }else if(
       input.sprint &&
       moving &&
       this.stamina>0
     ){
-
-      speed=
-        this.runSpeed;
+      speed=this.runSpeed;
     }
 
     if(
@@ -651,8 +435,7 @@ export class Player{
       this.stamina=
         Math.max(
           0,
-          this.stamina-
-          24*dt
+          this.stamina-24*dt
         );
 
     }else{
@@ -660,9 +443,32 @@ export class Player{
       this.stamina=
         Math.min(
           100,
-          this.stamina+
-          18*dt
+          this.stamina+18*dt
         );
+    }
+
+    if(
+      this.input.consumeJump() &&
+      this.grounded &&
+      !input.crouch
+    ){
+
+      this.velocityY=5.2;
+      this.grounded=false;
+    }
+
+    this.velocityY-=25*dt;
+
+    this.group.position.y+=
+      this.velocityY*dt;
+
+    if(
+      this.group.position.y<=0
+    ){
+
+      this.group.position.y=0;
+      this.velocityY=0;
+      this.grounded=true;
     }
 
     if(moving){
@@ -682,9 +488,7 @@ export class Player{
           .38
         )
       ){
-
-        this.group.position.x=
-          nextX;
+        this.group.position.x=nextX;
       }
 
       if(
@@ -694,19 +498,17 @@ export class Player{
           .38
         )
       ){
-
-        this.group.position.z=
-          nextZ;
+        this.group.position.z=nextZ;
       }
 
-      const targetRotation=
+      const target=
         Math.atan2(
           movement.x,
           movement.z
         );
 
       let difference=
-        targetRotation-
+        target-
         this.group.rotation.y;
 
       difference=
@@ -717,70 +519,26 @@ export class Player{
 
       this.group.rotation.y+=
         difference*
-        Math.min(
-          1,
-          dt*14
-        );
+        Math.min(1,dt*14);
     }
-
-    this.velocityY-=
-      this.gravity*dt;
-
-    this.group.position.y+=
-      this.velocityY*dt;
-
-    if(
-      this.group.position.y<=0
-    ){
-
-      this.group.position.y=0;
-      this.velocityY=0;
-      this.grounded=true;
-
-    }else{
-
-      this.grounded=false;
-    }
-
-    this.updateAnimation(
-      moving,
-      input.sprint &&
-      !input.crouch &&
-      this.stamina>0
-    );
-  }
-
-  updateAnimation(
-    moving,
-    running
-  ){
 
     if(!this.mixer){
       return;
     }
 
     if(!this.grounded){
-
       this.playAnimation("idle");
-
     }else if(!moving){
-
       this.playAnimation("idle");
-
-    }else if(running){
-
+    }else if(
+      input.sprint &&
+      !input.crouch
+    ){
       this.playAnimation("run");
-
     }else{
-
       this.playAnimation("walk");
     }
 
-    this.mixer.update(
-      Math.min(
-        .05,
-        1/60
-      )
-    );
+    this.mixer.update(dt);
   }
 }
