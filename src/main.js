@@ -14,7 +14,7 @@ import {
   drawBots
 } from "./bots.js";
 
-const VERSION = "0.5.0";
+const VERSION = "0.6.0";
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
