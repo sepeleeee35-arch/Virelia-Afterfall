@@ -4,361 +4,306 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Virelia: Afterfall</title>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"
+  }
+}
+</script>
+
 <style>
-*{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101315;font-family:Arial,sans-serif;touch-action:none}
-#game{position:fixed;inset:0}
-canvas{display:block}
-#hud{
-position:fixed;left:15px;top:14px;color:#fff;font-weight:800;
-font-size:16px;line-height:1.45;text-shadow:0 2px 5px #000;z-index:10
+*{
+  box-sizing:border-box;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-touch-callout:none;
 }
-#tip{
-position:fixed;right:14px;top:88px;background:#182025dd;color:#fff;
-padding:9px 13px;border-radius:14px;font-size:12px;text-align:center;
-z-index:10
+
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#111;
+  font-family:Arial,sans-serif;
 }
-.btn{
-position:fixed;z-index:20;border:0;background:#ffffffdd;color:#17191a;
-font-weight:900;box-shadow:0 5px 15px #0006
+
+canvas{
+  display:block;
+  position:fixed;
+  inset:0;
 }
-.circle{border-radius:50%}
-.round{border-radius:20px}
-#joy{
-position:fixed;left:27px;bottom:28px;width:145px;height:145px;
-border:2px solid #ffffff55;border-radius:50%;background:#ffffff18;z-index:20
-}
-#knob{
-position:absolute;width:68px;height:68px;left:36px;top:36px;border-radius:50%;
-background:#ffffff55;border:2px solid #ffffff77
-}
-#jump{right:165px;bottom:34px;width:82px;height:82px}
-#action{right:30px;bottom:28px;width:100px;height:100px;font-size:14px}
-#crouch{right:47px;bottom:140px;width:86px;height:58px}
-#sprint{left:185px;bottom:42px;width:82px;height:62px}
-#enterCar{right:145px;bottom:142px;width:110px;height:58px;display:none}
-#exitCar{right:25px;bottom:142px;width:110px;height:58px;display:none}
-#enterHouse{right:145px;bottom:208px;width:110px;height:58px;display:none}
-#exitHouse{right:25px;bottom:208px;width:110px;height:58px;display:none}
-#full{
-position:fixed;right:16px;top:17px;width:58px;height:58px;border:0;
-border-radius:17px;background:#ffffffdd;font-size:23px;z-index:20
-}
-#speed{
-position:fixed;left:16px;bottom:9px;color:#fff;font-weight:900;
-font-size:14px;text-shadow:0 2px 5px #000;z-index:20;display:none
-}
+
 #loading{
-position:fixed;inset:0;background:#111;color:#fff;z-index:100;
-display:flex;align-items:center;justify-content:center;
-font-size:20px;font-weight:800
+  position:fixed;
+  inset:0;
+  z-index:100;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  background:#111;
+  color:white;
+  font-weight:bold;
+  font-size:20px;
+}
+
+#loading small{
+  margin-top:10px;
+  opacity:.65;
+  font-size:12px;
+}
+
+#hud{
+  position:fixed;
+  top:12px;
+  left:12px;
+  z-index:10;
+  color:white;
+  font-weight:bold;
+  text-shadow:0 2px 4px #000;
+  pointer-events:none;
+}
+
+.bar{
+  width:160px;
+  height:16px;
+  background:#222;
+  border:2px solid #000;
+  margin-top:5px;
+  border-radius:8px;
+  overflow:hidden;
+}
+
+.fill{
+  height:100%;
+  width:100%;
+}
+
+#hpFill{
+  background:#e33;
+}
+
+#foodFill{
+  background:#e0a82e;
+}
+
+#status{
+  margin-top:7px;
+  font-size:13px;
+}
+
+#joystick{
+  position:fixed;
+  z-index:20;
+  left:22px;
+  bottom:24px;
+  width:145px;
+  height:145px;
+  border-radius:50%;
+  background:rgba(255,255,255,.10);
+  border:2px solid rgba(255,255,255,.25);
+  touch-action:none;
+}
+
+#stick{
+  position:absolute;
+  left:42px;
+  top:42px;
+  width:61px;
+  height:61px;
+  border-radius:50%;
+  background:rgba(255,255,255,.32);
+  border:2px solid rgba(255,255,255,.55);
+}
+
+#buttons{
+  position:fixed;
+  z-index:20;
+  right:16px;
+  bottom:18px;
+  width:190px;
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+}
+
+.btn{
+  height:58px;
+  border:2px solid rgba(255,255,255,.35);
+  border-radius:18px;
+  background:rgba(20,20,20,.68);
+  color:white;
+  font-size:13px;
+  font-weight:bold;
+  touch-action:none;
+}
+
+.btn:active{
+  background:rgba(255,255,255,.25);
+  transform:scale(.96);
+}
+
+#actionBtn{
+  grid-column:span 2;
+  height:66px;
+  border-radius:50%;
+  width:66px;
+  justify-self:center;
+  font-size:12px;
+}
+
+#fullscreen{
+  position:fixed;
+  right:12px;
+  top:12px;
+  z-index:20;
+  width:42px;
+  height:42px;
+  border-radius:12px;
+  border:1px solid #777;
+  background:rgba(0,0,0,.55);
+  color:white;
+  font-size:20px;
+}
+
+#hint{
+  position:fixed;
+  left:50%;
+  bottom:12px;
+  transform:translateX(-50%);
+  z-index:10;
+  color:white;
+  font-size:12px;
+  text-shadow:0 2px 4px #000;
+  opacity:.8;
+  pointer-events:none;
+}
+
+@media(max-width:700px){
+  #hud{
+    transform:scale(.9);
+    transform-origin:top left;
+  }
 }
 </style>
 </head>
+
 <body>
 
-<div id="game"></div>
-<div id="loading">MEMUAT DUNIA 3D...</div>
-
-<div id="hud">
-HP <span id="hp">100</span><br>
-Hunger <span id="hunger">100</span><br>
-Supplies <span id="supplies">0</span>
+<div id="loading">
+  <div>MEMUAT DUNIA 3D...</div>
+  <small id="loadText">Menyiapkan kota...</small>
 </div>
 
-<div id="tip">GESER KANAN = KAMERA<br>360° • ATAS/BAWAH</div>
+<div id="hud">
+  HP
+  <div class="bar">
+    <div id="hpFill" class="fill"></div>
+  </div>
 
-<button id="full">⛶</button>
+  HUNGER
+  <div class="bar">
+    <div id="foodFill" class="fill"></div>
+  </div>
 
-<div id="joy"><div id="knob"></div></div>
+  <div id="status">BERJALAN</div>
+</div>
 
-<button id="sprint" class="btn round">🏃<br>LARI</button>
-<button id="crouch" class="btn round">JONGKOK</button>
-<button id="jump" class="btn circle">LOMPAT</button>
-<button id="action" class="btn circle">👊<br>TINJU</button>
+<button id="fullscreen">⛶</button>
 
-<button id="enterCar" class="btn round">🚗 MASUK</button>
-<button id="exitCar" class="btn round">🚪 KELUAR</button>
+<div id="joystick">
+  <div id="stick"></div>
+</div>
 
-<button id="enterHouse" class="btn round">🏠 MASUK</button>
-<button id="exitHouse" class="btn round">🚪 KELUAR</button>
+<div id="buttons">
+  <button id="jumpBtn" class="btn">LOMPAT</button>
+  <button id="crouchBtn" class="btn">JONGKOK</button>
 
-<div id="speed">0 KM/H</div>
+  <button id="enterBtn" class="btn">MASUK MOBIL</button>
+  <button id="exitBtn" class="btn">KELUAR MOBIL</button>
+
+  <button id="actionBtn" class="btn">👊</button>
+
+  <button id="sprintBtn" class="btn">SPRINT</button>
+</div>
+
+<div id="hint">Joystick = jalan • Geser layar kanan = kamera</div>
 
 <script type="module">
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js";
-import {GLTFLoader} from "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/loaders/GLTFLoader.js";
 
-const scene=new THREE.Scene();
-scene.background=new THREE.Color(0x788386);
-scene.fog=new THREE.FogExp2(0x788386,.0038);
+import * as THREE from "three";
+import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 
-const camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,.1,900);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x8fa0a3);
+scene.fog = new THREE.Fog(0x8fa0a3,70,300);
 
-const renderer=new THREE.WebGLRenderer({antialias:true});
+const camera = new THREE.PerspectiveCamera(
+  65,
+  innerWidth/innerHeight,
+  .05,
+  500
+);
+
+const renderer = new THREE.WebGLRenderer({
+  antialias:true,
+  powerPreference:"high-performance"
+});
+
 renderer.setSize(innerWidth,innerHeight);
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));
 renderer.shadowMap.enabled=true;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.outputColorSpace=THREE.SRGBColorSpace;
-renderer.toneMapping=THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure=1.08;
-document.getElementById("game").appendChild(renderer.domElement);
 
-const hemi=new THREE.HemisphereLight(0xc7d7dc,0x354039,1.8);
-scene.add(hemi);
+document.body.appendChild(renderer.domElement);
 
-const sun=new THREE.DirectionalLight(0xffe5c5,3);
-sun.position.set(-100,140,90);
+const clock=new THREE.Clock();
+
+const ambient=new THREE.HemisphereLight(
+  0xddeeff,
+  0x445544,
+  2.0
+);
+scene.add(ambient);
+
+const sun=new THREE.DirectionalLight(0xffffff,2.4);
+sun.position.set(70,120,50);
 sun.castShadow=true;
-sun.shadow.mapSize.set(2048,2048);
-sun.shadow.camera.left=-230;
-sun.shadow.camera.right=230;
-sun.shadow.camera.top=230;
-sun.shadow.camera.bottom=-230;
-sun.shadow.camera.far=500;
+sun.shadow.mapSize.set(1024,1024);
+sun.shadow.camera.left=-140;
+sun.shadow.camera.right=140;
+sun.shadow.camera.top=140;
+sun.shadow.camera.bottom=-140;
 scene.add(sun);
 
-const world=new THREE.Group();
-scene.add(world);
+const ground=new THREE.Mesh(
+  new THREE.PlaneGeometry(300,300),
+  new THREE.MeshStandardMaterial({
+    color:0x3d633d,
+    roughness:1
+  })
+);
 
-const solid=[];
-const cameraMeshes=[];
+ground.rotation.x=-Math.PI/2;
+ground.receiveShadow=true;
+scene.add(ground);
+
+const worldSize=140;
+
+const colliders=[];
 const houses=[];
 const cars=[];
 const zombies=[];
-const supplies=[];
-const trees=[];
-
-const M={
-grass:new THREE.MeshStandardMaterial({color:0x4c624d,roughness:1}),
-road:new THREE.MeshStandardMaterial({color:0x242729,roughness:.98}),
-side:new THREE.MeshStandardMaterial({color:0x858785,roughness:.95}),
-wall:new THREE.MeshStandardMaterial({color:0x77746e,roughness:.9}),
-wall2:new THREE.MeshStandardMaterial({color:0x625f5a,roughness:.9}),
-roof:new THREE.MeshStandardMaterial({color:0x343536,roughness:.85}),
-floor:new THREE.MeshStandardMaterial({color:0x665e51,roughness:.9}),
-wood:new THREE.MeshStandardMaterial({color:0x4d382b,roughness:.85}),
-dark:new THREE.MeshStandardMaterial({color:0x1e2324,roughness:.75}),
-glass:new THREE.MeshStandardMaterial({color:0x45666e,roughness:.12,metalness:.4}),
-metal:new THREE.MeshStandardMaterial({color:0x45494a,roughness:.35,metalness:.7}),
-green:new THREE.MeshStandardMaterial({color:0x36543e,roughness:1}),
-tree:new THREE.MeshStandardMaterial({color:0x4d3b2a,roughness:1}),
-leaf:new THREE.MeshStandardMaterial({color:0x2d5037,roughness:1}),
-rust:new THREE.MeshStandardMaterial({color:0x704936,roughness:.8}),
-yellow:new THREE.MeshStandardMaterial({color:0xb99c22,roughness:.6}),
-red:new THREE.MeshStandardMaterial({color:0x71342d,roughness:.7}),
-skin:new THREE.MeshStandardMaterial({color:0xb97b5d,roughness:.8}),
-zombie:new THREE.MeshStandardMaterial({color:0x59655a,roughness:.9})
-};
-
-function box(name,x,y,z,sx,sy,sz,mat,parent=world){
-const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mat);
-m.name=name;
-m.position.set(x,y,z);
-m.castShadow=true;
-m.receiveShadow=true;
-parent.add(m);
-return m;
-}
-
-function cyl(x,y,z,r,h,mat,parent=world){
-const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,12),mat);
-m.position.set(x,y,z);
-m.castShadow=true;
-m.receiveShadow=true;
-parent.add(m);
-return m;
-}
-
-function rectHit(px,pz,o,pad=.55){
-const cx=Math.max(o.x-o.w/2,Math.min(px,o.x+o.w/2));
-const cz=Math.max(o.z-o.d/2,Math.min(pz,o.z+o.d/2));
-const dx=px-cx,dz=pz-cz;
-return dx*dx+dz*dz<pad*pad;
-}
-
-function addGround(){
-box("ground",0,-.5,0,380,.8,320,M.grass);
-}
-
-function addRoads(){
-for(let x=-110;x<=110;x+=55){
-box("road",x,0,0,13,.08,320,M.road);
-box("side",x,.07,-161.5,13,.16,2,M.side);
-box("side",x,.07,161.5,13,.16,2,M.side);
-}
-for(let z=-90;z<=90;z+=45){
-box("road",0,0,z,360,.08,13,M.road);
-}
-for(let x=-110;x<=110;x+=55){
-for(let z=-150;z<150;z+=11){
-box("mark",x,.06,z,.16,.015,5,M.side);
-}
-}
-for(let z=-90;z<=90;z+=45){
-for(let x=-175;x<175;x+=11){
-box("mark",x,.06,z,5,.015,.16,M.side);
-}
-}
-}
-
-function addHouse(x,z,w=27,d=24,h=7,index=0){
-const g=new THREE.Group();
-g.position.set(x,0,z);
-
-const floor=box("floor",0,.08,0,w-.8,.16,d-.8,M.floor,g);
-
-const wallT=.6;
-const doorW=2.3;
-const side=(w-doorW)/2;
-
-const left=box("frontWall",-side/2,h/2,d/2,w/2-doorW/2,h,wallT,M.wall,g);
-const right=box("frontWall",side/2,h/2,d/2,w/2-doorW/2,h,wallT,M.wall,g);
-const back=box("backWall",0,h/2,-d/2,w,h,wallT,M.wall2,g);
-const lwall=box("leftWall",-w/2,h/2,0,wallT,h,d,M.wall2,g);
-const rwall=box("rightWall",w/2,h/2,0,wallT,h,d,M.wall2,g);
-
-box("roof",0,h+.15,0,w+.5,.3,d+.5,M.roof,g);
-
-const door=box("door",0,1.25,d/2+.32,doorW,2.5,.18,M.dark,g);
-
-for(let sideX of [-1,1]){
-for(let zoff of [-5,1,7]){
-const win=box("window",sideX*(w/2+.04),3,zoff, .08,1.5,2.2,M.glass,g);
-}
-}
-
-box("table",0,.85,0,3,.16,2,M.wood,g);
-for(const xx of [-1.25,1.25]){
-for(const zz of [-.7,.7]){
-cyl(xx,.42,zz,.12,.8,M.wood,g);
-}
-}
-
-box("sofa",-7,1.0,-4,4,.9,1.5,M.red,g);
-box("sofaBack",-7,1.7,-4.7,4,1.5,.35,M.red,g);
-
-box("bed",7,.55,-5,5,.6,3.2,M.dark,g);
-box("pillow",7,1.0,-6.05,2.2,.3,.75,M.side,g);
-
-box("cabinet",8,2,5,2.2,4,.8,M.wood,g);
-box("counter",-7,1.2,5,4,.5,1.8,M.wood,g);
-
-const lamp=new THREE.PointLight(0xffdca8,1.6,15);
-lamp.position.set(0,5.8,0);
-g.add(lamp);
-
-const wallData=[
-{x:x-left.position.x*0,z:z+d/2,w:w/2-doorW/2,d:wallT},
-{x:x+right.position.x*0,z:z+d/2,w:w/2-doorW/2,d:wallT},
-{x,z:z-d/2,w,d:wallT},
-{x:x-w/2,z,w:wallT,d},
-{x:x+w/2,z,w:wallT,d}
-];
-
-for(const o of wallData)solid.push({type:"wall",...o});
-
-g.userData={
-inside:false,
-door,
-interior:g,
-doorX:x,
-doorZ:z+d/2
-};
-
-houses.push(g);
-world.add(g);
-}
-
-function addTree(x,z,s=1){
-const g=new THREE.Group();
-g.position.set(x,0,z);
-g.scale.setScalar(s);
-
-cyl(0,2,0,.48,4,M.tree,g);
-
-const c=new THREE.Mesh(new THREE.SphereGeometry(2.7,14,11),M.leaf);
-c.position.y=5;
-c.castShadow=true;
-g.add(c);
-
-const c2=new THREE.Mesh(new THREE.SphereGeometry(1.8,12,9),M.leaf);
-c2.position.set(1.3,5.2,.2);
-g.add(c2);
-
-trees.push(g);
-solid.push({type:"tree",x,z,r:2.2*s});
-cameraMeshes.push(...g.children);
-world.add(g);
-}
-
-function addCar(x,z,rot,color){
-const g=new THREE.Group();
-g.position.set(x,.25,z);
-g.rotation.y=rot;
-
-const bodyMat=new THREE.MeshStandardMaterial({color,roughness:.4,metalness:.25});
-
-const body=box("body",0,.7,0,4.6,1.05,7.5,bodyMat,g);
-box("hood",0,1.18,2.15,4.15,.25,2.1,bodyMat,g);
-box("cabin",0,1.6,-.55,3.7,1.2,3.1,M.dark,g);
-
-for(const xw of [-1,1]){
-const wheel=cyl(2.25*xw,.48,2.35,.62,.45,M.dark,g);
-wheel.rotation.z=Math.PI/2;
-const wheel2=cyl(2.25*xw,.48,-2.35,.62,.45,M.dark,g);
-wheel2.rotation.z=Math.PI/2;
-}
-
-box("frontGlass",0,1.6,1.05,3.25,.75,.08,M.glass,g);
-box("rearGlass",0,1.6,-2.15,3.25,.75,.08,M.glass,g);
-box("bumper",0,.5,3.8,4.25,.3,.2,M.metal,g);
-box("bumper",0,.5,-3.8,4.25,.3,.2,M.metal,g);
-
-cars.push(g);
-solid.push({type:"car",x,z,w:2.7,d:4.5,group:g});
-cameraMeshes.push(body);
-world.add(g);
-}
-
-function addSupply(x,z){
-const g=new THREE.Group();
-g.position.set(x,.1,z);
-box("crate",0,.35,0,1,.7,1,M.yellow,g);
-box("strap",0,.72,0,.13,.04,1.02,M.rust,g);
-box("strap",0,.72,0,1.02,.04,.13,M.rust,g);
-g.userData.taken=false;
-supplies.push(g);
-world.add(g);
-}
-
-function createZombie(x,z){
-const g=new THREE.Group();
-
-box("body",0,1.25,0,1.0,1.3,.6,M.zombie,g);
-
-const head=new THREE.Mesh(new THREE.SphereGeometry(.4,16,12),M.skin);
-head.position.y=2.25;
-g.add(head);
-
-box("eyeL",-.13,2.3,-.38,.07,.07,.04,M.red,g);
-box("eyeR",.13,2.3,-.38,.07,.07,.04,M.red,g);
-
-box("arm",-0.65,1.25,0,.28,1.15,.3,M.zombie,g);
-box("arm",0.65,1.25,0,.28,1.15,.3,M.zombie,g);
-box("leg",-0.28,.38,0,.36,.9,.4,M.dark,g);
-box("leg",.28,.38,0,.36,.9,.4,M.dark,g);
-
-g.position.set(x,0,z);
-g.userData={hp:2,stun:0,attackCooldown:0};
-zombies.push(g);
-world.add(g);
-}
+const pickups=[];
 
 const player=new THREE.Group();
-world.add(player);
-player.position.set(0,.02,35);
+player.position.set(0,0,15);
+scene.add(player);
 
 let playerModel=null;
 let mixer=null;
@@ -366,725 +311,1395 @@ let actions={};
 let activeAction=null;
 let glbReady=false;
 
-const loader=new GLTFLoader();
-
-loader.load(
-"https://threejs.org/examples/models/gltf/Soldier.glb",
-gltf=>{
-playerModel=gltf.scene;
-
-playerModel.traverse(o=>{
-if(o.isMesh){
-o.castShadow=true;
-o.receiveShadow=true;
-}
-});
-
-const box3=new THREE.Box3().setFromObject(playerModel);
-const size=box3.getSize(new THREE.Vector3());
-const targetHeight=3.0;
-const scale=targetHeight/size.y;
-playerModel.scale.setScalar(scale);
-
-const box2=new THREE.Box3().setFromObject(playerModel);
-const center=box2.getCenter(new THREE.Vector3());
-
-playerModel.position.x=-center.x;
-playerModel.position.y=-box2.min.y;
-playerModel.position.z=-center.z;
-
-player.add(playerModel);
-
-mixer=new THREE.AnimationMixer(playerModel);
-
-for(const clip of gltf.animations){
-actions[clip.name]=mixer.clipAction(clip);
-}
-
-const idle=actions.Idle;
-const walk=actions.Walk;
-const run=actions.Run;
-
-if(idle)activeAction=idle;
-else activeAction=mixer.clipAction(gltf.animations[0]);
-
-activeAction.play();
-glbReady=true;
-document.getElementById("loading").style.display="none";
-},
-undefined,
-()=>{
-document.getElementById("loading").textContent="MODEL GAGAL DIMUAT";
-}
-);
-
 let hp=100;
 let hunger=100;
-let suppliesCount=2;
 
+let velocityY=0;
+let grounded=true;
 let crouching=false;
 let sprinting=false;
-let grounded=true;
-let verticalVelocity=0;
 
 let activeCar=null;
 let insideHouse=null;
 
-let joyX=0,joyY=0;
-let cameraYaw=0;
-let cameraPitch=.18;
-let dragging=false;
-let lastX=0,lastY=0;
+let camYaw=0;
+let camPitch=-0.25;
+
+let camDistance=6;
+let targetCamDistance=6;
+
+let joystickX=0;
+let joystickY=0;
+
+let cameraDragging=false;
+let lastTouchX=0;
+let lastTouchY=0;
+
+let actionCooldown=0;
+let hungerTimer=0;
 
 const keys={};
 
-function setAnimation(name){
-if(!mixer)return;
+window.addEventListener("keydown",e=>{
+  keys[e.key.toLowerCase()]=true;
 
-const next=actions[name]||actions.Idle;
-if(!next||next===activeAction)return;
+  if(e.key===" "){
+    jump();
+  }
 
-next.reset().fadeIn(.18).play();
+  if(e.key.toLowerCase()==="c"){
+    crouching=!crouching;
+  }
 
-if(activeAction)activeAction.fadeOut(.18);
+  if(e.key.toLowerCase()==="shift"){
+    sprinting=true;
+  }
 
-activeAction=next;
+  if(e.key.toLowerCase()==="e"){
+    doAction();
+  }
+});
+
+window.addEventListener("keyup",e=>{
+  keys[e.key.toLowerCase()]=false;
+
+  if(e.key.toLowerCase()==="shift"){
+    sprinting=false;
+  }
+});
+
+function mat(color,roughness=0.8){
+  return new THREE.MeshStandardMaterial({
+    color,
+    roughness
+  });
 }
 
-function playerHeight(){
-return crouching?2.1:3;
+function box(w,h,d,color){
+  const m=new THREE.Mesh(
+    new THREE.BoxGeometry(w,h,d),
+    mat(color)
+  );
+  m.castShadow=true;
+  m.receiveShadow=true;
+  return m;
 }
 
-function blocked(x,z){
-for(const o of solid){
-
-if(o.type==="wall"){
-if(rectHit(x,z,o,.5))return true;
+function addCollider(x,z,w,d,owner=null){
+  colliders.push({
+    x,
+    z,
+    w,
+    d,
+    owner
+  });
 }
 
-if(o.type==="car"){
-if(rectHit(x,z,o,.65))return true;
+function blocked(x,z,r=.7,ignore=null){
+  for(const c of colliders){
+    if(c.owner===ignore) continue;
+
+    const dx=Math.max(
+      Math.abs(x-c.x)-c.w/2,
+      0
+    );
+
+    const dz=Math.max(
+      Math.abs(z-c.z)-c.d/2,
+      0
+    );
+
+    if(dx*dx+dz*dz<r*r){
+      return true;
+    }
+  }
+
+  return false;
 }
 
-if(o.type==="tree"){
-const dx=x-o.x,dz=z-o.z;
-if(dx*dx+dz*dz<(o.r+.6)*(o.r+.6))return true;
-}
+function createRoad(x,z,w,d){
+  const road=box(w,.04,d,0x292929);
+  road.position.set(x,.02,z);
+  scene.add(road);
+
+  const lineMat=mat(0xd9c94d);
+
+  if(w>d){
+    for(let p=x-w/2+8;p<x+w/2;p+=16){
+      const line=new THREE.Mesh(
+        new THREE.BoxGeometry(7,.045,.22),
+        lineMat
+      );
+      line.position.set(p,.05,z);
+      scene.add(line);
+    }
+  }else{
+    for(let p=z-d/2+8;p<z+d/2;p+=16){
+      const line=new THREE.Mesh(
+        new THREE.BoxGeometry(.22,.045,7),
+        lineMat
+      );
+      line.position.set(x,.05,p);
+      scene.add(line);
+    }
+  }
 }
 
-return false;
+createRoad(0,0,300,12);
+createRoad(0,0,12,300);
+createRoad(0,45,300,10);
+createRoad(45,0,10,300);
+createRoad(-45,0,10,300);
+
+function createHouse(x,z,rot=0){
+  const group=new THREE.Group();
+  group.position.set(x,0,z);
+  group.rotation.y=rot;
+  scene.add(group);
+
+  const floor=box(12,.25,10,0x806b55);
+  floor.position.y=.12;
+  group.add(floor);
+
+  const wallMat=0xc4b08f;
+
+  const back=box(12,4,.35,wallMat);
+  back.position.set(0,2,-5);
+  group.add(back);
+
+  const left=box(.35,4,10,wallMat);
+  left.position.set(-6,2,0);
+  group.add(left);
+
+  const right=box(.35,4,10,wallMat);
+  right.position.set(6,2,0);
+  group.add(right);
+
+  const frontLeft=box(4.4,4,.35,wallMat);
+  frontLeft.position.set(-3.8,2,5);
+  group.add(frontLeft);
+
+  const frontRight=box(4.4,4,.35,wallMat);
+  frontRight.position.set(3.8,2,5);
+  group.add(frontRight);
+
+  const roof=box(13,.5,11,0x554238);
+  roof.position.y=4.25;
+  group.add(roof);
+
+  const door=box(2.1,3.3,.15,0x503326);
+  door.position.set(0,1.65,5.05);
+  group.add(door);
+
+  const window1=box(2.2,1.5,.12,0x5d8190);
+  window1.position.set(-3.6,2.2,5.08);
+  group.add(window1);
+
+  const window2=box(2.2,1.5,.12,0x5d8190);
+  window2.position.set(3.6,2.2,5.08);
+  group.add(window2);
+
+  const table=box(2.5,.65,1.4,0x65442c);
+  table.position.set(0,.65,-1);
+  group.add(table);
+
+  const sofa=box(3,.9,1.2,0x39454a);
+  sofa.position.set(-3,.45,-2.5);
+  group.add(sofa);
+
+  const bed=box(3.4,.65,2,0x777c88);
+  bed.position.set(3,.35,-2.3);
+  group.add(bed);
+
+  const cabinet=box(1.4,2.3,.7,0x604633);
+  cabinet.position.set(-4.7,1.15,-3.5);
+  group.add(cabinet);
+
+  const lamp=new THREE.PointLight(0xffd6a0,3,15);
+  lamp.position.set(0,3.2,0);
+  group.add(lamp);
+
+  const partition=box(.25,2.5,4,wallMat);
+  partition.position.set(2,1.25,0);
+  group.add(partition);
+
+  houses.push({
+    group,
+    x,
+    z,
+    radius:9
+  });
+
+  addCollider(x,z-5,12,.35,group);
+  addCollider(x-6,z,.35,10,group);
+  addCollider(x+6,z,.35,10,group);
+  addCollider(x-3.8,z+5,4.4,.35,group);
+  addCollider(x+3.8,z+5,4.4,.35,group);
+}
+
+createHouse(-23,-23);
+createHouse(23,-23);
+createHouse(-23,23);
+createHouse(23,23);
+createHouse(70,25);
+createHouse(-70,-25);
+
+function createTree(x,z){
+  const g=new THREE.Group();
+
+  const trunk=box(.9,5,.9,0x65442c);
+  trunk.position.y=2.5;
+  g.add(trunk);
+
+  const crown=new THREE.Mesh(
+    new THREE.SphereGeometry(3.2,10,8),
+    mat(0x2f5c32)
+  );
+  crown.position.y=6;
+  crown.castShadow=true;
+  g.add(crown);
+
+  g.position.set(x,0,z);
+  scene.add(g);
+
+  addCollider(x,z,2.2,2.2,g);
+}
+
+const treePositions=[
+  [-60,-60],
+  [-48,-70],
+  [55,-60],
+  [70,-70],
+  [-70,55],
+  [-58,65],
+  [58,60],
+  [72,48],
+  [95,-25],
+  [-95,20],
+  [92,70],
+  [-90,-70]
+];
+
+for(const [x,z] of treePositions){
+  createTree(x,z);
+}
+
+function createCar(x,z,color=0x3366aa){
+  const g=new THREE.Group();
+
+  const body=box(4.2,.9,7,color);
+  body.position.y=.75;
+  g.add(body);
+
+  const cabin=box(3.3,1.1,3.2,0x20252b);
+  cabin.position.y=1.55;
+  cabin.position.z=-.2;
+  g.add(cabin);
+
+  const wheels=[];
+
+  for(const wx of [-2.05,2.05]){
+    for(const wz of [-2.25,2.25]){
+      const wheel=new THREE.Mesh(
+        new THREE.CylinderGeometry(.65,.65,.45,12),
+        mat(0x111111)
+      );
+
+      wheel.rotation.z=Math.PI/2;
+      wheel.position.set(wx,.55,wz);
+      g.add(wheel);
+      wheels.push(wheel);
+    }
+  }
+
+  g.position.set(x,0,z);
+  scene.add(g);
+
+  const data={
+    group:g,
+    speed:0,
+    wheels
+  };
+
+  cars.push(data);
+  addCollider(x,z,4.8,7.6,g);
+}
+
+createCar(0,-45,0x325f91);
+createCar(45,45,0x7b3333);
+createCar(-45,45,0x3d7144);
+createCar(75,-45,0x8a7433);
+
+function createZombie(x,z){
+  const g=new THREE.Group();
+
+  const body=box(1.05,1.8,.65,0x52605a);
+  body.position.y=1.5;
+  g.add(body);
+
+  const head=new THREE.Mesh(
+    new THREE.SphereGeometry(.48,12,10),
+    mat(0x8b9b85)
+  );
+  head.position.y=2.75;
+  g.add(head);
+
+  const leg1=box(.35,1,.35,0x30363a);
+  leg1.position.set(-.3,.5,0);
+  g.add(leg1);
+
+  const leg2=box(.35,1,.35,0x30363a);
+  leg2.position.set(.3,.5,0);
+  g.add(leg2);
+
+  const arm1=box(.3,1.3,.3,0x77877d);
+  arm1.position.set(-.75,1.5,0);
+  g.add(arm1);
+
+  const arm2=box(.3,1.3,.3,0x77877d);
+  arm2.position.set(.75,1.5,0);
+  g.add(arm2);
+
+  g.position.set(x,0,z);
+  scene.add(g);
+
+  zombies.push({
+    group:g,
+    speed:.8+Math.random()*.45,
+    attack:0,
+    phase:Math.random()*6
+  });
+}
+
+function validZombieSpawn(x,z){
+  if(Math.abs(x)<15 && Math.abs(z)<15) return false;
+
+  for(const h of houses){
+    if(Math.hypot(x-h.x,z-h.z)<11) return false;
+  }
+
+  for(const c of cars){
+    const p=c.group.position;
+    if(Math.hypot(x-p.x,z-p.z)<6) return false;
+  }
+
+  return !blocked(x,z,1);
+}
+
+let tries=0;
+while(zombies.length<12 && tries<300){
+  tries++;
+
+  const x=(Math.random()-.5)*230;
+  const z=(Math.random()-.5)*230;
+
+  if(validZombieSpawn(x,z)){
+    createZombie(x,z);
+  }
+}
+
+function createPickup(x,z){
+  const g=new THREE.Mesh(
+    new THREE.BoxGeometry(.7,.7,.7),
+    mat(0xd3a84c)
+  );
+
+  g.position.set(x,.5,z);
+  g.castShadow=true;
+  scene.add(g);
+
+  pickups.push(g);
+}
+
+createPickup(12,12);
+createPickup(-12,12);
+createPickup(12,-12);
+createPickup(-12,-12);
+
+function createFallbackCharacter(){
+  const g=new THREE.Group();
+
+  const skin=mat(0xc38d6d);
+  const dark=mat(0x252a2e);
+  const armor=mat(0x424b52);
+  const boot=mat(0x17191b);
+
+  const torso=box(1.15,1.45,.65,armor);
+  torso.position.y=2.05;
+  g.add(torso);
+
+  const neck=box(.38,.25,.38,skin);
+  neck.position.y=2.85;
+  g.add(neck);
+
+  const head=new THREE.Mesh(
+    new THREE.SphereGeometry(.52,16,12),
+    skin
+  );
+  head.position.y=3.35;
+  head.scale.set(1,.95,.9);
+  g.add(head);
+
+  const hair=new THREE.Mesh(
+    new THREE.SphereGeometry(.55,16,10),
+    dark
+  );
+  hair.position.set(0,3.67,-.02);
+  hair.scale.set(1,.55,.95);
+  g.add(hair);
+
+  const eye1=new THREE.Mesh(
+    new THREE.SphereGeometry(.055,8,8),
+    mat(0x111111)
+  );
+  eye1.position.set(-.19,3.39,-.47);
+  g.add(eye1);
+
+  const eye2=eye1.clone();
+  eye2.position.x=.19;
+  g.add(eye2);
+
+  const scarf=box(1.15,.3,.72,dark);
+  scarf.position.set(0,2.75,0);
+  g.add(scarf);
+
+  const shoulder1=box(.5,.4,.8,armor);
+  shoulder1.position.set(-.78,2.45,0);
+  shoulder1.rotation.z=-.15;
+  g.add(shoulder1);
+
+  const shoulder2=shoulder1.clone();
+  shoulder2.position.x=.78;
+  shoulder2.rotation.z=.15;
+  g.add(shoulder2);
+
+  const arm1=box(.4,1.25,.4,dark);
+  arm1.position.set(-.78,1.75,0);
+  g.add(arm1);
+
+  const arm2=arm1.clone();
+  arm2.position.x=.78;
+  g.add(arm2);
+
+  const belt=box(1.2,.22,.7,dark);
+  belt.position.y=1.45;
+  g.add(belt);
+
+  const leg1=box(.42,1.4,.45,dark);
+  leg1.position.set(-.32,.65,0);
+  g.add(leg1);
+
+  const leg2=leg1.clone();
+  leg2.position.x=.32;
+  g.add(leg2);
+
+  const boot1=box(.48,.3,.75,boot);
+  boot1.position.set(-.32,.05,-.12);
+  g.add(boot1);
+
+  const boot2=boot1.clone();
+  boot2.position.x=.32;
+  g.add(boot2);
+
+  return g;
+}
+
+function setupFallback(){
+  if(playerModel) return;
+
+  playerModel=createFallbackCharacter();
+  player.add(playerModel);
+  playerModel.scale.setScalar(.92);
+}
+
+function findAnimation(clipNames){
+  for(const wanted of clipNames){
+    const found=Object.keys(actions).find(
+      n=>n.toLowerCase()===wanted.toLowerCase()
+    );
+
+    if(found) return actions[found];
+  }
+
+  return null;
+}
+
+function setAnimation(names){
+  if(!mixer) return;
+
+  const next=findAnimation(names);
+
+  if(!next || next===activeAction) return;
+
+  if(activeAction){
+    activeAction.fadeOut(.15);
+  }
+
+  next.reset().fadeIn(.15).play();
+  activeAction=next;
+}
+
+function loadGLB(){
+  const loader=new GLTFLoader();
+
+  document.getElementById("loadText").textContent=
+    "Memuat karakter 3D...";
+
+  loader.load(
+    "https://threejs.org/examples/models/gltf/Soldier.glb",
+
+    gltf=>{
+      if(playerModel){
+        player.remove(playerModel);
+      }
+
+      playerModel=gltf.scene;
+
+      playerModel.traverse(o=>{
+        if(o.isMesh){
+          o.castShadow=true;
+          o.receiveShadow=true;
+        }
+      });
+
+      const b1=new THREE.Box3().setFromObject(playerModel);
+      const size=b1.getSize(new THREE.Vector3());
+
+      const scale=3.8/Math.max(size.y,.001);
+      playerModel.scale.setScalar(scale);
+
+      const b2=new THREE.Box3().setFromObject(playerModel);
+      const center=b2.getCenter(new THREE.Vector3());
+
+      playerModel.position.x=-center.x;
+      playerModel.position.z=-center.z;
+      playerModel.position.y=-b2.min.y;
+
+      player.add(playerModel);
+
+      mixer=new THREE.AnimationMixer(playerModel);
+
+      for(const clip of gltf.animations){
+        actions[clip.name]=mixer.clipAction(clip);
+      }
+
+      setAnimation(["Idle"]);
+
+      glbReady=true;
+
+      document.getElementById("loadText").textContent=
+        "Dunia siap";
+
+      setTimeout(()=>{
+        document.getElementById("loading").style.display="none";
+      },300);
+    },
+
+    xhr=>{
+      if(xhr.total){
+        const p=Math.round(
+          xhr.loaded/xhr.total*100
+        );
+
+        document.getElementById("loading").firstElementChild.textContent=
+          "MEMUAT KARAKTER "+p+"%";
+      }
+    },
+
+    error=>{
+      console.log("GLB gagal dimuat, memakai karakter cadangan.",error);
+
+      setupFallback();
+
+      document.getElementById("loadText").textContent=
+        "Karakter cadangan aktif";
+
+      setTimeout(()=>{
+        document.getElementById("loading").style.display="none";
+      },500);
+    }
+  );
+}
+
+loadGLB();
+
+function jump(){
+  if(activeCar) return;
+
+  if(grounded){
+    velocityY=8.5;
+    grounded=false;
+  }
+}
+
+function toggleCrouch(){
+  if(activeCar) return;
+
+  crouching=!crouching;
 }
 
 function movePlayer(dx,dz){
-if(activeCar)return;
+  if(activeCar) return;
 
-const len=Math.hypot(dx,dz);
-if(len>1){dx/=len;dz/=len}
+  const len=Math.hypot(dx,dz);
 
-const nx=player.position.x+dx;
-const nz=player.position.z+dz;
+  if(len<.001) return;
 
-if(!blocked(nx,player.position.z))player.position.x=nx;
-if(!blocked(player.position.x,nz))player.position.z=nz;
-}
+  dx/=len;
+  dz/=len;
 
-function jump(){
-if(activeCar)return;
-if(grounded){
-verticalVelocity=7.5;
-grounded=false;
-}
-}
+  const speed=sprinting?8.5:crouching?2.2:5.0;
 
-function updateVertical(dt){
-if(activeCar)return;
+  const forwardX=Math.sin(camYaw);
+  const forwardZ=Math.cos(camYaw);
 
-verticalVelocity-=18*dt;
-player.position.y+=verticalVelocity*dt;
+  const rightX=Math.cos(camYaw);
+  const rightZ=-Math.sin(camYaw);
 
-if(player.position.y<=.02){
-player.position.y=.02;
-verticalVelocity=0;
-grounded=true;
-}else grounded=false;
+  const mx=
+    forwardX*(-dz)+
+    rightX*dx;
+
+  const mz=
+    forwardZ*(-dz)+
+    rightZ*dx;
+
+  const nx=player.position.x+mx*speed*.016;
+  const nz=player.position.z+mz*speed*.016;
+
+  if(!blocked(nx,player.position.z,.65)){
+    player.position.x=nx;
+  }
+
+  if(!blocked(player.position.x,nz,.65)){
+    player.position.z=nz;
+  }
+
+  player.rotation.y=Math.atan2(mx,mz);
+
+  if(mixer){
+    setAnimation(
+      sprinting?
+      ["Run","run"]:
+      crouching?
+      ["Walk","walk"]:
+      ["Walk","walk"]
+    );
+  }
 }
 
 function nearestZombie(){
-let best=null,d=999;
+  let best=null;
+  let dist=3.2;
 
-for(const z of zombies){
-if(!z.parent)continue;
+  for(const z of zombies){
+    const d=player.position.distanceTo(z.group.position);
 
-const dd=player.position.distanceTo(z.position);
+    if(d<dist){
+      dist=d;
+      best=z;
+    }
+  }
 
-if(dd<d){
-d=dd;
-best=z;
-}
-}
-
-return {z:best,d};
-}
-
-function nearestSupply(){
-let best=null,d=999;
-
-for(const s of supplies){
-if(s.userData.taken)continue;
-const dd=player.position.distanceTo(s.position);
-if(dd<d){d=dd;best=s}
-}
-
-return {s:best,d};
+  return best;
 }
 
 function nearestCar(){
-let best=null,d=999;
+  let best=null;
+  let dist=4.5;
 
-for(const c of cars){
-const dd=player.position.distanceTo(c.position);
-if(dd<d){d=dd;best=c}
+  for(const c of cars){
+    const d=player.position.distanceTo(c.group.position);
+
+    if(d<dist){
+      dist=d;
+      best=c;
+    }
+  }
+
+  return best;
 }
 
-return {c:best,d};
+function nearestPickup(){
+  let best=null;
+  let dist=2.5;
+
+  for(const p of pickups){
+    const d=player.position.distanceTo(p.position);
+
+    if(d<dist){
+      dist=d;
+      best=p;
+    }
+  }
+
+  return best;
 }
 
 function nearestHouse(){
-let best=null,d=999;
+  let best=null;
+  let dist=7;
 
-for(const h of houses){
-const dx=player.position.x-h.position.x;
-const dz=player.position.z-h.position.z;
+  for(const h of houses){
+    const d=Math.hypot(
+      player.position.x-h.x,
+      player.position.z-(h.z+5)
+    );
 
-const doorZ=h.userData.doorZ;
-const dd=Math.hypot(dx,player.position.z-doorZ);
+    if(d<dist){
+      dist=d;
+      best=h;
+    }
+  }
 
-if(dd<d){
-d=dd;
-best=h;
-}
-}
-
-return {h:best,d};
-}
-
-function punch(){
-if(activeCar||insideHouse)return;
-
-const q=nearestZombie();
-
-if(q.z&&q.d<3.4){
-q.z.userData.hp--;
-q.z.userData.stun=.6;
-
-const dir=new THREE.Vector3().subVectors(q.z.position,player.position).normalize();
-q.z.position.addScaledVector(dir,1.1);
-
-if(q.z.userData.hp<=0){
-world.remove(q.z);
-}
-}
+  return best;
 }
 
-function pickup(){
-const q=nearestSupply();
+function doAction(){
+  if(actionCooldown>0) return;
 
-if(q.s&&q.d<3.2){
-q.s.userData.taken=true;
-q.s.visible=false;
-suppliesCount++;
-document.getElementById("supplies").textContent=suppliesCount;
+  actionCooldown=.55;
+
+  if(activeCar){
+    return;
+  }
+
+  const zombie=nearestZombie();
+
+  if(zombie){
+    zombie.group.position.x-=
+      Math.sin(player.rotation.y)*1.3;
+
+    zombie.group.position.z-=
+      Math.cos(player.rotation.y)*1.3;
+
+    return;
+  }
+
+  const pickup=nearestPickup();
+
+  if(pickup){
+    hunger=Math.min(100,hunger+20);
+
+    scene.remove(pickup);
+
+    const i=pickups.indexOf(pickup);
+
+    if(i>=0) pickups.splice(i,1);
+
+    return;
+  }
+
+  const car=nearestCar();
+
+  if(car){
+    enterCar(car);
+    return;
+  }
+
+  const house=nearestHouse();
+
+  if(house){
+    enterHouse(house);
+  }
 }
-}
 
-function enterCar(){
-if(activeCar||insideHouse)return;
+function enterCar(car){
+  if(activeCar) return;
 
-const q=nearestCar();
+  activeCar=car;
 
-if(q.c&&q.d<6){
-activeCar=q.c;
-player.visible=false;
-q.c.userData={speed:0};
+  player.visible=false;
 
-document.getElementById("enterCar").style.display="none";
-document.getElementById("exitCar").style.display="block";
-document.getElementById("speed").style.display="block";
-}
+  car.group.add(player);
+
+  player.position.set(0,1.1,0);
+
+  document.getElementById("enterBtn").style.display="none";
+  document.getElementById("exitBtn").style.display="block";
+  document.getElementById("actionBtn").textContent="DRIVE";
+  document.getElementById("status").textContent="DI DALAM MOBIL";
 }
 
 function exitCar(){
-if(!activeCar)return;
+  if(!activeCar) return;
 
-const side=new THREE.Vector3(3.5,0,0).applyQuaternion(activeCar.quaternion);
-const pos=activeCar.position.clone().add(side);
+  const car=activeCar;
 
-if(!blocked(pos.x,pos.z)){
-player.position.set(pos.x,.02,pos.z);
-player.visible=true;
-activeCar=null;
+  car.group.remove(player);
 
-document.getElementById("exitCar").style.display="none";
-document.getElementById("speed").style.display="none";
-}
-}
+  player.visible=true;
 
-function enterHouse(){
-if(insideHouse||activeCar)return;
+  const backX=
+    car.group.position.x-
+    Math.sin(car.group.rotation.y)*5;
 
-const q=nearestHouse();
+  const backZ=
+    car.group.position.z-
+    Math.cos(car.group.rotation.y)*5;
 
-if(q.h&&q.d<4.5){
-insideHouse=q.h;
-insideHouse.userData.inside=true;
+  player.position.set(backX,0,backZ);
 
-player.position.set(
-insideHouse.position.x,
-.03,
-insideHouse.position.z
-);
+  activeCar=null;
 
-player.rotation.y=0;
-
-document.getElementById("enterHouse").style.display="none";
-document.getElementById("exitHouse").style.display="block";
-}
+  document.getElementById("enterBtn").style.display="block";
+  document.getElementById("exitBtn").style.display="none";
+  document.getElementById("actionBtn").textContent="👊";
+  document.getElementById("status").textContent="BERJALAN";
 }
 
-function exitHouse(){
-if(!insideHouse)return;
+function driveCar(car){
+  let throttle=0;
 
-const h=insideHouse;
+  if(keys.w||keys.arrowup||joystickY<-.15){
+    throttle=1;
+  }
 
-player.position.set(
-h.position.x,
-.03,
-h.userData.doorZ+2.5
-);
+  if(keys.s||keys.arrowdown||joystickY>.15){
+    throttle=-.65;
+  }
 
-insideHouse.userData.inside=false;
-insideHouse=null;
+  const maxSpeed=1.2;
 
-document.getElementById("exitHouse").style.display="none";
+  car.speed+=throttle*.035;
+
+  car.speed*=.985;
+
+  car.speed=THREE.MathUtils.clamp(
+    car.speed,
+    -0.55,
+    maxSpeed
+  );
+
+  let steer=0;
+
+  if(keys.a||keys.arrowleft||joystickX<-.2){
+    steer=1;
+  }
+
+  if(keys.d||keys.arrowright||joystickX>.2){
+    steer=-1;
+  }
+
+  if(Math.abs(car.speed)>.02){
+    car.group.rotation.y+=
+      steer*.035*
+      Math.min(Math.abs(car.speed)*1.4,1);
+  }
+
+  const forwardX=Math.sin(car.group.rotation.y);
+  const forwardZ=Math.cos(car.group.rotation.y);
+
+  const nx=
+    car.group.position.x+
+    forwardX*car.speed;
+
+  const nz=
+    car.group.position.z+
+    forwardZ*car.speed;
+
+  if(
+    !blocked(nx,nz,2.1,car.group)
+  ){
+    car.group.position.x=nx;
+    car.group.position.z=nz;
+  }else{
+    car.speed*=-.25;
+  }
+
+  for(const wheel of car.wheels){
+    wheel.rotation.x-=car.speed;
+  }
 }
 
-function drive(dt){
-if(!activeCar)return;
+function enterHouse(house){
+  if(insideHouse) return;
 
-const throttle=-joyY;
-const steer=joyX;
+  insideHouse=house;
 
-let speed=activeCar.userData.speed;
+  player.position.set(
+    house.x,
+    0,
+    house.z
+  );
 
-if(Math.abs(throttle)>.08){
-speed+=throttle*(throttle>0?28:35)*dt;
-}else{
-speed*=Math.pow(.08,dt);
+  document.getElementById("status").textContent=
+    "DI DALAM RUMAH";
 }
 
-speed=Math.max(-12,Math.min(30,speed));
+function leaveHouse(){
+  if(!insideHouse) return;
 
-activeCar.rotation.y-=steer*(speed/30)*1.5*dt;
+  const h=insideHouse;
 
-const forward=new THREE.Vector3(0,0,1).applyQuaternion(activeCar.quaternion);
+  player.position.set(
+    h.x,
+    0,
+    h.z+8
+  );
 
-const nx=activeCar.position.x+forward.x*speed*dt;
-const nz=activeCar.position.z+forward.z*speed*dt;
+  insideHouse=null;
 
-if(!blocked(nx,nz)){
-activeCar.position.x=nx;
-activeCar.position.z=nz;
-}else{
-speed*=-.15;
-}
-
-activeCar.userData.speed=speed;
-
-document.getElementById("speed").textContent=
-Math.round(Math.abs(speed)*3.6)+" KM/H";
-}
-
-function zombieAttack(z){
-if(z.userData.attackCooldown>0)return;
-
-z.userData.attackCooldown=1.25;
-hp=Math.max(0,hp-7);
-
-const dir=new THREE.Vector3()
-.subVectors(player.position,z.position)
-.normalize();
-
-player.position.addScaledVector(dir,.8);
+  document.getElementById("status").textContent=
+    "BERJALAN";
 }
 
 function updateZombies(dt){
-for(const z of zombies){
+  for(const z of zombies){
 
-if(!z.parent)continue;
+    z.phase+=dt;
 
-z.userData.attackCooldown=Math.max(0,z.userData.attackCooldown-dt);
+    const dx=
+      player.position.x-z.group.position.x;
 
-if(z.userData.stun>0){
-z.userData.stun-=dt;
-continue;
+    const dz=
+      player.position.z-z.group.position.z;
+
+    const dist=Math.hypot(dx,dz);
+
+    if(dist>2.2 && dist<70){
+
+      const nx=dx/dist;
+      const nz=dz/dist;
+
+      const speed=z.speed*dt;
+
+      const tx=
+        z.group.position.x+nx*speed;
+
+      const tz=
+        z.group.position.z+nz*speed;
+
+      if(
+        !blocked(tx,z.group.position.z,.55) &&
+        !blocked(player.position.x,z.group.position.z,.55)
+      ){
+        z.group.position.x=tx;
+      }
+
+      if(
+        !blocked(z.group.position.x,tz,.55) &&
+        !blocked(z.group.position.x,player.position.z,.55)
+      ){
+        z.group.position.z=tz;
+      }
+
+      z.group.rotation.y=
+        Math.atan2(nx,nz);
+
+      const bob=
+        Math.sin(z.phase*7)*.05;
+
+      z.group.position.y=bob;
+    }
+
+    z.attack-=dt;
+
+    if(dist<2.3 && z.attack<=0){
+      hp=Math.max(0,hp-7);
+      z.attack=1.1;
+
+      const pushX=dx/(dist||1);
+      const pushZ=dz/(dist||1);
+
+      player.position.x+=pushX*.8;
+      player.position.z+=pushZ*.8;
+    }
+  }
 }
 
-const dx=player.position.x-z.position.x;
-const dz=player.position.z-z.position.z;
-const d=Math.hypot(dx,dz);
+function updatePlayer(dt){
 
-if(d<25&&d>1.65){
-const speed=1.7;
+  if(activeCar){
+    driveCar(activeCar);
+    return;
+  }
 
-const vx=dx/d*speed*dt;
-const vz=dz/d*speed*dt;
+  let x=joystickX;
+  let y=joystickY;
 
-if(!blocked(z.position.x+vx,z.position.z))
-z.position.x+=vx;
+  if(keys.w||keys.arrowup) y=-1;
+  if(keys.s||keys.arrowdown) y=1;
+  if(keys.a||keys.arrowleft) x=-1;
+  if(keys.d||keys.arrowright) x=1;
 
-if(!blocked(z.position.x,z.position.z+vz))
-z.position.z+=vz;
+  if(Math.abs(x)>.08||Math.abs(y)>.08){
+    movePlayer(x,y);
+  }else{
+    if(mixer){
+      setAnimation(["Idle","idle"]);
+    }
+  }
 
-z.rotation.y=Math.atan2(dx,dz);
+  velocityY-=20*dt;
+
+  player.position.y+=velocityY*dt;
+
+  if(player.position.y<=0){
+    player.position.y=0;
+    velocityY=0;
+    grounded=true;
+  }
+
+  const limit=145;
+
+  player.position.x=
+    THREE.MathUtils.clamp(
+      player.position.x,
+      -limit,
+      limit
+    );
+
+  player.position.z=
+    THREE.MathUtils.clamp(
+      player.position.z,
+      -limit,
+      limit
+    );
 }
 
-if(d<1.75&&!activeCar&&!insideHouse){
-zombieAttack(z);
+function updateCamera(){
+
+  let target;
+
+  if(activeCar){
+    target=activeCar.group.position.clone();
+    target.y+=1.5;
+  }else{
+    target=player.position.clone();
+
+    target.y+=
+      crouching?
+      1.0:
+      1.55;
+  }
+
+  const horizontal=
+    Math.cos(camPitch)*camDistance;
+
+  const offset=new THREE.Vector3(
+    Math.sin(camYaw)*horizontal,
+    Math.sin(camPitch)*camDistance,
+    Math.cos(camYaw)*horizontal
+  );
+
+  const desired=target.clone().add(offset);
+
+  const ray=new THREE.Raycaster();
+
+  const direction=
+    desired.clone().sub(target);
+
+  const length=direction.length();
+
+  direction.normalize();
+
+  ray.set(target,direction);
+
+  const objects=[
+    ...scene.children.filter(o=>
+      o!==ground &&
+      o!==player &&
+      o!==activeCar?.group
+    )
+  ];
+
+  const hits=ray.intersectObjects(objects,true);
+
+  targetCamDistance=camDistance;
+
+  if(hits.length && hits[0].distance<length){
+    targetCamDistance=Math.max(
+      .9,
+      hits[0].distance-.45
+    );
+  }
+
+  camDistance+=
+    (targetCamDistance-camDistance)*.2;
+
+  const finalHorizontal=
+    Math.cos(camPitch)*camDistance;
+
+  const finalOffset=new THREE.Vector3(
+    Math.sin(camYaw)*finalHorizontal,
+    Math.sin(camPitch)*camDistance,
+    Math.cos(camPitch)*0
+  );
+
+  finalOffset.y=
+    Math.sin(camPitch)*camDistance;
+
+  finalOffset.x=
+    Math.sin(camYaw)*finalHorizontal;
+
+  finalOffset.z=
+    Math.cos(camYaw)*finalHorizontal;
+
+  camera.position.copy(
+    target.clone().add(finalOffset)
+  );
+
+  camera.lookAt(target);
 }
-}
-}
 
-function updateButtons(){
-const enterCar=document.getElementById("enterCar");
-const exitCar=document.getElementById("exitCar");
-const enterHouseBtn=document.getElementById("enterHouse");
-const exitHouseBtn=document.getElementById("exitHouse");
+function updateHUD(){
+  document.getElementById("hpFill").style.width=
+    hp+"%";
 
-enterCar.style.display="none";
-enterHouseBtn.style.display="none";
+  document.getElementById("foodFill").style.width=
+    hunger+"%";
 
-if(activeCar){
-exitCar.style.display="block";
-}else{
-exitCar.style.display="none";
+  if(hp<=0){
+    document.getElementById("status").textContent=
+      "KAMU JATUH";
+  }
 
-const c=nearestCar();
+  const zombie=nearestZombie();
+  const pickup=nearestPickup();
+  const car=nearestCar();
 
-if(c.c&&c.d<6)
-enterCar.style.display="block";
-
-if(!insideHouse){
-const h=nearestHouse();
-
-if(h.h&&h.d<4.5)
-enterHouseBtn.style.display="block";
-}
-}
-
-exitHouseBtn.style.display=insideHouse?"block":"none";
-
-const z=nearestZombie();
-const s=nearestSupply();
-
-const action=document.getElementById("action");
-
-if(z.z&&z.d<3.8){
-action.innerHTML="👊<br>PUKUL";
-}else if(s.s&&s.d<3.5){
-action.innerHTML="📦<br>AMBIL";
-}else{
-action.innerHTML="👊<br>TINJU";
-}
+  if(activeCar){
+    document.getElementById("actionBtn").textContent=
+      "DRIVE";
+  }else if(zombie){
+    document.getElementById("actionBtn").textContent=
+      "👊";
+  }else if(pickup){
+    document.getElementById("actionBtn").textContent=
+      "AMBIL";
+  }else if(car){
+    document.getElementById("actionBtn").textContent=
+      "MASUK";
+  }else{
+    document.getElementById("actionBtn").textContent=
+      "👊";
+  }
 }
 
-document.getElementById("action").onclick=()=>{
-const z=nearestZombie();
+function updateHunger(dt){
+  hungerTimer+=dt;
 
-if(z.z&&z.d<3.8)punch();
-else pickup();
-};
+  if(hungerTimer>8){
+    hungerTimer=0;
+    hunger=Math.max(0,hunger-1);
 
-document.getElementById("jump").onclick=jump;
-document.getElementById("crouch").onclick=()=>{
-if(activeCar)return;
-crouching=!crouching;
-};
+    if(hunger<=0){
+      hp=Math.max(0,hp-2);
+    }
+  }
+}
 
-document.getElementById("sprint").addEventListener("pointerdown",()=>sprinting=true);
-document.getElementById("sprint").addEventListener("pointerup",()=>sprinting=false);
-document.getElementById("sprint").addEventListener("pointercancel",()=>sprinting=false);
-document.getElementById("enterCar").onclick=enterCar;
-document.getElementById("exitCar").onclick=exitCar;
-document.getElementById("enterHouse").onclick=enterHouse;
-document.getElementById("exitHouse").onclick=exitHouse;
+const joystick=document.getElementById("joystick");
+const stick=document.getElementById("stick");
 
-document.getElementById("full").onclick=()=>{
-if(!document.fullscreenElement)
-document.documentElement.requestFullscreen?.();
-else
-document.exitFullscreen?.();
-};
+let joyPointer=null;
+
+function updateJoystick(clientX,clientY){
+  const r=joystick.getBoundingClientRect();
+
+  const cx=r.left+r.width/2;
+  const cy=r.top+r.height/2;
+
+  let dx=clientX-cx;
+  let dy=clientY-cy;
+
+  const max=48;
+
+  const len=Math.hypot(dx,dy);
+
+  if(len>max){
+    dx=dx/len*max;
+    dy=dy/len*max;
+  }
+
+  stick.style.transform=
+    `translate(${dx}px,${dy}px)`;
+
+  joystickX=dx/max;
+  joystickY=dy/max;
+}
+
+function resetJoystick(){
+  joyPointer=null;
+
+  stick.style.transform=
+    "translate(0,0)";
+
+  joystickX=0;
+  joystickY=0;
+}
+
+joystick.addEventListener("pointerdown",e=>{
+  joyPointer=e.pointerId;
+  joystick.setPointerCapture(e.pointerId);
+  updateJoystick(e.clientX,e.clientY);
+});
+
+joystick.addEventListener("pointermove",e=>{
+  if(e.pointerId===joyPointer){
+    updateJoystick(e.clientX,e.clientY);
+  }
+});
+
+joystick.addEventListener("pointerup",resetJoystick);
+joystick.addEventListener("pointercancel",resetJoystick);
 
 renderer.domElement.addEventListener("pointerdown",e=>{
-if(e.clientX>innerWidth*.42){
-dragging=true;
-lastX=e.clientX;
-lastY=e.clientY;
-}
+  if(e.clientX<innerWidth*.42) return;
+
+  cameraDragging=true;
+  lastTouchX=e.clientX;
+  lastTouchY=e.clientY;
 });
 
 renderer.domElement.addEventListener("pointermove",e=>{
-if(!dragging)return;
+  if(!cameraDragging) return;
 
-const dx=e.clientX-lastX;
-const dy=e.clientY-lastY;
+  const dx=e.clientX-lastTouchX;
+  const dy=e.clientY-lastTouchY;
 
-cameraYaw-=dx*.006;
-cameraPitch-=dy*.004;
+  lastTouchX=e.clientX;
+  lastTouchY=e.clientY;
 
-cameraPitch=Math.max(-.55,Math.min(1.0,cameraPitch));
+  camYaw-=dx*.006;
+  camPitch-=dy*.005;
 
-lastX=e.clientX;
-lastY=e.clientY;
+  camPitch=THREE.MathUtils.clamp(
+    camPitch,
+    -1.15,
+    1.05
+  );
 });
 
-renderer.domElement.addEventListener("pointerup",()=>dragging=false);
-renderer.domElement.addEventListener("pointercancel",()=>dragging=false);
-
-document.addEventListener("keydown",e=>{
-keys[e.key.toLowerCase()]=true;
-
-if(e.key===" "){
-e.preventDefault();
-jump();
-}
-
-if(e.key.toLowerCase()==="shift")sprinting=true;
-if(e.key.toLowerCase()==="c")crouching=!crouching;
-if(e.key.toLowerCase()==="e"){
-if(insideHouse)exitHouse();
-else{
-const c=nearestCar();
-const h=nearestHouse();
-
-if(c.c&&c.d<6)enterCar();
-else if(h.h&&h.d<4.5)enterHouse();
-else{
-const z=nearestZombie();
-if(z.z&&z.d<3.8)punch();
-else pickup();
-}
-}
-}
+renderer.domElement.addEventListener("pointerup",()=>{
+  cameraDragging=false;
 });
 
-document.addEventListener("keyup",e=>{
-keys[e.key.toLowerCase()]=false;
-
-if(e.key.toLowerCase()==="shift")
-sprinting=false;
+renderer.domElement.addEventListener("pointercancel",()=>{
+  cameraDragging=false;
 });
 
-const joy=document.getElementById("joy");
-const knob=document.getElementById("knob");
-let joyActive=false;
-
-function setJoy(x,y){
-const r=joy.getBoundingClientRect();
-
-let dx=x-(r.left+r.width/2);
-let dy=y-(r.top+r.height/2);
-
-const max=50;
-const len=Math.hypot(dx,dy);
-
-if(len>max){
-dx=dx/len*max;
-dy=dy/len*max;
-}
-
-joyX=dx/max;
-joyY=dy/max;
-
-knob.style.transform=`translate(${dx}px,${dy}px)`;
-}
-
-joy.addEventListener("pointerdown",e=>{
-joyActive=true;
-joy.setPointerCapture(e.pointerId);
-setJoy(e.clientX,e.clientY);
-});
-
-joy.addEventListener("pointermove",e=>{
-if(joyActive)setJoy(e.clientX,e.clientY);
-});
-
-joy.addEventListener("pointerup",()=>{
-joyActive=false;
-joyX=0;
-joyY=0;
-knob.style.transform="translate(0,0)";
-});
-
-function updateCamera(){
-const target=new THREE.Vector3();
-
-if(activeCar){
-target.copy(activeCar.position);
-target.y+=1.35;
-}else{
-target.copy(player.position);
-target.y+=crouching?1.45:2;
-}
-
-const distance=activeCar?15:11.5;
-
-const offset=new THREE.Vector3(
-Math.sin(cameraYaw)*Math.cos(cameraPitch)*distance,
-Math.sin(cameraPitch)*distance+3,
-Math.cos(cameraYaw)*Math.cos(cameraPitch)*distance
+document.getElementById("jumpBtn").addEventListener(
+  "pointerdown",
+  jump
 );
 
-const desired=target.clone().add(offset);
-const dir=desired.clone().sub(target);
-const len=dir.length();
-dir.normalize();
+document.getElementById("crouchBtn").addEventListener(
+  "pointerdown",
+  toggleCrouch
+);
 
-const ray=new THREE.Raycaster(target,dir,0.4,len);
-const hits=ray.intersectObjects(cameraMeshes,true);
+document.getElementById("sprintBtn").addEventListener(
+  "pointerdown",
+  ()=>sprinting=true
+);
 
-let finalLen=len;
+document.getElementById("sprintBtn").addEventListener(
+  "pointerup",
+  ()=>sprinting=false
+);
 
-if(hits.length){
-finalLen=Math.max(.9,hits[0].distance-.5);
-}
+document.getElementById("sprintBtn").addEventListener(
+  "pointercancel",
+  ()=>sprinting=false
+);
 
-const pos=target.clone().add(dir.multiplyScalar(finalLen));
+document.getElementById("actionBtn").addEventListener(
+  "pointerdown",
+  ()=>{
+    if(activeCar){
+      return;
+    }
 
-camera.position.lerp(pos,.16);
-camera.lookAt(target);
-}
+    doAction();
+  }
+);
 
-function buildWorld(){
-addGround();
-addRoads();
+document.getElementById("enterBtn").addEventListener(
+  "pointerdown",
+  ()=>{
+    if(!activeCar){
+      const car=nearestCar();
 
-const xs=[-82.5,-27.5,27.5,82.5];
-const zs=[-67.5,-22.5,22.5,67.5];
+      if(car){
+        enterCar(car);
+      }
+    }
+  }
+);
 
-let n=0;
+document.getElementById("exitBtn").addEventListener(
+  "pointerdown",
+  exitCar
+);
 
-for(const x of xs){
-for(const z of zs){
-if(Math.abs(x)<30&&Math.abs(z)<30)continue;
-addHouse(x,z,27,24,6+(n%3),n++);
-}
-}
+document.getElementById("fullscreen").addEventListener(
+  "click",
+  async()=>{
+    try{
+      if(!document.fullscreenElement){
+        await document.documentElement.requestFullscreen();
+      }else{
+        await document.exitFullscreen();
+      }
+    }catch(e){}
+  }
+);
 
-const tp=[
-[-145,-120,1.1],[-120,-115,.9],[-90,-125,1.2],
-[100,-125,1], [135,-105,1.1],
-[-145,100,1.2],[-125,125,.9],[110,115,1.2],
-[140,80,1],[-145,-10,1],[-125,35,.9],[135,25,1.1]
-];
-
-for(const p of tp)addTree(...p);
-
-addCar(-5,-70,0,0x9a7e20);
-addCar(5,70,Math.PI,0x596368);
-addCar(-110,-5,Math.PI/2,0x69322f);
-addCar(110,5,-Math.PI/2,0x385460);
-
-const sp=[
-[-48,-37],[48,37],[-78,38],[78,-38],
-[-18,72],[18,-72],[-130,-30],[130,30]
-];
-
-for(const p of sp)addSupply(...p);
-
-for(let i=0;i<14;i++){
-const a=Math.random()*Math.PI*2;
-const r=45+Math.random()*100;
-createZombie(Math.cos(a)*r,Math.sin(a)*r);
-}
-}
-
-buildWorld();
-
-const clock=new THREE.Clock();
+document.getElementById("exitBtn").style.display="none";
 
 function animate(){
-requestAnimationFrame(animate);
 
-const dt=Math.min(.033,clock.getDelta());
+  requestAnimationFrame(animate);
 
-let mx=joyX;
-let mz=joyY;
+  const dt=Math.min(
+    clock.getDelta(),
+    .05
+  );
 
-if(keys.w||keys.arrowup)mz=-1;
-if(keys.s||keys.arrowdown)mz=1;
-if(keys.a||keys.arrowleft)mx=-1;
-if(keys.d||keys.arrowright)mx=1;
+  if(mixer){
+    mixer.update(dt);
+  }
 
-if(!activeCar){
-const forward=new THREE.Vector3(
-Math.sin(cameraYaw),0,Math.cos(cameraYaw)
-);
+  actionCooldown=Math.max(
+    0,
+    actionCooldown-dt
+  );
 
-const right=new THREE.Vector3(
-Math.cos(cameraYaw),0,-Math.sin(cameraYaw)
-);
+  updatePlayer(dt);
+  updateZombies(dt);
+  updateHunger(dt);
+  updateCamera();
+  updateHUD();
 
-const move=forward.clone().multiplyScalar(-mz);
-move.add(right.multiplyScalar(mx));
-
-if(move.length()>0){
-
-move.normalize();
-
-let speed=crouching?.055:(sprinting?.17:.105);
-
-move.multiplyScalar(speed);
-movePlayer(move.x,move.z);
-
-player.rotation.y=Math.atan2(move.x,move.z);
-
-if(glbReady){
-if(sprinting&&!crouching)setAnimation("Run");
-else setAnimation("Walk");
-}
-
-}else{
-if(glbReady)setAnimation("Idle");
-}
-
-}else{
-if(glbReady)setAnimation("Idle");
-}
-
-if(mixer)mixer.update(dt);
-
-updateVertical(dt);
-drive(dt);
-updateZombies(dt);
-updateCamera();
-updateButtons();
-
-hunger=Math.max(0,hunger-dt*.008);
-
-document.getElementById("hp").textContent=Math.round(hp);
-document.getElementById("hunger").textContent=Math.round(hunger);
-
-renderer.render(scene,camera);
+  renderer.render(scene,camera);
 }
 
 window.addEventListener("resize",()=>{
-camera.aspect=innerWidth/innerHeight;
-camera.updateProjectionMatrix();
-renderer.setSize(innerWidth,innerHeight);
+  camera.aspect=innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+
+  renderer.setSize(
+    innerWidth,
+    innerHeight
+  );
 });
 
 animate();
+
+setTimeout(()=>{
+  if(
+    document.getElementById("loading").style.display!=="none"
+  ){
+    setupFallback();
+
+    document.getElementById("loading").style.display=
+      "none";
+  }
+},10000);
+
 </script>
+
 </body>
 </html>
