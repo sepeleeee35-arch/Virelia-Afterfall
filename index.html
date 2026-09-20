@@ -2,1418 +2,213 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Virelia: Afterfall</title>
 
 <script type="importmap">
 {
-  "imports":{
-    "three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
-    "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"
   }
 }
 </script>
 
 <style>
 *{
-box-sizing:border-box;
-user-select:none;
--webkit-user-select:none;
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
 }
 
 html,body{
-margin:0;
-width:100%;
-height:100%;
-overflow:hidden;
-background:#111;
-font-family:Arial,sans-serif;
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#000;
+  font-family:Arial,sans-serif;
+  touch-action:none;
+}
+
+body{
+  position:fixed;
+  inset:0;
 }
 
 canvas{
-position:fixed;
-inset:0;
+  display:block;
+  width:100%;
+  height:100%;
+  touch-action:none;
 }
 
 #loading{
-position:fixed;
-inset:0;
-z-index:100;
-display:flex;
-align-items:center;
-justify-content:center;
-flex-direction:column;
-background:#111;
-color:white;
-font-size:22px;
-font-weight:bold;
-}
-
-#loading small{
-margin-top:10px;
-font-size:12px;
-opacity:.6;
+  position:fixed;
+  inset:0;
+  z-index:50;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#10161a;
+  color:#fff;
+  font-size:20px;
+  letter-spacing:2px;
 }
 
 #hud{
-position:fixed;
-top:15px;
-left:18px;
-z-index:20;
-color:white;
-text-shadow:0 2px 4px #000;
-font-weight:bold;
+  position:fixed;
+  top:14px;
+  left:14px;
+  z-index:10;
+  color:white;
+  text-shadow:0 2px 5px #000;
+  pointer-events:none;
 }
 
-.label{
-font-size:17px;
+#title{
+  font-size:16px;
+  font-weight:bold;
+  margin-bottom:6px;
 }
 
 .bar{
-width:245px;
-height:23px;
-margin:5px 0 8px;
-background:#222;
-border:2px solid #111;
-border-radius:13px;
-overflow:hidden;
+  width:190px;
+  height:12px;
+  background:#222;
+  border:1px solid #555;
+  border-radius:8px;
+  overflow:hidden;
+  margin-bottom:5px;
 }
 
-.fill{
-height:100%;
+#hpbar{
+  width:100%;
+  height:100%;
+  background:#d94a4a;
 }
 
-#hp{
-background:#e93636;
-width:100%;
-}
-
-#hunger{
-background:#e3ad2e;
-width:100%;
-}
-
-#state{
-font-size:13px;
-}
-
-#fullscreen{
-position:fixed;
-right:15px;
-top:15px;
-z-index:30;
-width:54px;
-height:54px;
-border:0;
-border-radius:16px;
-background:rgba(20,20,20,.7);
-color:white;
-font-size:25px;
+#stambar{
+  width:100%;
+  height:100%;
+  background:#e0b84a;
 }
 
 #joystick{
-position:fixed;
-left:25px;
-bottom:28px;
-width:155px;
-height:155px;
-z-index:30;
-border-radius:50%;
-border:2px solid rgba(255,255,255,.25);
-background:rgba(255,255,255,.10);
-touch-action:none;
+  position:fixed;
+  left:24px;
+  bottom:24px;
+  width:145px;
+  height:145px;
+  z-index:20;
+  border-radius:50%;
+  background:rgba(255,255,255,.10);
+  border:2px solid rgba(255,255,255,.22);
 }
 
 #stick{
-position:absolute;
-left:46px;
-top:46px;
-width:60px;
-height:60px;
-border-radius:50%;
-background:rgba(255,255,255,.42);
-border:2px solid rgba(255,255,255,.5);
+  position:absolute;
+  left:42px;
+  top:42px;
+  width:61px;
+  height:61px;
+  border-radius:50%;
+  background:rgba(255,255,255,.32);
+  border:2px solid rgba(255,255,255,.45);
 }
 
-#buttons{
-position:fixed;
-right:18px;
-bottom:18px;
-z-index:30;
-display:grid;
-grid-template-columns:100px 100px;
-gap:9px;
+#actions{
+  position:fixed;
+  right:22px;
+  bottom:22px;
+  z-index:20;
+  display:grid;
+  grid-template-columns:repeat(2,78px);
+  gap:12px;
 }
 
-button{
-border:2px solid rgba(255,255,255,.16);
-background:rgba(20,20,20,.72);
-color:white;
-font-weight:bold;
-border-radius:17px;
-min-height:58px;
-touch-action:none;
+.action{
+  width:78px;
+  height:78px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.3);
+  background:rgba(25,30,35,.65);
+  color:white;
+  font-weight:bold;
+  font-size:13px;
+  touch-action:none;
 }
 
-button:active{
-transform:scale(.94);
+.action:active{
+  transform:scale(.92);
+  background:rgba(255,255,255,.25);
 }
 
 #action{
-grid-column:span 2;
-width:78px;
-height:78px;
-min-height:78px;
-border-radius:50%;
-justify-self:center;
-font-size:20px;
+  font-size:26px;
 }
 
-#hint{
-position:fixed;
-left:50%;
-bottom:9px;
-transform:translateX(-50%);
-color:white;
-z-index:20;
-font-size:11px;
-opacity:.65;
-white-space:nowrap;
-text-shadow:0 2px 4px #000;
+#fullscreen{
+  position:fixed;
+  right:18px;
+  top:15px;
+  z-index:20;
+  width:42px;
+  height:42px;
+  border:0;
+  border-radius:50%;
+  background:rgba(0,0,0,.45);
+  color:white;
+  font-size:20px;
+}
+
+@media (orientation:portrait){
+  #joystick{
+    left:16px;
+    bottom:18px;
+  }
+
+  #actions{
+    right:12px;
+    bottom:16px;
+  }
 }
 </style>
 </head>
 
 <body>
 
-<div id="loading">
-MEMUAT DUNIA 3D
-<small>Menyiapkan Virelia...</small>
-</div>
+<div id="loading">MEMUAT VIRELIA 3D...</div>
 
 <div id="hud">
+  <div id="title">VIRELIA // AFTERFALL</div>
 
-<div class="label">HP</div>
-<div class="bar">
-<div id="hp" class="fill"></div>
-</div>
+  <div>HP</div>
+  <div class="bar">
+    <div id="hpbar"></div>
+  </div>
 
-<div class="label">HUNGER</div>
-<div class="bar">
-<div id="hunger" class="fill"></div>
-</div>
-
-<div id="state">BERJALAN</div>
-
+  <div>STAMINA</div>
+  <div class="bar">
+    <div id="stambar"></div>
+  </div>
 </div>
 
 <button id="fullscreen">⛶</button>
 
 <div id="joystick">
-<div id="stick"></div>
+  <div id="stick"></div>
 </div>
 
-<div id="buttons">
-
-<button id="jump">LOMPAT</button>
-<button id="crouch">JONGKOK</button>
-
-<button id="sprint">SPRINT</button>
-<button id="action">👊</button>
-
-</div>
-
-<div id="hint">
-Analog = gerak • Geser sisi kanan = kamera
+<div id="actions">
+  <button class="action" id="jump">JUMP</button>
+  <button class="action" id="sprint">RUN</button>
+  <button class="action" id="crouch">CROUCH</button>
+  <button class="action" id="action">👊</button>
 </div>
 
 <script type="module">
-
-import * as THREE from "three";
-
-let GLTFLoader=null;
-
-try{
-const m=await import("three/addons/loaders/GLTFLoader.js");
-GLTFLoader=m.GLTFLoader;
-}catch(e){
-console.log("GLTFLoader tidak tersedia");
-}
-
-const scene=new THREE.Scene();
-
-scene.background=new THREE.Color(0x91a0a1);
-
-scene.fog=new THREE.Fog(
-0x91a0a1,
-55,
-240
-);
-
-const camera=new THREE.PerspectiveCamera(
-62,
-innerWidth/innerHeight,
-0.05,
-500
-);
-
-const renderer=new THREE.WebGLRenderer({
-antialias:true,
-powerPreference:"high-performance"
-});
-
-renderer.setSize(
-innerWidth,
-innerHeight
-);
-
-renderer.setPixelRatio(
-Math.min(devicePixelRatio,1.5)
-);
-
-renderer.outputColorSpace=
-THREE.SRGBColorSpace;
-
-renderer.shadowMap.enabled=true;
-
-document.body.appendChild(
-renderer.domElement
-);
-
-scene.add(
-new THREE.HemisphereLight(
-0xdceaff,
-0x263828,
-2.2
-)
-);
-
-const sun=new THREE.DirectionalLight(
-0xffffff,
-2
-);
-
-sun.position.set(
-40,
-80,
-30
-);
-
-sun.castShadow=true;
-
-scene.add(sun);
-
-const clock=new THREE.Clock();
-
-const ground=new THREE.Mesh(
-new THREE.PlaneGeometry(
-300,
-300
-),
-new THREE.MeshStandardMaterial({
-color:0x416c46,
-roughness:1
-})
-);
-
-ground.rotation.x=-Math.PI/2;
-ground.receiveShadow=true;
-
-scene.add(ground);
-
-function material(c){
-return new THREE.MeshStandardMaterial({
-color:c,
-roughness:.8
-});
-}
-
-function box(
-w,
-h,
-d,
-c
-){
-
-const m=new THREE.Mesh(
-new THREE.BoxGeometry(w,h,d),
-material(c)
-);
-
-m.castShadow=true;
-m.receiveShadow=true;
-
-return m;
-}
-
-function createRoad(
-x,
-z,
-w,
-d
-){
-
-const r=box(
-w,
-.06,
-d,
-0x292b2c
-);
-
-r.position.set(
-x,
-.03,
-z
-);
-
-scene.add(r);
-
-}
-
-createRoad(0,0,300,12);
-createRoad(0,0,12,300);
-createRoad(0,42,300,10);
-createRoad(42,0,10,300);
-createRoad(-42,0,10,300);
-
-function createHouse(
-x,
-z
-){
-
-const g=new THREE.Group();
-
-g.position.set(x,0,z);
-
-const floor=box(
-13,
-.2,
-10,
-0x816d55
-);
-
-floor.position.y=.1;
-
-g.add(floor);
-
-const wall=0xb8a98e;
-
-const back=box(
-13,
-4.2,
-.3,
-wall
-);
-
-back.position.set(
-0,
-2.1,
--5
-);
-
-g.add(back);
-
-const left=box(
-.3,
-4.2,
-10,
-wall
-);
-
-left.position.set(
--6.35,
-2.1,
-0
-);
-
-g.add(left);
-
-const right=left.clone();
-
-right.position.x=6.35;
-
-g.add(right);
-
-const frontL=box(
-4.7,
-4.2,
-.3,
-wall
-);
-
-frontL.position.set(
--4.1,
-2.1,
-5
-);
-
-g.add(frontL);
-
-const frontR=frontL.clone();
-
-frontR.position.x=4.1;
-
-g.add(frontR);
-
-const roof=box(
-14,
-.5,
-11,
-0x4b4037
-);
-
-roof.position.y=4.45;
-
-g.add(roof);
-
-const door=box(
-2,
-3.3,
-.15,
-0x54382b
-);
-
-door.position.set(
-0,
-1.65,
-5.1
-);
-
-g.add(door);
-
-const sofa=box(
-3.2,
-.9,
-1.1,
-0x3d484d
-);
-
-sofa.position.set(
--3,
-.45,
--2
-);
-
-g.add(sofa);
-
-const table=box(
-2.2,
-.65,
-1.3,
-0x63432b
-);
-
-table.position.set(
-0,
-.65,
--1
-);
-
-g.add(table);
-
-scene.add(g);
-
-}
-
-[
-[-22,-22],
-[22,-22],
-[-22,22],
-[22,22],
-[65,25],
-[-65,-25],
-[65,-65],
-[-65,65]
-].forEach(
-p=>createHouse(
-p[0],
-p[1]
-)
-);
-
-function createTree(
-x,
-z
-){
-
-const g=new THREE.Group();
-
-const trunk=box(
-.65,
-3.5,
-.65,
-0x61412b
-);
-
-trunk.position.y=1.75;
-
-g.add(trunk);
-
-const crown=new THREE.Mesh(
-new THREE.SphereGeometry(
-2.4,
-12,
-10
-),
-material(0x315e36)
-);
-
-crown.position.y=4.4;
-
-g.add(crown);
-
-g.position.set(
-x,
-0,
-z
-);
-
-scene.add(g);
-
-}
-
-[
-[-60,-55],
-[-48,-70],
-[55,-60],
-[70,-70],
-[-70,55],
-[-55,68],
-[58,60],
-[72,48],
-[92,-25],
-[-92,25]
-].forEach(
-p=>createTree(
-p[0],
-p[1]
-)
-);
-
-const player=new THREE.Group();
-
-player.position.set(
-0,
-0,
-18
-);
-
-scene.add(player);
-
-let playerModel=null;
-let mixer=null;
-let animations={};
-let currentAction=null;
-
-function fallbackPlayer(){
-
-const g=new THREE.Group();
-
-const skin=material(0xb98061);
-const dark=material(0x202326);
-const armor=material(0x50585d);
-
-const body=box(
-.72,
-.92,
-.43,
-armor
-);
-
-body.position.y=1.17;
-
-g.add(body);
-
-const head=new THREE.Mesh(
-new THREE.SphereGeometry(
-.255,
-16,
-12
-),
-skin
-);
-
-head.position.y=1.9;
-
-g.add(head);
-
-const hair=new THREE.Mesh(
-new THREE.SphereGeometry(
-.28,
-16,
-10
-),
-dark
-);
-
-hair.position.y=2.08;
-hair.scale.y=.55;
-
-g.add(hair);
-
-for(
-const side of [-1,1]
-){
-
-const leg=box(
-.25,
-.7,
-.27,
-dark
-);
-
-leg.position.set(
-side*.19,
-.35,
-0
-);
-
-g.add(leg);
-
-const arm=box(
-.22,
-.68,
-.22,
-dark
-);
-
-arm.position.set(
-side*.48,
-1.18,
-0
-);
-
-g.add(arm);
-
-}
-
-return g;
-
-}
-
-function normalizeHeight(
-model,
-height
-){
-
-const b=
-new THREE.Box3()
-.setFromObject(model);
-
-const s=
-b.getSize(
-new THREE.Vector3()
-);
-
-if(
-s.y<=0
-){
-return;
-}
-
-model.scale.setScalar(
-height/s.y
-);
-
-const b2=
-new THREE.Box3()
-.setFromObject(model);
-
-const c=
-b2.getCenter(
-new THREE.Vector3()
-);
-
-model.position.x=-c.x;
-model.position.z=-c.z;
-model.position.y=-b2.min.y;
-
-}
-
-playerModel=fallbackPlayer();
-
-normalizeHeight(
-playerModel,
-1.76
-);
-
-player.add(playerModel);
-
-async function loadGLB(){
-
-if(!GLTFLoader){
-return;
-}
-
-try{
-
-const loader=new GLTFLoader();
-
-const gltf=
-await loader.loadAsync(
-"https://threejs.org/examples/models/gltf/Soldier.glb"
-);
-
-const model=gltf.scene;
-
-model.traverse(
-o=>{
-
-if(o.isMesh){
-
-o.castShadow=true;
-o.receiveShadow=true;
-
-}
-
-}
-);
-
-normalizeHeight(
-model,
-1.76
-);
-
-player.remove(playerModel);
-
-playerModel=model;
-
-player.add(playerModel);
-
-if(
-gltf.animations.length
-){
-
-mixer=
-new THREE.AnimationMixer(
-playerModel
-);
-
-for(
-const clip of gltf.animations
-){
-
-animations[
-clip.name.toLowerCase()
-]=
-mixer.clipAction(clip);
-
-}
-
-playAnim("idle");
-
-}
-
-}catch(e){
-
-console.log(
-"GLB gagal, fallback digunakan"
-);
-
-}
-
-}
-
-loadGLB();
-
-function playAnim(
-name
-){
-
-if(!mixer){
-return;
-}
-
-const keys=
-Object.keys(animations);
-
-let key=
-keys.find(
-x=>x.includes(name)
-);
-
-if(!key){
-return;
-}
-
-const next=
-animations[key];
-
-if(
-next===currentAction
-){
-return;
-}
-
-if(currentAction){
-currentAction.fadeOut(.12);
-}
-
-next.reset();
-next.fadeIn(.12);
-next.play();
-
-currentAction=next;
-
-}
-
-let yaw=0;
-let pitch=-0.18;
-
-const cameraDistance=4.4;
-
-let joyX=0;
-let joyY=0;
-
-let crouched=false;
-let sprint=false;
-
-let verticalVelocity=0;
-let grounded=true;
-
-const gravity=25;
-const jumpPower=6.2;
-
-let hpValue=100;
-let hungerValue=100;
-
-function updateMovement(dt){
-
-let x=joyX;
-let y=joyY;
-
-if(keys.w||keys.arrowup){
-y=-1;
-}
-
-if(keys.s||keys.arrowdown){
-y=1;
-}
-
-if(keys.a||keys.arrowleft){
-x=-1;
-}
-
-if(keys.d||keys.arrowright){
-x=1;
-}
-
-const amount=
-Math.hypot(x,y);
-
-if(amount<.08){
-
-playAnim("idle");
-
-return;
-
-}
-
-x/=amount;
-y/=amount;
-
-let speed=4.1;
-
-if(sprint&&!crouched){
-speed=7.0;
-}
-
-if(crouched){
-speed=2.0;
-}
-
-const forward=
-new THREE.Vector3(
--Math.sin(yaw),
-0,
--Math.cos(yaw)
-);
-
-const right=
-new THREE.Vector3(
-Math.cos(yaw),
-0,
--Math.sin(yaw)
-);
-
-const move=
-new THREE.Vector3();
-
-move.addScaledVector(
-right,
-x
-);
-
-move.addScaledVector(
-forward,
--y
-);
-
-move.normalize();
-
-player.position.addScaledVector(
-move,
-speed*dt
-);
-
-player.rotation.y=
-Math.atan2(
-move.x,
-move.z
-);
-
-if(
-sprint&&!crouched
-){
-playAnim("run");
-}else{
-playAnim("walk");
-}
-
-}
-
-function updateJump(dt){
-
-verticalVelocity-=
-gravity*dt;
-
-player.position.y+=
-verticalVelocity*dt;
-
-if(
-player.position.y<=0
-){
-
-player.position.y=0;
-verticalVelocity=0;
-grounded=true;
-
-}
-
-}
-
-function jump(){
-
-if(
-grounded
-){
-
-verticalVelocity=
-jumpPower;
-
-grounded=false;
-
-}
-
-}
-
-function updateCamera(){
-
-const target=
-player.position.clone();
-
-target.y+=
-crouched
-?.82
-:1.05;
-
-const horizontal=
-Math.cos(pitch)*
-cameraDistance;
-
-const desired=
-new THREE.Vector3(
-target.x+
-Math.sin(yaw)*
-horizontal,
-
-target.y+
-Math.sin(pitch)*
-cameraDistance,
-
-target.z+
-Math.cos(yaw)*
-horizontal
-);
-
-camera.position.lerp(
-desired,
-.16
-);
-
-camera.lookAt(
-target
-);
-
-}
-
-function updateHUD(){
-
-document.getElementById(
-"hp"
-).style.width=
-hpValue+"%";
-
-document.getElementById(
-"hunger"
-).style.width=
-hungerValue+"%";
-
-let text="BERJALAN";
-
-if(crouched){
-text="JONGKOK";
-}
-
-if(sprint&&!crouched){
-text="SPRINT";
-}
-
-if(!grounded){
-text="LOMPAT";
-}
-
-document.getElementById(
-"state"
-).textContent=text;
-
-}
-
-const keys={};
-
-addEventListener(
-"keydown",
-e=>{
-
-keys[
-e.key.toLowerCase()
-]=true;
-
-if(e.key===" "){
-jump();
-}
-
-if(
-e.key.toLowerCase()==="c"
-){
-crouched=!crouched;
-}
-
-if(
-e.key.toLowerCase()==="shift"
-){
-sprint=true;
-}
-
-}
-);
-
-addEventListener(
-"keyup",
-e=>{
-
-keys[
-e.key.toLowerCase()
-]=false;
-
-if(
-e.key.toLowerCase()==="shift"
-){
-sprint=false;
-}
-
-}
-);
-
-const joystick=
-document.getElementById(
-"joystick"
-);
-
-const stick=
-document.getElementById(
-"stick"
-);
-
-let joyPointer=null;
-
-function setJoystick(
-x,
-y
-){
-
-const r=
-joystick.getBoundingClientRect();
-
-const cx=
-r.left+r.width/2;
-
-const cy=
-r.top+r.height/2;
-
-let dx=x-cx;
-let dy=y-cy;
-
-const max=48;
-
-const len=
-Math.hypot(dx,dy);
-
-if(len>max){
-
-dx=dx/len*max;
-dy=dy/len*max;
-
-}
-
-joyX=dx/max;
-joyY=dy/max;
-
-stick.style.transform=
-`translate(${dx}px,${dy}px)`;
-
-}
-
-function resetJoystick(){
-
-joyX=0;
-joyY=0;
-joyPointer=null;
-
-stick.style.transform=
-"translate(0,0)";
-
-}
-
-joystick.addEventListener(
-"pointerdown",
-e=>{
-
-joyPointer=e.pointerId;
-
-joystick.setPointerCapture(
-e.pointerId
-);
-
-setJoystick(
-e.clientX,
-e.clientY
-);
-
-}
-);
-
-joystick.addEventListener(
-"pointermove",
-e=>{
-
-if(
-e.pointerId===joyPointer
-){
-
-setJoystick(
-e.clientX,
-e.clientY
-);
-
-}
-
-}
-);
-
-joystick.addEventListener(
-"pointerup",
-resetJoystick
-);
-
-joystick.addEventListener(
-"pointercancel",
-resetJoystick
-);
-
-let cameraTouch=false;
-let previousX=0;
-let previousY=0;
-
-renderer.domElement.addEventListener(
-"pointerdown",
-e=>{
-
-if(
-e.clientX<
-innerWidth*.38
-){
-return;
-}
-
-cameraTouch=true;
-
-previousX=e.clientX;
-previousY=e.clientY;
-
-}
-);
-
-renderer.domElement.addEventListener(
-"pointermove",
-e=>{
-
-if(!cameraTouch){
-return;
-}
-
-const dx=
-e.clientX-previousX;
-
-const dy=
-e.clientY-previousY;
-
-previousX=e.clientX;
-previousY=e.clientY;
-
-yaw-=dx*.006;
-pitch-=dy*.0045;
-
-pitch=
-THREE.MathUtils.clamp(
-pitch,
--0.85,
-0.55
-);
-
-}
-);
-
-renderer.domElement.addEventListener(
-"pointerup",
-()=>{
-cameraTouch=false;
-}
-);
-
-renderer.domElement.addEventListener(
-"pointercancel",
-()=>{
-cameraTouch=false;
-}
-);
-
-document.getElementById(
-"jump"
-).addEventListener(
-"pointerdown",
-jump
-);
-
-document.getElementById(
-"crouch"
-).addEventListener(
-"pointerdown",
-()=>{
-crouched=!crouched;
-}
-);
-
-const sprintButton=
-document.getElementById(
-"sprint"
-);
-
-sprintButton.addEventListener(
-"pointerdown",
-()=>{
-sprint=true;
-}
-);
-
-sprintButton.addEventListener(
-"pointerup",
-()=>{
-sprint=false;
-}
-);
-
-sprintButton.addEventListener(
-"pointercancel",
-()=>{
-sprint=false;
-}
-);
-
-document.getElementById(
-"fullscreen"
-).addEventListener(
-"click",
-async()=>{
-
-if(
-!document.fullscreenElement
-){
-
-await document.documentElement
-.requestFullscreen()
-.catch(()=>{});
-
-}else{
-
-await document.exitFullscreen()
-.catch(()=>{});
-
-}
-
-}
-);
-
-function loop(){
-
-requestAnimationFrame(loop);
-
-const dt=
-Math.min(
-clock.getDelta(),
-.033
-);
-
-if(mixer){
-mixer.update(dt);
-}
-
-updateMovement(dt);
-updateJump(dt);
-updateCamera();
-updateHUD();
-
-renderer.render(
-scene,
-camera
-);
-
-}
-
-document.getElementById(
-"loading"
-).style.display="none";
-
-loop();
-
-addEventListener(
-"resize",
-()=>{
-
-camera.aspect=
-innerWidth/innerHeight;
-
-camera.updateProjectionMatrix();
-
-renderer.setSize(
-innerWidth,
-innerHeight
-);
-
-}
-);
-
+import {startGame} from "./src/main.js";
+startGame();
 </script>
 
 </body>
