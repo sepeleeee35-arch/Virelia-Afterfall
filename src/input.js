@@ -2,39 +2,25 @@ export const input = {
   x: 0,
   y: 0,
   run: false,
-  crouch: false
+  crouch: false,
+  cameraYaw: 0
 };
 
 export function setupInput() {
-  const joystick =
-    document.getElementById("joystick");
-
-  const stick =
-    document.getElementById("stick");
+  const joystick = document.getElementById("joystick");
+  const stick = document.getElementById("stick");
 
   let active = false;
 
   function move(e) {
-    const rect =
-      joystick.getBoundingClientRect();
+    const rect = joystick.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
 
-    const centerX =
-      rect.left + rect.width / 2;
-
-    const centerY =
-      rect.top + rect.height / 2;
-
-    let dx =
-      e.clientX - centerX;
-
-    let dy =
-      e.clientY - centerY;
-
-    const max =
-      rect.width * 0.30;
-
-    const length =
-      Math.hypot(dx, dy);
+    let dx = e.clientX - centerX;
+    let dy = e.clientY - centerY;
+    const max = rect.width * 0.30;
+    const length = Math.hypot(dx, dy);
 
     if (length > max) {
       dx = dx / length * max;
@@ -43,88 +29,74 @@ export function setupInput() {
 
     input.x = dx / max;
     input.y = dy / max;
-
-    stick.style.transform =
-      `translate(${dx}px, ${dy}px)`;
+    stick.style.transform = `translate(${dx}px, ${dy}px)`;
   }
 
   function reset() {
     active = false;
-
     input.x = 0;
     input.y = 0;
-
-    stick.style.transform =
-      "translate(0,0)";
+    stick.style.transform = "translate(0,0)";
   }
 
-  joystick.addEventListener(
-    "pointerdown",
-    e => {
-      active = true;
+  joystick.addEventListener("pointerdown", e => {
+    active = true;
+    joystick.setPointerCapture(e.pointerId);
+    move(e);
+  });
 
-      joystick.setPointerCapture(
-        e.pointerId
-      );
+  joystick.addEventListener("pointermove", e => {
+    if (active) move(e);
+  });
 
-      move(e);
-    }
-  );
+  joystick.addEventListener("pointerup", reset);
+  joystick.addEventListener("pointercancel", reset);
 
-  joystick.addEventListener(
-    "pointermove",
-    e => {
-      if (active) move(e);
-    }
-  );
+  const lookPad = document.getElementById("lookPad");
 
-  joystick.addEventListener(
-    "pointerup",
-    reset
-  );
+  if (lookPad) {
+    let lookActive = false;
+    let lastX = 0;
 
-  joystick.addEventListener(
-    "pointercancel",
-    reset
-  );
+    lookPad.addEventListener("pointerdown", e => {
+      lookActive = true;
+      lastX = e.clientX;
+      lookPad.setPointerCapture(e.pointerId);
+    });
 
-  const run =
-    document.getElementById("runBtn");
+    lookPad.addEventListener("pointermove", e => {
+      if (!lookActive) return;
+      const dx = e.clientX - lastX;
+      lastX = e.clientX;
+      input.cameraYaw += dx * 0.009;
+    });
 
-  run.addEventListener(
-    "pointerdown",
-    () => {
-      input.run = true;
-    }
-  );
+    const stopLook = () => {
+      lookActive = false;
+    };
 
-  run.addEventListener(
-    "pointerup",
-    () => {
-      input.run = false;
-    }
-  );
+    lookPad.addEventListener("pointerup", stopLook);
+    lookPad.addEventListener("pointercancel", stopLook);
+  }
 
-  run.addEventListener(
-    "pointercancel",
-    () => {
-      input.run = false;
-    }
-  );
+  const run = document.getElementById("runBtn");
 
-  const crouch =
-    document.getElementById("crouchBtn");
+  run.addEventListener("pointerdown", () => {
+    input.run = true;
+  });
 
-  crouch.addEventListener(
-    "click",
-    () => {
-      input.crouch =
-        !input.crouch;
+  run.addEventListener("pointerup", () => {
+    input.run = false;
+  });
 
-      crouch.textContent =
-        input.crouch
-          ? "STAND"
-          : "CROUCH";
-    }
-  );
+  run.addEventListener("pointercancel", () => {
+    input.run = false;
+  });
+
+  const crouch = document.getElementById("crouchBtn");
+
+  crouch.addEventListener("click", () => {
+    input.crouch = !input.crouch;
+    crouch.textContent = input.crouch ? "STAND" : "CROUCH";
+  });
 }
