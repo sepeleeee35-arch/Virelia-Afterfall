@@ -1,5 +1,4 @@
 import {
-  input,
   setupInput,
   consumeAction,
   consumeBag
@@ -37,43 +36,67 @@ import {
   showMessage
 } from "./ui.js";
 
+
 const canvas =
-  document.getElementById(
-    "game"
-  );
+  document.getElementById("game");
 
 const ctx =
   canvas.getContext("2d");
 
+
 const mini =
-  document.getElementById(
-    "mini"
-  );
+  document.getElementById("mini");
 
 const mctx =
   mini.getContext("2d");
 
-let W=innerWidth;
-let H=innerHeight;
 
-const camera={
-  x:0,
-  y:0
+let W = 1;
+let H = 1;
+
+let started = false;
+
+let lastTime = 0;
+
+
+/*
+  KAMERA
+
+  Kamera tidak lagi bebas.
+  Kamera selalu mengikuti player.
+*/
+
+const camera = {
+
+  x: 0,
+  y: 0,
+
+  smooth: 0.12
 };
 
-let started=false;
-let lastTime=0;
+
+/* =========================================
+   START
+========================================= */
 
 export function startGame(){
 
   if(started)
     return;
 
-  started=true;
+  started = true;
 
-  resize();
+  resizeCanvas();
 
   createWorld();
+
+  /*
+    Pastikan player berada di area
+    yang valid.
+  */
+
+  player.x = 6000;
+  player.y = 5200;
 
   createBots(world);
 
@@ -81,40 +104,124 @@ export function startGame(){
 
   setupInput();
 
-  document.getElementById(
-    "start"
-  ).style.display="none";
+  document
+    .getElementById("start")
+    .style.display = "none";
 
-  camera.x=player.x;
-  camera.y=player.y;
+  camera.x = player.x;
+  camera.y = player.y;
 
-  lastTime=
+  lastTime =
     performance.now();
 
   requestAnimationFrame(loop);
 }
 
-function resize(){
 
-  W=innerWidth;
-  H=innerHeight;
+/* =========================================
+   RESIZE
+========================================= */
 
-  canvas.width=W;
-  canvas.height=H;
+function resizeCanvas(){
+
+  const ratio =
+    Math.min(
+      window.devicePixelRatio || 1,
+      2
+    );
+
+  W = Math.max(
+    1,
+    window.innerWidth
+  );
+
+  H = Math.max(
+    1,
+    window.innerHeight
+  );
+
+  canvas.width =
+    Math.floor(W * ratio);
+
+  canvas.height =
+    Math.floor(H * ratio);
+
+  canvas.style.width =
+    W + "px";
+
+  canvas.style.height =
+    H + "px";
+
+  /*
+    Semua drawing menggunakan
+    ukuran CSS pixel.
+  */
+
+  ctx.setTransform(
+    ratio,
+    0,
+    0,
+    ratio,
+    0,
+    0
+  );
+
+
+  const mw =
+    Math.max(
+      1,
+      mini.clientWidth
+    );
+
+  const mh =
+    Math.max(
+      1,
+      mini.clientHeight
+    );
 
   mini.width =
-    mini.clientWidth *
-    devicePixelRatio;
+    Math.floor(mw * ratio);
 
   mini.height =
-    mini.clientHeight *
-    devicePixelRatio;
+    Math.floor(mh * ratio);
+
+  mctx.setTransform(
+    ratio,
+    0,
+    0,
+    ratio,
+    0,
+    0
+  );
 }
 
-addEventListener(
+
+window.addEventListener(
   "resize",
-  resize
+  () => {
+
+    resizeCanvas();
+
+  }
 );
+
+
+window.addEventListener(
+  "orientationchange",
+  () => {
+
+    setTimeout(
+      resizeCanvas,
+      150
+    );
+
+  }
+);
+
+
+/* =========================================
+   UPDATE
+========================================= */
 
 function update(dt){
 
@@ -130,6 +237,7 @@ function update(dt){
 
   updateZone(dt);
 
+
   if(
     consumeAction()
   ){
@@ -139,6 +247,7 @@ function update(dt){
 
     showMessage(result);
   }
+
 
   if(
     consumeBag()
@@ -155,41 +264,109 @@ function update(dt){
       : "block";
   }
 
+
+  /*
+    CAMERA FOLLOW
+
+    Posisi kamera ditarik ke player.
+  */
+
   camera.x +=
     (
-      player.x-camera.x
-    )*.12;
+      player.x -
+      camera.x
+    ) *
+    camera.smooth;
 
   camera.y +=
     (
-      player.y-camera.y
-    )*.12;
+      player.y -
+      camera.y
+    ) *
+    camera.smooth;
+
+
+  /*
+    Jangan biarkan kamera keluar
+    terlalu jauh dari map.
+  */
+
+  const halfW =
+    W / 2;
+
+  const halfH =
+    H / 2;
+
+
+  camera.x =
+    Math.max(
+      halfW,
+      Math.min(
+        world.width-halfW,
+        camera.x
+      )
+    );
+
+
+  camera.y =
+    Math.max(
+      halfH,
+      Math.min(
+        world.height-halfH,
+        camera.y
+      )
+    );
+
 
   updateUI(dt);
 }
 
+
+/* =========================================
+   LOOP
+========================================= */
+
 function loop(time){
 
-  const dt =
-    Math.min(
-      .033,
-      (time-lastTime)/1000
+  if(!started)
+    return;
+
+
+  let dt =
+    (time-lastTime) /
+    1000;
+
+  lastTime = time;
+
+
+  /*
+    Anti lag besar.
+  */
+
+  dt =
+    Math.max(
+      0,
+      Math.min(
+        dt,
+        0.033
+      )
     );
 
-  lastTime=time;
 
   update(dt);
 
   render();
+
 
   requestAnimationFrame(
     loop
   );
 }
 
-/* =========================================================
-   DRAW
-   ========================================================= */
+
+/* =========================================
+   SCREEN POSITION
+========================================= */
 
 function screenPosition(
   x,
@@ -199,16 +376,26 @@ function screenPosition(
   return {
 
     x:
-      W/2+
+      W/2 +
       (x-camera.x),
 
     y:
-      H/2+
+      H/2 +
       (y-camera.y)
+
   };
 }
 
+
+/* =========================================
+   RENDER
+========================================= */
+
 function render(){
+
+  /*
+    Bersihkan frame
+  */
 
   ctx.clearRect(
     0,
@@ -217,7 +404,13 @@ function render(){
     H
   );
 
-  ctx.fillStyle="#728b5d";
+
+  /*
+    BASE TERRAIN
+  */
+
+  ctx.fillStyle =
+    "#728b5d";
 
   ctx.fillRect(
     0,
@@ -226,17 +419,45 @@ function render(){
     H
   );
 
+
+  /*
+    WORLD
+  */
+
   drawRoads();
+
   drawBuildings();
+
   drawTrees();
+
   drawVehicles();
+
   drawLoot();
+
   drawBots();
+
   drawZone();
+
+
+  /*
+    PLAYER TERAKHIR
+    supaya selalu berada di atas.
+  */
+
   drawPlayer();
+
+
+  /*
+    MINIMAP
+  */
 
   drawMiniMap();
 }
+
+
+/* =========================================
+   ROADS
+========================================= */
 
 function drawRoads(){
 
@@ -250,7 +471,10 @@ function drawRoads(){
         r.y
       );
 
-    ctx.fillStyle="#4e5552";
+
+    ctx.fillStyle =
+      "#505754";
+
 
     ctx.fillRect(
       p.x,
@@ -259,15 +483,23 @@ function drawRoads(){
       r.h
     );
 
-    ctx.strokeStyle="#d5c96c";
-    ctx.lineWidth=3;
+
+    /*
+      Road marking
+    */
+
+    ctx.strokeStyle =
+      "#d7cc70";
+
+    ctx.lineWidth = 3;
 
     ctx.setLineDash([
-      22,
-      18
+      24,
+      20
     ]);
 
-    if(r.w>r.h){
+
+    if(r.w >= r.h){
 
       ctx.beginPath();
 
@@ -300,9 +532,15 @@ function drawRoads(){
       ctx.stroke();
     }
 
+
     ctx.setLineDash([]);
   }
 }
+
+
+/* =========================================
+   BUILDINGS
+========================================= */
 
 function drawBuildings(){
 
@@ -316,8 +554,28 @@ function drawBuildings(){
         b.y
       );
 
-    ctx.fillStyle=
-      "rgba(0,0,0,.2)";
+
+    /*
+      Culling
+      supaya HP mobile tidak menggambar
+      seluruh map.
+    */
+
+    if(
+      p.x > W+500 ||
+      p.y > H+500 ||
+      p.x+b.w < -500 ||
+      p.y+b.h < -500
+    )
+      continue;
+
+
+    /*
+      Shadow
+    */
+
+    ctx.fillStyle =
+      "rgba(0,0,0,.20)";
 
     ctx.fillRect(
       p.x+8,
@@ -326,7 +584,13 @@ function drawBuildings(){
       b.h
     );
 
-    ctx.fillStyle="#a49b87";
+
+    /*
+      Building
+    */
+
+    ctx.fillStyle =
+      "#a69c87";
 
     ctx.fillRect(
       p.x,
@@ -335,32 +599,54 @@ function drawBuildings(){
       b.h
     );
 
-    ctx.fillStyle="#55524c";
+
+    /*
+      Roof
+    */
+
+    ctx.fillStyle =
+      "#55514b";
 
     ctx.fillRect(
       p.x,
       p.y,
       b.w,
-      35
+      34
     );
 
-    ctx.fillStyle="#29414a";
+
+    /*
+      Windows
+    */
+
+    ctx.fillStyle =
+      "#29424a";
+
 
     for(
-      let x=p.x+40;
-      x<p.x+b.w-20;
-      x+=75
+      let x =
+        p.x+38;
+
+      x <
+        p.x+b.w-20;
+
+      x += 72
     ){
 
       ctx.fillRect(
         x,
-        p.y+60,
+        p.y+62,
         18,
         15
       );
     }
   }
 }
+
+
+/* =========================================
+   TREES
+========================================= */
 
 function drawTrees(){
 
@@ -374,15 +660,22 @@ function drawTrees(){
         t.y
       );
 
+
     if(
-      p.x<-60 ||
-      p.x>W+60 ||
-      p.y<-60 ||
-      p.y>H+60
+      p.x < -60 ||
+      p.x > W+60 ||
+      p.y < -60 ||
+      p.y > H+60
     )
       continue;
 
-    ctx.fillStyle="#5d4936";
+
+    /*
+      trunk
+    */
+
+    ctx.fillStyle =
+      "#5d4936";
 
     ctx.fillRect(
       p.x-4,
@@ -391,7 +684,13 @@ function drawTrees(){
       20
     );
 
-    ctx.fillStyle="#3f6942";
+
+    /*
+      crown
+    */
+
+    ctx.fillStyle =
+      "#416b44";
 
     ctx.beginPath();
 
@@ -407,6 +706,11 @@ function drawTrees(){
   }
 }
 
+
+/* =========================================
+   VEHICLES
+========================================= */
+
 function drawVehicles(){
 
   for(
@@ -419,6 +723,16 @@ function drawVehicles(){
         v.y
       );
 
+
+    if(
+      p.x < -80 ||
+      p.x > W+80 ||
+      p.y < -80 ||
+      p.y > H+80
+    )
+      continue;
+
+
     ctx.save();
 
     ctx.translate(
@@ -430,7 +744,9 @@ function drawVehicles(){
       v.angle
     );
 
-    ctx.fillStyle="#293438";
+
+    ctx.fillStyle =
+      "#293538";
 
     ctx.fillRect(
       -25,
@@ -439,7 +755,9 @@ function drawVehicles(){
       26
     );
 
-    ctx.fillStyle="#667777";
+
+    ctx.fillStyle =
+      "#667778";
 
     ctx.fillRect(
       -15,
@@ -448,9 +766,15 @@ function drawVehicles(){
       18
     );
 
+
     ctx.restore();
   }
 }
+
+
+/* =========================================
+   LOOT
+========================================= */
 
 function drawLoot(){
 
@@ -461,45 +785,65 @@ function drawLoot(){
     if(item.taken)
       continue;
 
+
     const p =
       screenPosition(
         item.x,
         item.y
       );
 
-    let color="#ddd";
 
     if(
-      item.type==="helmet"
+      p.x < -30 ||
+      p.x > W+30 ||
+      p.y < -30 ||
+      p.y > H+30
     )
-      color="#d3ad50";
+      continue;
+
+
+    let color =
+      "#ddd";
+
 
     if(
-      item.type==="vest"
+      item.type === "helmet"
+    )
+      color="#d4ad51";
+
+
+    if(
+      item.type === "vest"
     )
       color="#54a079";
 
+
     if(
-      item.type==="backpack"
+      item.type === "backpack"
     )
       color="#8069ae";
 
+
     if(
-      item.type==="shoes"
+      item.type === "shoes"
     )
       color="#bb735d";
 
+
     if(
-      item.type==="food"
+      item.type === "food"
     )
       color="#d4c15d";
 
+
     if(
-      item.type==="medkit"
+      item.type === "medkit"
     )
       color="#d86c6c";
 
-    ctx.fillStyle=color;
+
+    ctx.fillStyle =
+      color;
 
     ctx.fillRect(
       p.x-7,
@@ -510,6 +854,11 @@ function drawLoot(){
   }
 }
 
+
+/* =========================================
+   BOTS
+========================================= */
+
 function drawBots(){
 
   for(
@@ -519,15 +868,28 @@ function drawBots(){
     if(!bot.alive)
       continue;
 
+
     const p =
       screenPosition(
         bot.x,
         bot.y
       );
 
-    /* shadow */
 
-    ctx.fillStyle=
+    if(
+      p.x < -70 ||
+      p.x > W+70 ||
+      p.y < -80 ||
+      p.y > H+80
+    )
+      continue;
+
+
+    /*
+      shadow
+    */
+
+    ctx.fillStyle =
       "rgba(0,0,0,.25)";
 
     ctx.beginPath();
@@ -544,9 +906,13 @@ function drawBots(){
 
     ctx.fill();
 
-    /* body */
 
-    ctx.fillStyle="#344b55";
+    /*
+      body
+    */
+
+    ctx.fillStyle =
+      "#344b55";
 
     ctx.fillRect(
       p.x-11,
@@ -555,9 +921,13 @@ function drawBots(){
       32
     );
 
-    /* head */
 
-    ctx.fillStyle="#c08d72";
+    /*
+      head
+    */
+
+    ctx.fillStyle =
+      "#c08d72";
 
     ctx.beginPath();
 
@@ -571,11 +941,15 @@ function drawBots(){
 
     ctx.fill();
 
-    /* legs */
 
-    ctx.strokeStyle="#252d31";
+    /*
+      legs
+    */
 
-    ctx.lineWidth=7;
+    ctx.strokeStyle =
+      "#252d31";
+
+    ctx.lineWidth = 7;
 
     ctx.beginPath();
 
@@ -601,9 +975,13 @@ function drawBots(){
 
     ctx.stroke();
 
-    /* HP */
 
-    ctx.fillStyle="#222";
+    /*
+      HP
+    */
+
+    ctx.fillStyle =
+      "#222";
 
     ctx.fillRect(
       p.x-18,
@@ -612,25 +990,50 @@ function drawBots(){
       4
     );
 
-    ctx.fillStyle="#5fd476";
+
+    ctx.fillStyle =
+      "#5fd476";
 
     ctx.fillRect(
       p.x-18,
       p.y-57,
-      36*(bot.hp/100),
+      36 *
+      Math.max(
+        0,
+        bot.hp/100
+      ),
       4
     );
   }
 }
 
+
+/* =========================================
+   PLAYER
+========================================= */
+
 function drawPlayer(){
 
-  const x=W/2;
-  const y=H/2;
+  /*
+    PLAYER SELALU DI TENGAH.
 
-  /* shadow */
+    Ini penting:
+    kamera bergerak mengikuti player,
+    bukan player yang "lari" dari layar.
+  */
 
-  ctx.fillStyle=
+  const x =
+    W/2;
+
+  const y =
+    H/2;
+
+
+  /*
+    shadow
+  */
+
+  ctx.fillStyle =
     "rgba(0,0,0,.32)";
 
   ctx.beginPath();
@@ -647,13 +1050,17 @@ function drawPlayer(){
 
   ctx.fill();
 
-  /* backpack */
+
+  /*
+    backpack
+  */
 
   if(
     player.equipment.backpack
   ){
 
-    ctx.fillStyle="#735d9a";
+    ctx.fillStyle =
+      "#735d9a";
 
     ctx.fillRect(
       x-21,
@@ -663,9 +1070,12 @@ function drawPlayer(){
     );
   }
 
-  /* body */
 
-  ctx.fillStyle=
+  /*
+    body
+  */
+
+  ctx.fillStyle =
     player.equipment.vest
     ? "#477e6b"
     : "#394c55";
@@ -677,9 +1087,13 @@ function drawPlayer(){
     42
   );
 
-  /* head */
 
-  ctx.fillStyle="#bd896e";
+  /*
+    head
+  */
+
+  ctx.fillStyle =
+    "#bd896e";
 
   ctx.beginPath();
 
@@ -693,13 +1107,17 @@ function drawPlayer(){
 
   ctx.fill();
 
-  /* helmet */
+
+  /*
+    helmet
+  */
 
   if(
     player.equipment.helmet
   ){
 
-    ctx.fillStyle="#343f43";
+    ctx.fillStyle =
+      "#343f43";
 
     ctx.beginPath();
 
@@ -714,11 +1132,15 @@ function drawPlayer(){
     ctx.fill();
   }
 
-  /* legs */
 
-  ctx.strokeStyle="#262e32";
+  /*
+    legs
+  */
 
-  ctx.lineWidth=9;
+  ctx.strokeStyle =
+    "#262e32";
+
+  ctx.lineWidth = 9;
 
   ctx.beginPath();
 
@@ -745,6 +1167,11 @@ function drawPlayer(){
   ctx.stroke();
 }
 
+
+/* =========================================
+   SAFE ZONE
+========================================= */
+
 function drawZone(){
 
   const p =
@@ -753,10 +1180,16 @@ function drawZone(){
       zone.y
     );
 
-  ctx.strokeStyle=
-    "rgba(210,230,105,.75)";
 
-  ctx.lineWidth=4;
+  /*
+    Jangan menggambar circle
+    kalau terlalu jauh dari layar.
+  */
+
+  ctx.strokeStyle =
+    "rgba(210,230,105,.72)";
+
+  ctx.lineWidth = 4;
 
   ctx.beginPath();
 
@@ -771,10 +1204,19 @@ function drawZone(){
   ctx.stroke();
 }
 
+
+/* =========================================
+   MINIMAP
+========================================= */
+
 function drawMiniMap(){
 
-  const w=mini.width;
-  const h=mini.height;
+  const w =
+    mini.clientWidth;
+
+  const h =
+    mini.clientHeight;
+
 
   mctx.clearRect(
     0,
@@ -783,7 +1225,13 @@ function drawMiniMap(){
     h
   );
 
-  mctx.fillStyle="#71865c";
+
+  /*
+    background
+  */
+
+  mctx.fillStyle =
+    "#71865c";
 
   mctx.fillRect(
     0,
@@ -792,15 +1240,21 @@ function drawMiniMap(){
     h
   );
 
+
   const sx =
     w/world.width;
 
   const sy =
     h/world.height;
 
-  /* roads */
 
-  mctx.strokeStyle="#4d5551";
+  /*
+    roads
+  */
+
+  mctx.strokeStyle =
+    "#4d5551";
+
 
   for(
     const r of world.roads
@@ -809,12 +1263,19 @@ function drawMiniMap(){
     mctx.lineWidth =
       Math.max(
         2,
-        r.w*sx
+        Math.min(
+          8,
+          r.w*sx
+        )
       );
+
 
     mctx.beginPath();
 
-    if(r.w>r.h){
+
+    if(
+      r.w >= r.h
+    ){
 
       mctx.moveTo(
         r.x*sx,
@@ -839,12 +1300,18 @@ function drawMiniMap(){
       );
     }
 
+
     mctx.stroke();
   }
 
-  /* buildings */
 
-  mctx.fillStyle="#777";
+  /*
+    buildings
+  */
+
+  mctx.fillStyle =
+    "#777";
+
 
   for(
     const b of world.buildings
@@ -864,10 +1331,15 @@ function drawMiniMap(){
     );
   }
 
-  /* zone */
 
-  mctx.strokeStyle="#d4df73";
-  mctx.lineWidth=3;
+  /*
+    safe zone
+  */
+
+  mctx.strokeStyle =
+    "#d4df73";
+
+  mctx.lineWidth = 2;
 
   mctx.beginPath();
 
@@ -881,7 +1353,10 @@ function drawMiniMap(){
 
   mctx.stroke();
 
-  /* bots */
+
+  /*
+    bots
+  */
 
   for(
     const bot of bots
@@ -890,7 +1365,9 @@ function drawMiniMap(){
     if(!bot.alive)
       continue;
 
-    mctx.fillStyle="#d36565";
+
+    mctx.fillStyle =
+      "#d36565";
 
     mctx.fillRect(
       bot.x*sx-2,
@@ -900,16 +1377,20 @@ function drawMiniMap(){
     );
   }
 
-  /* player */
 
-  mctx.fillStyle="#fff";
+  /*
+    player
+  */
+
+  mctx.fillStyle =
+    "#ffffff";
 
   mctx.beginPath();
 
   mctx.arc(
     player.x*sx,
     player.y*sy,
-    5,
+    4,
     0,
     Math.PI*2
   );
