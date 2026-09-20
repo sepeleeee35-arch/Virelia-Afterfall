@@ -164,15 +164,16 @@ function updateCamera(dt) {
   const cp = Math.cos(pitch);
   const sp = Math.sin(pitch);
 
+  const distance = input.aim ? 150 : CAMERA_DISTANCE;
   const backX = -Math.sin(yaw) * cp;
   const backZ = Math.cos(yaw) * cp;
 
   cameraRight.set(Math.cos(yaw), 0, Math.sin(yaw));
 
   cameraDesired.set(
-    player.x + backX * CAMERA_DISTANCE + cameraRight.x * CAMERA_SHOULDER,
+    player.x + backX * distance + cameraRight.x * CAMERA_SHOULDER,
     52 + CAMERA_HEIGHT + sp * 155,
-    player.y + backZ * CAMERA_DISTANCE + cameraRight.z * CAMERA_SHOULDER
+    player.y + backZ * distance + cameraRight.z * CAMERA_SHOULDER
   );
 
   const smoothing = 1 - Math.exp(-CAMERA_SMOOTH * dt);
@@ -183,9 +184,59 @@ function updateCamera(dt) {
     cameraTarget.y + 18 + sp * 34,
     cameraTarget.z
   );
+
+  if (weaponGroup) {
+    weaponGroup.position.set(player.x, 0, player.y);
+    weaponGroup.rotation.y = yaw;
+    weaponGroup.visible = !input.crouch;
+  }
 }
 
-function fireWeapon(){\n  if(reloadTimer>0 || fireCooldown>0 || ammo<=0) return;\n  ammo--;\n  fireCooldown=0.105;\n\n  aimDirection.set(\n    Math.sin(yaw),\n    Math.sin(pitch),\n    -Math.cos(yaw)\n  ).normalize();\n\n  raycaster.set(camera.position, aimDirection);\n  raycaster.far=650;\n\n  let best=null;\n  let bestDist=Infinity;\n  for(const bot of bots){\n    if(bot.hp<=0 || bot.dead || !bot.mesh.visible) continue;\n    const dx=bot.x-camera.position.x;\n    const dy=42-camera.position.y;\n    const dz=bot.z-camera.position.z;\n    const t=dx*aimDirection.x+dy*aimDirection.y+dz*aimDirection.z;\n    if(t<0 || t>650) continue;\n    const px=camera.position.x+aimDirection.x*t;\n    const py=camera.position.y+aimDirection.y*t;\n    const pz=camera.position.z+aimDirection.z*t;\n    const miss=Math.hypot(bot.x-px,42-py,bot.z-pz);\n    if(miss<34 && t<bestDist){best=bot;bestDist=t;}\n  }\n  if(best){\n    damageBot(best,34);\n    showCombatMessage(best.hp<=0 ? "ELIMINATED" : "HIT  -34");\n  }\n}\n\nfunction showCombatMessage(text){\n  const msg=document.getElementById("message");\n  if(!msg)return;\n  msg.textContent=text;\n  msg.style.opacity="1";\n  clearTimeout(showCombatMessage.timer);\n  showCombatMessage.timer=setTimeout(()=>msg.style.opacity="0",500);\n}\n\nfunction updateHud() {
+function fireWeapon(){
+  if(reloadTimer>0 || fireCooldown>0 || ammo<=0) return;
+  ammo--;
+  fireCooldown=0.105;
+
+  aimDirection.set(
+    Math.sin(yaw),
+    Math.sin(pitch),
+    -Math.cos(yaw)
+  ).normalize();
+
+  raycaster.set(camera.position, aimDirection);
+  raycaster.far=650;
+
+  let best=null;
+  let bestDist=Infinity;
+  for(const bot of bots){
+    if(bot.hp<=0 || bot.dead || !bot.mesh.visible) continue;
+    const dx=bot.x-camera.position.x;
+    const dy=42-camera.position.y;
+    const dz=bot.z-camera.position.z;
+    const t=dx*aimDirection.x+dy*aimDirection.y+dz*aimDirection.z;
+    if(t<0 || t>650) continue;
+    const px=camera.position.x+aimDirection.x*t;
+    const py=camera.position.y+aimDirection.y*t;
+    const pz=camera.position.z+aimDirection.z*t;
+    const miss=Math.hypot(bot.x-px,42-py,bot.z-pz);
+    if(miss<34 && t<bestDist){best=bot;bestDist=t;}
+  }
+  if(best){
+    damageBot(best,34);
+    showCombatMessage(best.hp<=0 ? "ELIMINATED" : "HIT  -34");
+  }
+}
+
+function showCombatMessage(text){
+  const msg=document.getElementById("message");
+  if(!msg)return;
+  msg.textContent=text;
+  msg.style.opacity="1";
+  clearTimeout(showCombatMessage.timer);
+  showCombatMessage.timer=setTimeout(()=>msg.style.opacity="0",500);
+}
+
+function updateHud() {
   const hp = document.getElementById("hpBar");
   const st = document.getElementById("staminaBar");
   const alive = document.getElementById("alive");
@@ -199,7 +250,13 @@ function fireWeapon(){\n  if(reloadTimer>0 || fireCooldown>0 || ammo<=0) return;
 
   const zone = getZoneState(player.x, player.y);
   if (phase) phase.textContent = zone.outside ? "MOVE TO ZONE" : "SURVIVAL";
-  if (zoneTimer) zoneTimer.textContent = "05:00";\n\n  const ammoEl=document.getElementById("ammo");\n  if(ammoEl) ammoEl.textContent=reloadTimer>0 ? "RELOADING" : ammo+" / 30";\n\n  const aimEl=document.getElementById("aimBtn");\n  if(aimEl) aimEl.textContent=input.aim ? "HIPFIRE" : "AIM";
+  if (zoneTimer) zoneTimer.textContent = "05:00";
+
+  const ammoEl=document.getElementById("ammo");
+  if(ammoEl) ammoEl.textContent=reloadTimer>0 ? "RELOADING" : ammo+" / 30";
+
+  const aimEl=document.getElementById("aimBtn");
+  if(aimEl) aimEl.textContent=input.aim ? "HIPFIRE" : "AIM";
 
   const nearby = getNearbyInteraction(player.x, player.y);
   if (msg) {
@@ -219,7 +276,13 @@ function update(dt) {
   yaw = input.cameraYaw;
   pitch = input.cameraPitch;
 
-  if(fireCooldown>0) fireCooldown=Math.max(0,fireCooldown-dt);\n  if(reloadTimer>0){\n    reloadTimer=Math.max(0,reloadTimer-dt);\n    if(reloadTimer===0) ammo=30;\n  }\n  if(input.fire) fireWeapon();\n  updatePlayer3D(dt);
+  if(fireCooldown>0) fireCooldown=Math.max(0,fireCooldown-dt);
+  if(reloadTimer>0){
+    reloadTimer=Math.max(0,reloadTimer-dt);
+    if(reloadTimer===0) ammo=30;
+  }
+  if(input.fire) fireWeapon();
+  updatePlayer3D(dt);
   updateBots(dt);
 
   if (playerGroup) {
@@ -244,7 +307,23 @@ function setupUi() {
     };
   }
 
-  const fire=document.getElementById("fireBtn");\n  if(fire){\n    const start=()=>{input.fire=true; fireWeapon();};\n    const stop=()=>{input.fire=false;};\n    fire.addEventListener("pointerdown",start);\n    fire.addEventListener("pointerup",stop);\n    fire.addEventListener("pointercancel",stop);\n    fire.addEventListener("pointerleave",stop);\n  }\n\n  const aim=document.getElementById("aimBtn");\n  if(aim) aim.onclick=()=>{input.aim=!input.aim;};\n\n  const reload=document.getElementById("reloadBtn");\n  if(reload) reload.onclick=()=>{if(reloadTimer<=0 && ammo<30) reloadTimer=1.15;};\n\n  const action = document.getElementById("actionBtn");
+  const fire=document.getElementById("fireBtn");
+  if(fire){
+    const start=()=>{input.fire=true; fireWeapon();};
+    const stop=()=>{input.fire=false;};
+    fire.addEventListener("pointerdown",start);
+    fire.addEventListener("pointerup",stop);
+    fire.addEventListener("pointercancel",stop);
+    fire.addEventListener("pointerleave",stop);
+  }
+
+  const aim=document.getElementById("aimBtn");
+  if(aim) aim.onclick=()=>{input.aim=!input.aim;};
+
+  const reload=document.getElementById("reloadBtn");
+  if(reload) reload.onclick=()=>{if(reloadTimer<=0 && ammo<30) reloadTimer=1.15;};
+
+  const action = document.getElementById("actionBtn");
 
   if (action) {
     action.onclick = () => {
@@ -286,7 +365,11 @@ export function startGame() {
   input.cameraPitch = 0.14;
   input.x = 0;
   input.y = 0;
-  input.crouch = false;\n  input.fire = false;\n  input.aim = false;\n  ammo = 30;\n  reloadTimer = 0;
+  input.crouch = false;
+  input.fire = false;
+  input.aim = false;
+  ammo = 30;
+  reloadTimer = 0;
 
   running = true;
 
