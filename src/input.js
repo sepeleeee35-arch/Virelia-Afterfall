@@ -3,106 +3,145 @@ export const input = {
   y: 0,
   run: false,
   crouch: false,
-  cameraYaw: 0,
-  cameraPitch: 0
+  cameraYaw: 0.35,
+  cameraPitch: 0.14
 };
 
 export function setupInput() {
   const joystick = document.getElementById("joystick");
   const stick = document.getElementById("stick");
 
-  let active = false;
+  let moveActive = false;
+  let movePointerId = null;
 
-  function move(e) {
+  function updateJoystick(e) {
     const rect = joystick.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
+    const centerX = rect.left + rect.width * 0.5;
+    const centerY = rect.top + rect.height * 0.5;
 
     let dx = e.clientX - centerX;
     let dy = e.clientY - centerY;
-    const max = rect.width * 0.30;
+
+    const max = Math.max(1, rect.width * 0.30);
     const length = Math.hypot(dx, dy);
 
     if (length > max) {
-      dx = dx / length * max;
-      dy = dy / length * max;
+      dx = (dx / length) * max;
+      dy = (dy / length) * max;
     }
 
-    input.x = dx / max;
-    input.y = dy / max;
+    let x = dx / max;
+    let y = -dy / max;
+
+    const magnitude = Math.hypot(x, y);
+    if (magnitude < 0.10) {
+      x = 0;
+      y = 0;
+    } else {
+      const normalized = Math.min(1, (magnitude - 0.10) / 0.90);
+      const scale = normalized / magnitude;
+      x *= scale;
+      y *= scale;
+    }
+
+    input.x = x;
+    input.y = y;
     stick.style.transform = `translate(${dx}px, ${dy}px)`;
   }
 
-  function reset() {
-    active = false;
+  function resetJoystick() {
+    moveActive = false;
+    movePointerId = null;
     input.x = 0;
     input.y = 0;
     stick.style.transform = "translate(0,0)";
   }
 
   joystick.addEventListener("pointerdown", e => {
-    active = true;
+    if (moveActive) return;
+    moveActive = true;
+    movePointerId = e.pointerId;
     joystick.setPointerCapture(e.pointerId);
-    move(e);
+    updateJoystick(e);
   });
 
   joystick.addEventListener("pointermove", e => {
-    if (active) move(e);
+    if (!moveActive || e.pointerId !== movePointerId) return;
+    updateJoystick(e);
   });
 
-  joystick.addEventListener("pointerup", reset);
-  joystick.addEventListener("pointercancel", reset);
+  joystick.addEventListener("pointerup", e => {
+    if (e.pointerId === movePointerId) resetJoystick();
+  });
+
+  joystick.addEventListener("pointercancel", e => {
+    if (e.pointerId === movePointerId) resetJoystick();
+  });
 
   const lookPad = document.getElementById("lookPad");
 
   if (lookPad) {
     let lookActive = false;
+    let lookPointerId = null;
     let lastX = 0;
     let lastY = 0;
 
     lookPad.addEventListener("pointerdown", e => {
+      if (e.target.closest("button")) return;
       lookActive = true;
+      lookPointerId = e.pointerId;
       lastX = e.clientX;
       lastY = e.clientY;
       lookPad.setPointerCapture(e.pointerId);
     });
 
     lookPad.addEventListener("pointermove", e => {
-      if (!lookActive) return;
+      if (!lookActive || e.pointerId !== lookPointerId) return;
+
       const dx = e.clientX - lastX;
       const dy = e.clientY - lastY;
       lastX = e.clientX;
       lastY = e.clientY;
-      input.cameraYaw += dx * 0.009;
-      input.cameraPitch = Math.max(-0.65, Math.min(0.78, input.cameraPitch - dy * 0.007));
+
+      input.cameraYaw += dx * 0.0105;
+      input.cameraPitch = Math.max(
+        -0.58,
+        Math.min(0.62, input.cameraPitch - dy * 0.008)
+      );
     });
 
-    const stopLook = () => {
-      lookActive = false;
-    };
+    function stopLook(e) {
+      if (e.pointerId === lookPointerId) {
+        lookActive = false;
+        lookPointerId = null;
+      }
+    }
 
     lookPad.addEventListener("pointerup", stopLook);
     lookPad.addEventListener("pointercancel", stopLook);
   }
 
   const run = document.getElementById("runBtn");
-
-  run.addEventListener("pointerdown", () => {
-    input.run = true;
-  });
-
-  run.addEventListener("pointerup", () => {
-    input.run = false;
-  });
-
-  run.addEventListener("pointercancel", () => {
-    input.run = false;
-  });
+  if (run) {
+    run.addEventListener("pointerdown", () => {
+      input.run = true;
+    });
+    run.addEventListener("pointerup", () => {
+      input.run = false;
+    });
+    run.addEventListener("pointercancel", () => {
+      input.run = false;
+    });
+    run.addEventListener("pointerleave", () => {
+      input.run = false;
+    });
+  }
 
   const crouch = document.getElementById("crouchBtn");
-
-  crouch.addEventListener("click", () => {
-    input.crouch = !input.crouch;
-    crouch.textContent = input.crouch ? "STAND" : "CROUCH";
-  });
+  if (crouch) {
+    crouch.addEventListener("click", () => {
+      input.crouch = !input.crouch;
+      crouch.textContent = input.crouch ? "STAND" : "CROUCH";
+    });
+  }
 }
