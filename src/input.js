@@ -1,231 +1,405 @@
 export function createInput(renderer){
 
-  const state = {
+  const state={
     moveX:0,
     moveY:0,
     sprint:false,
     crouch:false,
     jumpPressed:false,
     actionPressed:false,
+    enterPressed:false,
+    exitPressed:false,
     cameraDX:0,
     cameraDY:0
   };
 
-  const joystick = document.getElementById("joystick");
-  const stick = document.getElementById("stick");
+  const joystick=
+    document.getElementById("joystick");
 
-  let joystickPointer = null;
+  const stick=
+    document.getElementById("stick");
 
-  function updateJoystick(x,y){
-    const rect = joystick.getBoundingClientRect();
+  let joystickPointer=null;
 
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
+  function moveJoystick(x,y){
 
-    let dx = x - cx;
-    let dy = y - cy;
+    const rect=
+      joystick.getBoundingClientRect();
 
-    const max = rect.width * .36;
-    const length = Math.hypot(dx,dy);
+    const cx=
+      rect.left+rect.width/2;
 
-    if(length > max){
-      dx = dx / length * max;
-      dy = dy / length * max;
+    const cy=
+      rect.top+rect.height/2;
+
+    let dx=x-cx;
+    let dy=y-cy;
+
+    const max=
+      rect.width*.36;
+
+    const length=
+      Math.hypot(dx,dy);
+
+    if(length>max){
+
+      dx=dx/length*max;
+      dy=dy/length*max;
     }
 
-    state.moveX = dx / max;
-    state.moveY = dy / max;
+    state.moveX=dx/max;
+    state.moveY=dy/max;
 
-    stick.style.transform =
+    stick.style.transform=
       `translate(${dx}px,${dy}px)`;
   }
 
   function resetJoystick(){
-    joystickPointer = null;
-    state.moveX = 0;
-    state.moveY = 0;
-    stick.style.transform = "translate(0px,0px)";
+
+    joystickPointer=null;
+
+    state.moveX=0;
+    state.moveY=0;
+
+    stick.style.transform=
+      "translate(0px,0px)";
   }
 
-  joystick.addEventListener("pointerdown",e=>{
-    joystickPointer = e.pointerId;
-    joystick.setPointerCapture(e.pointerId);
-    updateJoystick(e.clientX,e.clientY);
-  });
-
-  joystick.addEventListener("pointermove",e=>{
-    if(e.pointerId === joystickPointer){
-      updateJoystick(e.clientX,e.clientY);
+  joystick.addEventListener(
+    "pointerdown",
+    e=>{
+      joystickPointer=e.pointerId;
+      joystick.setPointerCapture(
+        e.pointerId
+      );
+      moveJoystick(
+        e.clientX,
+        e.clientY
+      );
     }
-  });
+  );
 
-  joystick.addEventListener("pointerup",e=>{
-    if(e.pointerId === joystickPointer){
-      resetJoystick();
+  joystick.addEventListener(
+    "pointermove",
+    e=>{
+      if(
+        e.pointerId===joystickPointer
+      ){
+        moveJoystick(
+          e.clientX,
+          e.clientY
+        );
+      }
     }
-  });
+  );
 
-  joystick.addEventListener("pointercancel",resetJoystick);
-
-  let cameraPointer = null;
-  let lastCameraX = 0;
-  let lastCameraY = 0;
-
-  renderer.domElement.addEventListener("pointerdown",e=>{
-    if(e.clientX < window.innerWidth * .38) return;
-
-    cameraPointer = e.pointerId;
-    lastCameraX = e.clientX;
-    lastCameraY = e.clientY;
-
-    renderer.domElement.setPointerCapture(e.pointerId);
-  });
-
-  renderer.domElement.addEventListener("pointermove",e=>{
-    if(e.pointerId !== cameraPointer) return;
-
-    const dx = e.clientX - lastCameraX;
-    const dy = e.clientY - lastCameraY;
-
-    lastCameraX = e.clientX;
-    lastCameraY = e.clientY;
-
-    state.cameraDX += dx;
-    state.cameraDY += dy;
-  });
-
-  renderer.domElement.addEventListener("pointerup",e=>{
-    if(e.pointerId === cameraPointer){
-      cameraPointer = null;
+  joystick.addEventListener(
+    "pointerup",
+    e=>{
+      if(
+        e.pointerId===joystickPointer
+      ){
+        resetJoystick();
+      }
     }
-  });
+  );
 
-  renderer.domElement.addEventListener("pointercancel",e=>{
-    if(e.pointerId === cameraPointer){
-      cameraPointer = null;
+  joystick.addEventListener(
+    "pointercancel",
+    resetJoystick
+  );
+
+  let cameraPointer=null;
+  let lastX=0;
+  let lastY=0;
+
+  renderer.domElement.addEventListener(
+    "pointerdown",
+    e=>{
+
+      if(
+        e.clientX<
+        window.innerWidth*.38
+      ){
+        return;
+      }
+
+      cameraPointer=e.pointerId;
+      lastX=e.clientX;
+      lastY=e.clientY;
+
+      renderer.domElement.setPointerCapture(
+        e.pointerId
+      );
     }
-  });
+  );
 
-  const jumpButton = document.getElementById("jump");
-  const sprintButton = document.getElementById("sprint");
-  const crouchButton = document.getElementById("crouch");
-  const actionButton = document.getElementById("action");
+  renderer.domElement.addEventListener(
+    "pointermove",
+    e=>{
 
-  jumpButton.addEventListener("pointerdown",()=>{
-    state.jumpPressed = true;
-  });
+      if(
+        e.pointerId!==cameraPointer
+      ){
+        return;
+      }
 
-  function sprintStart(e){
-    e.preventDefault();
-    state.sprint = true;
+      state.cameraDX+=
+        e.clientX-lastX;
+
+      state.cameraDY+=
+        e.clientY-lastY;
+
+      lastX=e.clientX;
+      lastY=e.clientY;
+    }
+  );
+
+  renderer.domElement.addEventListener(
+    "pointerup",
+    e=>{
+      if(
+        e.pointerId===cameraPointer
+      ){
+        cameraPointer=null;
+      }
+    }
+  );
+
+  function press(id,callback){
+
+    document
+      .getElementById(id)
+      .addEventListener(
+        "pointerdown",
+        e=>{
+          e.preventDefault();
+          callback();
+        }
+      );
   }
 
-  function sprintEnd(){
-    state.sprint = false;
-  }
-
-  sprintButton.addEventListener("pointerdown",sprintStart);
-  sprintButton.addEventListener("pointerup",sprintEnd);
-  sprintButton.addEventListener("pointercancel",sprintEnd);
-  sprintButton.addEventListener("pointerleave",sprintEnd);
-
-  crouchButton.addEventListener("pointerdown",()=>{
-    state.crouch = !state.crouch;
-  });
-
-  actionButton.addEventListener("pointerdown",()=>{
-    state.actionPressed = true;
-  });
-
-  const keys = new Set();
-
-  window.addEventListener("keydown",e=>{
-    if([
-      "ArrowUp",
-      "ArrowDown",
-      "ArrowLeft",
-      "ArrowRight",
-      " ",
-      "Shift"
-    ].includes(e.key)){
-      e.preventDefault();
+  press(
+    "jump",
+    ()=>{
+      state.jumpPressed=true;
     }
+  );
 
-    if(e.repeat && (e.key === " " || e.key.toLowerCase() === "e")){
-      return;
+  press(
+    "punch",
+    ()=>{
+      state.actionPressed=true;
     }
+  );
 
-    keys.add(e.key.toLowerCase());
-
-    if(e.key === " "){
-      state.jumpPressed = true;
+  press(
+    "enter",
+    ()=>{
+      state.enterPressed=true;
     }
+  );
 
-    if(e.key.toLowerCase() === "e"){
-      state.actionPressed = true;
+  press(
+    "exit",
+    ()=>{
+      state.exitPressed=true;
     }
+  );
 
-    if(e.key.toLowerCase() === "c"){
-      state.crouch = !state.crouch;
+  const sprint=
+    document.getElementById(
+      "sprint"
+    );
+
+  sprint.addEventListener(
+    "pointerdown",
+    ()=>{
+      state.sprint=true;
     }
-  });
+  );
 
-  window.addEventListener("keyup",e=>{
-    keys.delete(e.key.toLowerCase());
-  });
-
-  function updateKeyboard(){
-
-    let x = 0;
-    let y = 0;
-
-    if(keys.has("a") || keys.has("arrowleft")) x -= 1;
-    if(keys.has("d") || keys.has("arrowright")) x += 1;
-    if(keys.has("w") || keys.has("arrowup")) y -= 1;
-    if(keys.has("s") || keys.has("arrowdown")) y += 1;
-
-    if(x !== 0 || y !== 0){
-      const length = Math.hypot(x,y);
-
-      state.moveX = x / length;
-      state.moveY = y / length;
+  sprint.addEventListener(
+    "pointerup",
+    ()=>{
+      state.sprint=false;
     }
+  );
 
-    if(keys.has("shift")){
-      state.sprint = true;
+  sprint.addEventListener(
+    "pointercancel",
+    ()=>{
+      state.sprint=false;
     }
-  }
+  );
 
-  return {
+  document
+    .getElementById("crouch")
+    .addEventListener(
+      "pointerdown",
+      ()=>{
+        state.crouch=
+          !state.crouch;
+      }
+    );
+
+  const keys=new Set();
+
+  window.addEventListener(
+    "keydown",
+    e=>{
+
+      keys.add(
+        e.key.toLowerCase()
+      );
+
+      if(e.key===" "){
+        state.jumpPressed=true;
+      }
+
+      if(
+        e.key.toLowerCase()==="e"
+      ){
+        state.enterPressed=true;
+      }
+
+      if(
+        e.key.toLowerCase()==="q"
+      ){
+        state.exitPressed=true;
+      }
+
+      if(
+        e.key.toLowerCase()==="c" &&
+        !e.repeat
+      ){
+        state.crouch=
+          !state.crouch;
+      }
+    }
+  );
+
+  window.addEventListener(
+    "keyup",
+    e=>{
+      keys.delete(
+        e.key.toLowerCase()
+      );
+    }
+  );
+
+  return{
 
     state,
 
     update(){
-      updateKeyboard();
+
+      if(
+        joystickPointer===null
+      ){
+
+        let x=0;
+        let y=0;
+
+        if(
+          keys.has("a") ||
+          keys.has("arrowleft")
+        ){
+          x-=1;
+        }
+
+        if(
+          keys.has("d") ||
+          keys.has("arrowright")
+        ){
+          x+=1;
+        }
+
+        if(
+          keys.has("w") ||
+          keys.has("arrowup")
+        ){
+          y-=1;
+        }
+
+        if(
+          keys.has("s") ||
+          keys.has("arrowdown")
+        ){
+          y+=1;
+        }
+
+        if(x!==0 || y!==0){
+
+          const length=
+            Math.hypot(x,y);
+
+          state.moveX=x/length;
+          state.moveY=y/length;
+
+        }else{
+
+          state.moveX=0;
+          state.moveY=0;
+        }
+      }
+
+      state.sprint=
+        state.sprint ||
+        keys.has("shift");
     },
 
     consumeJump(){
-      const value = state.jumpPressed;
-      state.jumpPressed = false;
+
+      const value=
+        state.jumpPressed;
+
+      state.jumpPressed=false;
+
       return value;
     },
 
     consumeAction(){
-      const value = state.actionPressed;
-      state.actionPressed = false;
+
+      const value=
+        state.actionPressed;
+
+      state.actionPressed=false;
+
+      return value;
+    },
+
+    consumeEnter(){
+
+      const value=
+        state.enterPressed;
+
+      state.enterPressed=false;
+
+      return value;
+    },
+
+    consumeExit(){
+
+      const value=
+        state.exitPressed;
+
+      state.exitPressed=false;
+
       return value;
     },
 
     consumeCameraDelta(){
-      const value = {
+
+      const result={
         x:state.cameraDX,
         y:state.cameraDY
       };
 
-      state.cameraDX = 0;
-      state.cameraDY = 0;
+      state.cameraDX=0;
+      state.cameraDY=0;
 
-      return value;
+      return result;
     }
   };
 }
