@@ -1,198 +1,299 @@
 export const world = {
+  width: 6000,
+  height: 4500,
 
-  width: 12000,
-  height: 9000,
-
-  buildings: [],
   roads: [],
+  buildings: [],
   trees: [],
+  hills: [],
+  water: [],
+  bridges: [],
+  landmarks: [],
   vehicles: []
 };
 
+function road(x, y, w, h){
+  world.roads.push({x,y,w,h});
+}
+
+function building(x, y, w, h, type="house"){
+  world.buildings.push({x,y,w,h,type});
+}
+
+function tree(x,y,r=22){
+  world.trees.push({x,y,r});
+}
+
 export function createWorld(){
 
-  /* ROADS */
+  world.roads.length = 0;
+  world.buildings.length = 0;
+  world.trees.length = 0;
+  world.hills.length = 0;
+  world.water.length = 0;
+  world.bridges.length = 0;
+  world.landmarks.length = 0;
+  world.vehicles.length = 0;
 
-  world.roads.push(
+  /* =========================
+     MAIN ROADS
+  ========================= */
+
+  road(0,2050,6000,180);
+  road(2850,0,180,4500);
+
+  road(700,700,4200,120);
+  road(700,3600,4200,120);
+
+  road(700,700,120,3000);
+
+  /* =========================
+     COAST
+  ========================= */
+
+  world.water.push({
+    x:4700,
+    y:0,
+    w:1300,
+    h:4500
+  });
+
+  /* =========================
+     BRIDGE
+  ========================= */
+
+  world.bridges.push({
+    x:4200,
+    y:1950,
+    w:1000,
+    h:380
+  });
+
+  /* =========================
+     NORTH COMPOUND
+  ========================= */
+
+  const north = [
+    [1050,850,230,160],
+    [1350,850,180,150],
+    [1050,1100,160,130],
+    [1320,1080,240,170],
+    [1650,900,190,150]
+  ];
+
+  north.forEach(
+    b => building(...b,"compound")
+  );
+
+  /* =========================
+     WEST TOWN
+  ========================= */
+
+  for(let y=900;y<1800;y+=260){
+
+    building(
+      350,
+      y,
+      190,
+      150,
+      "house"
+    );
+
+    building(
+      620,
+      y+40,
+      190,
+      150,
+      "house"
+    );
+
+  }
+
+  /* =========================
+     EAST TOWN
+  ========================= */
+
+  for(let y=850;y<1800;y+=270){
+
+    building(
+      3350,
+      y,
+      220,
+      160,
+      "house"
+    );
+
+    building(
+      3650,
+      y+30,
+      190,
+      140,
+      "house"
+    );
+
+    building(
+      3920,
+      y,
+      220,
+      170,
+      "warehouse"
+    );
+
+  }
+
+  /* =========================
+     SOUTH COMPOUNDS
+  ========================= */
+
+  for(let x=650;x<2300;x+=330){
+
+    building(
+      x,
+      3250,
+      230,
+      170,
+      "compound"
+    );
+
+  }
+
+  for(let x=3200;x<4450;x+=300){
+
+    building(
+      x,
+      3400,
+      210,
+      160,
+      "compound"
+    );
+
+  }
+
+  /* =========================
+     LARGE LANDMARK
+  ========================= */
+
+  world.landmarks.push({
+    x:2400,
+    y:1200,
+    w:650,
+    h:520,
+    name:"CENTRAL FORT"
+  });
+
+  building(
+    2450,
+    1250,
+    550,
+    420,
+    "landmark"
+  );
+
+  /* =========================
+     COASTAL BUILDINGS
+  ========================= */
+
+  building(
+    4200,
+    700,
+    350,
+    230,
+    "harbor"
+  );
+
+  building(
+    4250,
+    1050,
+    260,
+    180,
+    "harbor"
+  );
+
+  /* =========================
+     HILLS
+  ========================= */
+
+  world.hills.push(
     {
-      x:0,
-      y:4300,
-      w:12000,
-      h:150
+      x:500,
+      y:300,
+      w:1000,
+      h:550,
+      level:1
+    },
+    {
+      x:1550,
+      y:250,
+      w:900,
+      h:600,
+      level:2
+    },
+    {
+      x:900,
+      y:2700,
+      w:1200,
+      h:700,
+      level:2
+    },
+    {
+      x:3000,
+      y:2700,
+      w:1000,
+      h:600,
+      level:1
     }
   );
 
-  world.roads.push(
-    {
-      x:5600,
-      y:0,
-      w:150,
-      h:9000
-    }
-  );
+  /* =========================
+     TREES
+  ========================= */
 
-  world.roads.push(
-    {
-      x:1500,
-      y:1800,
-      w:8500,
-      h:100
-    }
-  );
+  for(let i=0;i<190;i++){
 
-  /* CITY BUILDINGS */
+    const x =
+      120 +
+      Math.random()*4300;
 
-  for(
-    let y=3000;
-    y<5600;
-    y+=480
-  ){
+    const y =
+      120 +
+      Math.random()*4200;
 
-    for(
-      let x=3800;
-      x<7800;
-      x+=480
-    ){
+    /*
+      jangan taruh di laut
+    */
 
-      world.buildings.push({
+    if(x>4700)
+      continue;
 
-        x,
-        y,
-
-        w:300,
-        h:270
-      });
-    }
+    tree(
+      x,
+      y,
+      16+Math.random()*12
+    );
   }
 
-  /* NORTH HOUSES */
+  /* =========================
+     VEHICLES
+  ========================= */
 
-  for(
-    let i=0;
-    i<25;
-    i++
-  ){
-
-    world.buildings.push({
-
-      x:
-        700 +
-        Math.random()*3000,
-
-      y:
-        800 +
-        Math.random()*1800,
-
-      w:220,
-      h:190
-    });
-  }
-
-  /* SOUTH COMPOUNDS */
-
-  for(
-    let i=0;
-    i<18;
-    i++
-  ){
-
-    world.buildings.push({
-
-      x:
-        800 +
-        Math.random()*3500,
-
-      y:
-        6000 +
-        Math.random()*2000,
-
-      w:300,
-      h:230
-    });
-  }
-
-  /* TREES */
-
-  for(
-    let i=0;
-    i<400;
-    i++
-  ){
-
-    world.trees.push({
-
-      x:
-        Math.random() *
-        world.width,
-
-      y:
-        Math.random() *
-        world.height,
-
-      r:
-        14 +
-        Math.random()*18
-    });
-  }
-
-  /* VEHICLES */
-
-  for(
-    let i=0;
-    i<30;
-    i++
-  ){
+  for(let i=0;i<25;i++){
 
     world.vehicles.push({
 
       x:
-        Math.random() *
-        world.width,
+        400+
+        Math.random()*4000,
 
       y:
-        Math.random() *
-        world.height,
+        500+
+        Math.random()*3500,
 
       angle:
-        Math.random() *
-        Math.PI*2
+        Math.random()*Math.PI*2
+
     });
-  }
-}
 
-export function isBlocked(
-  x,
-  y,
-  radius
-){
-
-  if(
-    x < radius ||
-    y < radius ||
-    x > world.width-radius ||
-    y > world.height-radius
-  ){
-    return true;
   }
 
-  for(
-    const b of world.buildings
-  ){
-
-    if(
-      x >
-        b.x-radius &&
-      x <
-        b.x+b.w+radius &&
-      y >
-        b.y-radius &&
-      y <
-        b.y+b.h+radius
-    ){
-
-      return true;
-    }
-  }
-
-  return false;
+  return world;
 }
