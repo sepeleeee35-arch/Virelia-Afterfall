@@ -261,7 +261,7 @@ canvas{
   height:2px;
 }
 
-#message{
+#ammo{\n  position:absolute;\n  right:255px;\n  bottom:28px;\n  padding:8px 12px;\n  border-radius:9px;\n  background:rgba(8,13,13,.78);\n  font-size:13px;\n  font-weight:bold;\n}\n\n#message{
   position:absolute;
 
   left:50%;
@@ -573,7 +573,7 @@ canvas{
   #playerCard{width:165px;}
   #phaseBox{left:180px;}
   #compass{top:65px;}
-  #statusFeed{top:145px;}
+  #statusFeed{top:145px;}\n  #ammo{right:235px;}
 }
 
 #buildVersion{
@@ -594,7 +594,7 @@ canvas{
 
 <meta name="cache-control" content="no-cache, no-store, must-revalidate">
 <meta name="pragma" content="no-cache">
-<meta name="build-version" content="1.4.0">
+<meta name="build-version" content="1.5.0">
 
 </head>
 
@@ -625,7 +625,7 @@ canvas{
 
 </div>
 
-<div id="buildVersion">BUILD v1.4.0</div>
+<div id="buildVersion">BUILD v1.5.0</div>
 
 <div id="hud">
 
@@ -638,7 +638,7 @@ canvas{
     </div>
 
     <div class="version">
-      VIRELIA v1.4.0
+      VIRELIA v1.5.0
     </div>
 
     <div class="bar">
@@ -681,7 +681,7 @@ canvas{
 
   </div>
 
-  <div id="crosshair"></div>
+  <div id="crosshair"></div>\n\n  <div id="ammo">30 / 30</div>
 
   <div id="message"></div>
 
@@ -772,7 +772,7 @@ canvas{
     </div>
 
     <div class="versionStart">
-      VERSION 1.4.0
+      VERSION 1.5.0
     </div>
 
     <button id="startBtn">
@@ -787,7 +787,7 @@ canvas{
 
 import {
   startGame
-} from "./src/main.js?v=1.4.0";
+} from "./src/main.js?v=1.5.0";
 
 const startScreen =
   document.getElementById("start");
@@ -842,7 +842,7 @@ window.addEventListener("error",function(event){
   const box=document.getElementById("bootError");
   if(box){
     box.style.display="block";
-    box.textContent="BUILD v1.4.0 • ERROR: "+(event.message||"unknown");
+    box.textContent="BUILD v1.5.0 • ERROR: "+(event.message||"unknown");
   }
 });
 </script>
