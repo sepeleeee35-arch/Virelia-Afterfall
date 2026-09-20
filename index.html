@@ -2,24 +2,26 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Virelia: Afterfall</title>
 
 <style>
 *{
   box-sizing:border-box;
-  -webkit-tap-highlight-color:transparent;
   user-select:none;
+  -webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
 }
+
 html,body{
   margin:0;
   width:100%;
   height:100%;
   overflow:hidden;
-  background:#101820;
-  font-family:Arial,Helvetica,sans-serif;
+  background:#111a18;
+  font-family:Arial,sans-serif;
 }
+
 canvas{
   display:block;
   width:100%;
@@ -31,80 +33,85 @@ canvas{
   position:fixed;
   inset:0;
   pointer-events:none;
-  color:white;
+  color:#fff;
 }
 
-/* TOP LEFT */
+/* PLAYER */
 #playerCard{
   position:absolute;
   top:12px;
   left:12px;
-  width:190px;
+  width:185px;
   padding:9px 11px;
   border-radius:12px;
-  background:rgba(10,15,18,.72);
-  border:1px solid rgba(255,255,255,.12);
-  backdrop-filter:blur(5px);
-}
-#playerName{
-  font-size:13px;
-  font-weight:bold;
-}
-#hpOuter,#staminaOuter{
-  height:7px;
-  margin-top:6px;
-  background:#263038;
-  border-radius:8px;
-  overflow:hidden;
-}
-#hp{
-  height:100%;
-  width:100%;
-  background:#55d66f;
-}
-#stamina{
-  height:100%;
-  width:100%;
-  background:#d7d95b;
+  background:rgba(8,13,15,.76);
+  border:1px solid rgba(255,255,255,.13);
 }
 
-/* TOP CENTER */
+#playerName{
+  font-size:12px;
+  font-weight:bold;
+}
+
+.bar{
+  height:7px;
+  margin-top:6px;
+  border-radius:8px;
+  overflow:hidden;
+  background:#293236;
+}
+
+#hp{
+  width:100%;
+  height:100%;
+  background:#59d875;
+}
+
+#stamina{
+  width:100%;
+  height:100%;
+  background:#d2d85e;
+}
+
+/* ZONE */
 #zoneInfo{
   position:absolute;
   top:12px;
   left:50%;
   transform:translateX(-50%);
-  padding:7px 15px;
-  border-radius:15px;
-  background:rgba(10,15,18,.72);
-  border:1px solid rgba(255,255,255,.1);
-  font-size:12px;
+  padding:7px 14px;
   text-align:center;
+  border-radius:14px;
+  background:rgba(8,13,15,.76);
+  font-size:11px;
 }
 
-/* TOP RIGHT */
+/* MINIMAP */
 #rightHud{
   position:absolute;
-  right:12px;
   top:12px;
+  right:12px;
   display:flex;
-  gap:9px;
-  align-items:flex-start;
+  gap:8px;
 }
+
 #aliveBox{
-  padding:9px 12px;
+  height:45px;
+  padding:8px 12px;
   border-radius:11px;
-  background:rgba(10,15,18,.72);
-  font-size:12px;
+  background:rgba(8,13,15,.76);
+  font-size:11px;
 }
+
 #miniWrap{
-  width:150px;
-  height:150px;
-  border-radius:13px;
+  width:155px;
+  height:155px;
   overflow:hidden;
-  border:2px solid rgba(255,255,255,.35);
-  background:#17231e;
+  border-radius:13px;
+  border:2px solid rgba(255,255,255,.4);
+  background:#647c55;
 }
+
 #mini{
   width:100%;
   height:100%;
@@ -115,64 +122,54 @@ canvas{
   position:absolute;
   left:50%;
   top:50%;
-  width:20px;
-  height:20px;
+  width:18px;
+  height:18px;
   transform:translate(-50%,-50%);
 }
+
 #crosshair:before,
 #crosshair:after{
   content:"";
   position:absolute;
   background:rgba(255,255,255,.85);
 }
+
 #crosshair:before{
-  width:2px;
-  height:20px;
-  left:9px;
+  left:8px;
   top:0;
-}
-#crosshair:after{
-  width:20px;
-  height:2px;
-  left:0;
-  top:9px;
+  width:2px;
+  height:18px;
 }
 
-/* LOOT */
-#lootInfo{
-  position:absolute;
-  left:50%;
-  bottom:120px;
-  transform:translateX(-50%);
-  min-width:170px;
-  padding:9px 13px;
-  text-align:center;
-  border-radius:12px;
-  background:rgba(8,12,15,.82);
-  display:none;
-  font-size:12px;
+#crosshair:after{
+  left:0;
+  top:8px;
+  width:18px;
+  height:2px;
 }
 
 /* INVENTORY */
 #inventory{
   position:absolute;
-  right:180px;
+  right:175px;
   bottom:25px;
-  width:210px;
-  padding:10px;
+  width:215px;
+  padding:11px;
   border-radius:12px;
-  background:rgba(10,15,18,.8);
+  background:rgba(8,13,15,.86);
   display:none;
   font-size:12px;
 }
+
 .invTitle{
   font-weight:bold;
-  margin-bottom:8px;
+  margin-bottom:7px;
 }
+
 .invRow{
   display:flex;
   justify-content:space-between;
-  padding:4px 0;
+  padding:5px 0;
   border-bottom:1px solid rgba(255,255,255,.08);
 }
 
@@ -180,13 +177,15 @@ canvas{
 #joyArea{
   position:absolute;
   left:22px;
-  bottom:25px;
+  bottom:24px;
   width:145px;
   height:145px;
   border-radius:50%;
-  background:rgba(255,255,255,.08);
   border:2px solid rgba(255,255,255,.16);
+  background:rgba(255,255,255,.07);
+  pointer-events:auto;
 }
+
 #joyKnob{
   position:absolute;
   width:65px;
@@ -194,118 +193,131 @@ canvas{
   left:40px;
   top:40px;
   border-radius:50%;
-  background:rgba(255,255,255,.24);
-  border:2px solid rgba(255,255,255,.35);
+  border:2px solid rgba(255,255,255,.3);
+  background:rgba(255,255,255,.22);
 }
 
-/* ACTION BUTTONS */
+/* BUTTONS */
 #actions{
   position:absolute;
   right:18px;
-  bottom:22px;
-  width:180px;
-  height:175px;
+  bottom:20px;
+  width:185px;
+  height:180px;
 }
+
 .action{
   position:absolute;
   width:62px;
   height:62px;
-  border-radius:50%;
   border:1px solid rgba(255,255,255,.22);
-  color:white;
-  background:rgba(20,27,31,.75);
-  font-size:11px;
+  border-radius:50%;
+  color:#fff;
+  background:rgba(16,24,27,.78);
+  font-size:10px;
   font-weight:bold;
   pointer-events:auto;
 }
+
 .action:active{
   transform:scale(.94);
-  background:rgba(70,90,95,.9);
 }
+
 #btnAction{
   right:0;
-  bottom:72px;
-  width:72px;
-  height:72px;
+  bottom:67px;
+  width:74px;
+  height:74px;
 }
+
 #btnJump{
-  right:73px;
+  right:76px;
   bottom:105px;
 }
+
 #btnSprint{
-  right:77px;
-  bottom:26px;
+  right:78px;
+  bottom:25px;
 }
+
 #btnCrouch{
   right:0;
-  bottom:5px;
+  bottom:0;
 }
+
 #btnBag{
   right:150px;
   bottom:145px;
-  width:45px;
-  height:45px;
+  width:44px;
+  height:44px;
 }
 
 /* START */
 #startScreen{
   position:fixed;
   inset:0;
-  z-index:20;
+  z-index:10;
   display:flex;
-  justify-content:center;
   align-items:center;
-  background:
-    radial-gradient(circle at 50% 35%,rgba(73,105,91,.5),transparent 35%),
-    linear-gradient(135deg,#0c1417,#1b2925);
+  justify-content:center;
   color:white;
+  background:
+    radial-gradient(
+      circle at 50% 40%,
+      rgba(72,102,78,.5),
+      transparent 35%
+    ),
+    linear-gradient(135deg,#091214,#1b2824);
 }
+
 .startBox{
-  width:min(90%,390px);
+  width:min(90%,400px);
   padding:28px;
   text-align:center;
   border-radius:18px;
-  background:rgba(10,15,18,.86);
-  border:1px solid rgba(255,255,255,.13);
-}
-.startTitle{
-  font-size:27px;
-  font-weight:900;
-  letter-spacing:2px;
-}
-.startSub{
-  margin-top:8px;
-  color:#aebbb7;
-  font-size:13px;
-  line-height:1.5;
-}
-#startBtn{
-  margin-top:22px;
-  width:100%;
-  padding:15px;
-  border:0;
-  border-radius:11px;
-  color:white;
-  background:#496e5c;
-  font-size:15px;
-  font-weight:bold;
+  background:rgba(8,13,15,.9);
+  border:1px solid rgba(255,255,255,.14);
 }
 
-/* MOBILE */
+.startTitle{
+  font-size:28px;
+  font-weight:900;
+  letter-spacing:3px;
+}
+
+.startSub{
+  margin-top:9px;
+  color:#aebbb6;
+  line-height:1.5;
+  font-size:12px;
+}
+
+#startBtn{
+  width:100%;
+  margin-top:22px;
+  padding:15px;
+  border:0;
+  border-radius:10px;
+  color:white;
+  background:#4e725e;
+  font-weight:bold;
+  font-size:14px;
+}
+
 @media(max-width:700px){
   #miniWrap{
-    width:115px;
-    height:115px;
+    width:112px;
+    height:112px;
   }
+
   #aliveBox{
     display:none;
   }
+
   #playerCard{
     width:155px;
   }
-  #zoneInfo{
-    font-size:10px;
-  }
+
   #inventory{
     right:10px;
     bottom:190px;
@@ -322,20 +334,21 @@ canvas{
 
   <div id="playerCard">
     <div id="playerName">SURVIVOR • 01</div>
-    <div id="hpOuter"><div id="hp"></div></div>
-    <div id="staminaOuter"><div id="stamina"></div></div>
+    <div class="bar"><div id="hp"></div></div>
+    <div class="bar"><div id="stamina"></div></div>
   </div>
 
   <div id="zoneInfo">
-    ZONA AMAN<br>
+    SAFE ZONE<br>
     <span id="zoneTimer">05:00</span>
   </div>
 
   <div id="rightHud">
     <div id="aliveBox">
-      SURVIVOR<br>
+      ALIVE<br>
       <b id="alive">70</b>
     </div>
+
     <div id="miniWrap">
       <canvas id="mini"></canvas>
     </div>
@@ -343,16 +356,32 @@ canvas{
 
   <div id="crosshair"></div>
 
-  <div id="lootInfo"></div>
-
   <div id="inventory">
     <div class="invTitle">INVENTORY</div>
-    <div class="invRow"><span>Medkit</span><span id="medCount">0</span></div>
-    <div class="invRow"><span>Food</span><span id="foodCount">0</span></div>
-    <div class="invRow"><span>Helmet</span><span id="helmetSlot">-</span></div>
-    <div class="invRow"><span>Vest</span><span id="vestSlot">-</span></div>
-    <div class="invRow"><span>Backpack</span><span id="bagSlot">-</span></div>
-    <div class="invRow"><span>Shoes</span><span id="shoeSlot">-</span></div>
+    <div class="invRow">
+      <span>Medkit</span>
+      <span id="medCount">0</span>
+    </div>
+    <div class="invRow">
+      <span>Food</span>
+      <span id="foodCount">0</span>
+    </div>
+    <div class="invRow">
+      <span>Helmet</span>
+      <span id="helmetSlot">-</span>
+    </div>
+    <div class="invRow">
+      <span>Vest</span>
+      <span id="vestSlot">-</span>
+    </div>
+    <div class="invRow">
+      <span>Backpack</span>
+      <span id="bagSlot">-</span>
+    </div>
+    <div class="invRow">
+      <span>Shoes</span>
+      <span id="shoeSlot">-</span>
+    </div>
   </div>
 
   <div id="joyArea">
@@ -372,19 +401,21 @@ canvas{
 <div id="startScreen">
   <div class="startBox">
     <div class="startTitle">VIRELIA</div>
+
     <div class="startSub">
       AFTERFALL<br><br>
-      LARGE SURVIVAL MAP<br>
+      ISLAND SURVIVAL MAP<br>
       70 SURVIVORS
     </div>
+
     <button id="startBtn">MASUK MAP</button>
   </div>
 </div>
 
 <script>
+
 /* =========================================================
-   VIRELIA AFTERFALL
-   LARGE BATTLE-SURVIVAL MAP
+   CORE
    ========================================================= */
 
 const canvas=document.getElementById("game");
@@ -397,6 +428,7 @@ let W=innerWidth;
 let H=innerHeight;
 
 function resize(){
+
   W=innerWidth;
   H=innerHeight;
 
@@ -406,6 +438,7 @@ function resize(){
   mini.width=mini.clientWidth*devicePixelRatio;
   mini.height=mini.clientHeight*devicePixelRatio;
 }
+
 addEventListener("resize",resize);
 resize();
 
@@ -413,24 +446,25 @@ resize();
    WORLD
    ========================================================= */
 
-const WORLD_W=12000;
-const WORLD_H=10000;
+const WORLD_W=14000;
+const WORLD_H=11000;
 
 const world={
   roads:[],
   buildings:[],
   trees:[],
   rocks:[],
+  hills:[],
   water:[],
   bridges:[],
+  landmarks:[],
   loot:[],
   vehicles:[],
-  hills:[],
-  zones:[]
+  fences:[],
+  compounds:[]
 };
 
-/* seeded random */
-let seed=77431;
+let seed=93821;
 
 function rnd(){
   seed=(seed*1664525+1013904223)>>>0;
@@ -445,52 +479,77 @@ function clamp(v,a,b){
   return Math.max(a,Math.min(b,v));
 }
 
-function dist(a,b){
-  return Math.hypot(a.x-b.x,a.y-b.y);
-}
-
 /* =========================================================
    TERRAIN
    ========================================================= */
 
 function createTerrain(){
 
-  /* hills */
-  for(let i=0;i<45;i++){
+  /*
+    Pulau utama.
+    Bagian timur dan selatan dibuat lebih terbuka
+    agar terasa seperti daerah pesisir.
+  */
+
+  for(let i=0;i<75;i++){
+
     world.hills.push({
-      x:rand(300,WORLD_W-300),
-      y:rand(300,WORLD_H-300),
-      r:rand(150,480),
-      h:rand(20,100)
+      x:rand(500,WORLD_W-500),
+      y:rand(500,WORLD_H-500),
+      r:rand(180,620),
+      level:Math.floor(rand(1,5))
     });
   }
 
-  /* rivers */
+  /* CENTRAL RIVER */
   world.water.push({
     points:[
-      {x:0,y:4100},
-      {x:1500,y:3900},
-      {x:3000,y:4200},
-      {x:4700,y:4000},
-      {x:6500,y:4450},
-      {x:8200,y:4200},
-      {x:10000,y:4550},
-      {x:12000,y:4300}
+      {x:0,y:5150},
+      {x:1200,y:4900},
+      {x:2500,y:5100},
+      {x:3900,y:4850},
+      {x:5200,y:5000},
+      {x:6600,y:4750},
+      {x:7900,y:5000},
+      {x:9300,y:4800},
+      {x:10800,y:5050},
+      {x:12400,y:4850},
+      {x:14000,y:5100}
     ],
-    width:240
+    width:300
   });
 
+  /* NORTH-SOUTH RIVER */
   world.water.push({
     points:[
-      {x:7700,y:0},
-      {x:7600,y:1400},
-      {x:7850,y:2900},
-      {x:7700,y:4400},
-      {x:8000,y:6100},
-      {x:7900,y:8000},
-      {x:8200,y:10000}
+      {x:8500,y:0},
+      {x:8300,y:1300},
+      {x:8450,y:2700},
+      {x:8250,y:3900},
+      {x:8400,y:5200},
+      {x:8200,y:6800},
+      {x:8400,y:8500},
+      {x:8100,y:11000}
     ],
-    width:180
+    width:230
+  });
+
+  /* COAST */
+  world.water.push({
+    points:[
+      {x:10800,y:0},
+      {x:11100,y:700},
+      {x:11000,y:1600},
+      {x:11400,y:2400},
+      {x:11200,y:3300},
+      {x:11600,y:4300},
+      {x:11400,y:5200},
+      {x:11800,y:6300},
+      {x:11600,y:7600},
+      {x:12000,y:9000},
+      {x:11800,y:11000}
+    ],
+    width:1100
   });
 }
 
@@ -498,47 +557,213 @@ function createTerrain(){
    ROADS
    ========================================================= */
 
-function addRoad(x1,y1,x2,y2,width=90){
-  world.roads.push({x1,y1,x2,y2,width});
+function addRoad(x1,y1,x2,y2,width=70,type="road"){
+  world.roads.push({
+    x1,y1,x2,y2,
+    width,
+    type
+  });
 }
 
 function createRoadNetwork(){
 
-  /* MAIN HIGHWAYS */
-  addRoad(0,2300,WORLD_W,2300,125);
-  addRoad(0,6900,WORLD_W,6900,125);
-  addRoad(2800,0,2800,WORLD_H,120);
-  addRoad(9100,0,9100,WORLD_H,120);
+  /* MAIN WEST-EAST */
+  addRoad(
+    300,
+    3200,
+    3300,
+    2900,
+    105,
+    "highway"
+  );
 
-  /* ring */
-  addRoad(1400,1200,10400,1200,90);
-  addRoad(1400,1200,1400,8500,90);
-  addRoad(10400,1200,10400,8500,90);
-  addRoad(1400,8500,10400,8500,90);
+  addRoad(
+    3300,
+    2900,
+    6500,
+    3100,
+    105,
+    "highway"
+  );
 
-  /* city roads */
-  for(let x=3300;x<=6500;x+=500){
-    addRoad(x,2800,x,6500,58);
+  addRoad(
+    6500,
+    3100,
+    9500,
+    2800,
+    105,
+    "highway"
+  );
+
+  addRoad(
+    9500,
+    2800,
+    11000,
+    3300,
+    105,
+    "highway"
+  );
+
+  /* SOUTH MAIN */
+  addRoad(
+    400,
+    8200,
+    2600,
+    7800,
+    100,
+    "highway"
+  );
+
+  addRoad(
+    2600,
+    7800,
+    5200,
+    8200,
+    100,
+    "highway"
+  );
+
+  addRoad(
+    5200,
+    8200,
+    7600,
+    7900,
+    100,
+    "highway"
+  );
+
+  addRoad(
+    7600,
+    7900,
+    10200,
+    8200,
+    100,
+    "highway"
+  );
+
+  /* CENTRAL CITY GRID */
+  for(let x=4100;x<=6800;x+=500){
+
+    addRoad(
+      x,
+      3500,
+      x+rand(-100,100),
+      6500,
+      55,
+      "city"
+    );
   }
 
-  for(let y=3000;y<=6500;y+=500){
-    addRoad(3100,y,6700,y,58);
+  for(let y=3500;y<=6500;y+=500){
+
+    addRoad(
+      3900,
+      y,
+      7000,
+      y+rand(-80,80),
+      55,
+      "city"
+    );
   }
 
-  /* industrial */
-  for(let y=7600;y<=8400;y+=300){
-    addRoad(7200,y,10300,y,55);
+  /* NORTH VILLAGE */
+  addRoad(2800,800,7000,1200,50,"village");
+  addRoad(3200,1200,3200,2300,45,"village");
+  addRoad(4000,1100,4100,2200,45,"village");
+  addRoad(5000,1200,4900,2300,45,"village");
+  addRoad(6000,1000,5900,2300,45,"village");
+
+  /* WEST CURVING ROAD */
+  addRoad(500,4000,1300,3500,55,"village");
+  addRoad(1300,3500,1900,3700,55,"village");
+  addRoad(1900,3700,2500,3300,55,"village");
+  addRoad(2500,3300,3100,3500,55,"village");
+
+  /* EAST COAST ROAD */
+  addRoad(9600,4100,10300,3900,55,"coast");
+  addRoad(10300,3900,10800,4300,55,"coast");
+  addRoad(10800,4300,11200,5000,55,"coast");
+  addRoad(11200,5000,10900,5700,55,"coast");
+  addRoad(10900,5700,11300,6500,55,"coast");
+
+  /* INDUSTRIAL */
+  for(let y=7200;y<=9000;y+=420){
+
+    addRoad(
+      8500,
+      y,
+      10600,
+      y+rand(-80,80),
+      55,
+      "industrial"
+    );
   }
 
-  /* village */
-  for(let x=900;x<=2500;x+=320){
-    addRoad(x,2700,x,3900,45);
-  }
+  /* MOUNTAIN ROADS */
+  addRoad(2500,1700,3300,2300,42,"mountain");
+  addRoad(3300,2300,3800,3000,42,"mountain");
 
-  /* northern settlement */
-  for(let x=3500;x<=6000;x+=420){
-    addRoad(x,500,x,1800,48);
-  }
+  addRoad(7000,1700,6500,2500,42,"mountain");
+  addRoad(6500,2500,6800,3300,42,"mountain");
+
+  addRoad(7600,1700,7000,2300,42,"mountain");
+}
+
+/* =========================================================
+   BRIDGES
+   ========================================================= */
+
+function createBridges(){
+
+  /*
+    Bridge 1:
+    melintasi sungai utama
+  */
+
+  world.bridges.push({
+    x:5200,
+    y:4930,
+    length:650,
+    width:145,
+    angle:0
+  });
+
+  /*
+    Bridge 2:
+    sungai utara-selatan
+  */
+
+  world.bridges.push({
+    x:8350,
+    y:3500,
+    length:500,
+    width:135,
+    angle:Math.PI/2
+  });
+
+  /*
+    Bridge 3
+  */
+
+  world.bridges.push({
+    x:8300,
+    y:7600,
+    length:500,
+    width:135,
+    angle:Math.PI/2
+  });
+
+  /*
+    Bridge 4 kecil
+  */
+
+  world.bridges.push({
+    x:9000,
+    y:4950,
+    length:440,
+    width:110,
+    angle:0
+  });
 }
 
 /* =========================================================
@@ -548,42 +773,63 @@ function createRoadNetwork(){
 function building(x,y,w,h,type,name){
   world.buildings.push({
     x,y,w,h,
-    type:type||"house",
-    name:name||"",
+    type,
+    name,
     roof:rand(0,1)
   });
 }
 
-function createPOI(){
+function createCity(){
 
   /* CENTRAL CITY */
-  building(3400,3000,420,280,"large","Central Plaza");
-  building(4000,3000,350,280,"large","Central Plaza");
-  building(4550,3000,500,280,"large","Central Plaza");
 
-  building(3400,3500,300,360,"large","Central City");
-  building(3900,3500,440,360,"large","Central City");
-  building(4500,3500,350,360,"large","Central City");
-  building(5000,3500,450,360,"large","Central City");
+  building(4200,3600,480,300,"large","Central Mall");
+  building(4800,3600,360,300,"large","Central Mall");
+  building(5300,3600,520,300,"large","Central Mall");
 
-  building(3400,4100,450,330,"large","Central City");
-  building(4000,4100,330,330,"large","Central City");
-  building(4500,4100,460,330,"large","Central City");
-  building(5100,4100,400,330,"large","Central City");
+  building(4200,4100,320,380,"large","City Block");
+  building(4700,4100,440,380,"large","City Block");
+  building(5300,4100,340,380,"large","City Block");
+  building(5800,4100,470,380,"large","City Block");
 
-  building(3400,4650,300,420,"large","Central City");
-  building(3900,4650,450,420,"large","Central City");
-  building(4500,4650,330,420,"large","Central City");
-  building(5000,4650,500,420,"large","Central City");
+  building(4200,4700,460,330,"large","City Block");
+  building(4800,4700,340,330,"large","City Block");
+  building(5300,4700,450,330,"large","City Block");
+  building(5900,4700,360,330,"large","City Block");
 
-  /* NORTH VILLAGE */
-  for(let y=600;y<=1600;y+=360){
-    for(let x=3500;x<=6000;x+=430){
-      if(rnd()>.16){
+  building(4200,5300,350,420,"large","City Block");
+  building(4700,5300,480,420,"large","City Block");
+  building(5300,5300,340,420,"large","City Block");
+  building(5800,5300,500,420,"large","City Block");
+
+  /* CENTRAL LANDMARK */
+  building(
+    4900,
+    5950,
+    900,
+    520,
+    "landmark",
+    "Virelia Grand Terminal"
+  );
+}
+
+/* =========================================================
+   VILLAGES
+   ========================================================= */
+
+function createVillages(){
+
+  /* NORTH */
+  for(let y=650;y<=1900;y+=330){
+
+    for(let x=3000;x<=6900;x+=450){
+
+      if(rnd()>.17){
+
         building(
-          x+rand(-40,40),
-          y+rand(-45,45),
-          rand(190,280),
+          x+rand(-50,50),
+          y+rand(-40,40),
+          rand(190,300),
           rand(160,240),
           "house",
           "North Village"
@@ -592,15 +838,18 @@ function createPOI(){
     }
   }
 
-  /* WEST VILLAGE */
-  for(let y=2700;y<=3700;y+=320){
-    for(let x=450;x<=2400;x+=380){
-      if(rnd()>.12){
+  /* WEST */
+  for(let y=3000;y<=4300;y+=330){
+
+    for(let x=500;x<=3000;x+=390){
+
+      if(rnd()>.15){
+
         building(
-          x+rand(-40,40),
+          x+rand(-45,45),
           y+rand(-40,40),
-          rand(180,270),
-          rand(150,230),
+          rand(180,290),
+          rand(160,230),
           "house",
           "West Village"
         );
@@ -608,69 +857,239 @@ function createPOI(){
     }
   }
 
-  /* EAST COAST TOWN */
-  for(let y=2600;y<=3700;y+=350){
-    for(let x=9600;x<=11200;x+=400){
-      if(rnd()>.15){
+  /* EAST COAST */
+  for(let y=3000;y<=6500;y+=360){
+
+    for(let x=9700;x<=10800;x+=390){
+
+      if(rnd()>.18){
+
         building(
-          x+rand(-40,40),
+          x+rand(-35,35),
           y+rand(-40,40),
-          rand(190,300),
-          rand(160,250),
+          rand(180,280),
+          rand(150,230),
           "house",
-          "East Town"
+          "Coastal Town"
         );
       }
     }
   }
+}
 
-  /* SOUTH INDUSTRIAL */
-  for(let x=7200;x<=10300;x+=650){
-    building(x,7550,500,300,"industrial","Industrial Zone");
-    building(x,8000,500,250,"industrial","Industrial Zone");
-  }
+/* =========================================================
+   REALISTIC COMPOUNDS
+   ========================================================= */
 
-  /* SOUTHWEST COMPOUND */
-  building(700,7300,500,420,"compound","Compound");
-  building(1350,7300,500,420,"compound","Compound");
-  building(2000,7300,500,420,"compound","Compound");
+function createCompounds(){
 
-  building(700,7900,500,420,"compound","Compound");
-  building(1350,7900,500,420,"compound","Compound");
-  building(2000,7900,500,420,"compound","Compound");
+  const areas=[
+    {x:900,y:6900},
+    {x:1900,y:7000},
+    {x:2900,y:7300},
+    {x:9600,y:7000},
+    {x:10800,y:7600}
+  ];
 
-  /* SOUTHEAST */
-  for(let x=9300;x<=11200;x+=450){
-    building(x,9000,300,230,"house","South Town");
+  for(const a of areas){
+
+    const compound={
+      x:a.x,
+      y:a.y,
+      w:900,
+      h:700
+    };
+
+    world.compounds.push(compound);
+
+    /* houses */
+    building(
+      a.x,
+      a.y,
+      270,
+      220,
+      "compound",
+      "Compound House"
+    );
+
+    building(
+      a.x+360,
+      a.y,
+      300,
+      230,
+      "compound",
+      "Compound House"
+    );
+
+    building(
+      a.x+80,
+      a.y+330,
+      340,
+      240,
+      "compound",
+      "Compound House"
+    );
+
+    /* warehouse */
+    building(
+      a.x+520,
+      a.y+330,
+      300,
+      260,
+      "warehouse",
+      "Compound Warehouse"
+    );
+
+    /* fences */
+    world.fences.push({
+      x:a.x-25,
+      y:a.y-25,
+      w:900,
+      h:700
+    });
   }
 }
 
 /* =========================================================
-   TREES / ROCKS
+   INDUSTRIAL ZONE
+   ========================================================= */
+
+function createIndustrial(){
+
+  for(let x=8200;x<=10600;x+=600){
+
+    building(
+      x,
+      7200,
+      500,
+      300,
+      "industrial",
+      "Industrial Warehouse"
+    );
+
+    building(
+      x,
+      7650,
+      500,
+      270,
+      "industrial",
+      "Industrial Warehouse"
+    );
+  }
+
+  /* large landmark */
+  building(
+    8800,
+    8400,
+    1100,
+    650,
+    "landmark",
+    "Power Station"
+  );
+}
+
+/* =========================================================
+   LANDMARKS
+   ========================================================= */
+
+function createLandmarks(){
+
+  /*
+    Mountain tower
+  */
+
+  world.landmarks.push({
+    x:3200,
+    y:2200,
+    type:"tower",
+    name:"Watch Tower",
+    size:220
+  });
+
+  /*
+    Giant radar
+  */
+
+  world.landmarks.push({
+    x:6900,
+    y:1500,
+    type:"radar",
+    name:"Radar Hill",
+    size:300
+  });
+
+  /*
+    Lighthouse
+  */
+
+  world.landmarks.push({
+    x:11600,
+    y:7200,
+    type:"lighthouse",
+    name:"Coastal Lighthouse",
+    size:220
+  });
+
+  /*
+    Ruined stadium
+  */
+
+  world.landmarks.push({
+    x:2700,
+    y:5600,
+    type:"stadium",
+    name:"Old Stadium",
+    size:520
+  });
+
+  /*
+    giant quarry
+  */
+
+  world.landmarks.push({
+    x:10500,
+    y:1700,
+    type:"quarry",
+    name:"North Quarry",
+    size:600
+  });
+}
+
+/* =========================================================
+   NATURE
    ========================================================= */
 
 function createNature(){
 
-  for(let i=0;i<420;i++){
+  for(let i=0;i<650;i++){
 
-    let x=rand(150,WORLD_W-150);
-    let y=rand(150,WORLD_H-150);
+    const x=rand(150,WORLD_W-150);
+    const y=rand(150,WORLD_H-150);
 
-    /* keep some city areas clearer */
-    if(x>3000&&x<6800&&y>2600&&y<5400) continue;
+    /*
+      Don't completely fill the city.
+    */
+
+    if(
+      x>3900 &&
+      x<7000 &&
+      y>3400 &&
+      y<6800
+    )continue;
 
     world.trees.push({
       x,y,
-      r:rand(15,32),
-      type:rnd()>.75?"pine":"tree"
+      r:rand(14,34),
+      type:rnd()>.78?"pine":"tree"
     });
   }
 
-  for(let i=0;i<180;i++){
+  for(let i=0;i<260;i++){
+
     world.rocks.push({
       x:rand(100,WORLD_W-100),
       y:rand(100,WORLD_H-100),
-      r:rand(8,25)
+      r:rand(7,26)
     });
   }
 }
@@ -681,32 +1100,15 @@ function createNature(){
 
 function createVehicles(){
 
-  for(let i=0;i<34;i++){
+  for(let i=0;i<45;i++){
 
-    let horizontal=rnd()>.5;
-
-    if(horizontal){
-      let y=rand(1500,8500);
-      let x=rand(500,WORLD_W-500);
-
-      world.vehicles.push({
-        x,y,
-        angle:0,
-        occupied:false,
-        type:rnd()>.65?"truck":"car"
-      });
-
-    }else{
-      let x=rand(1200,10500);
-      let y=rand(500,WORLD_H-500);
-
-      world.vehicles.push({
-        x,y,
-        angle:Math.PI/2,
-        occupied:false,
-        type:rnd()>.65?"truck":"car"
-      });
-    }
+    world.vehicles.push({
+      x:rand(500,WORLD_W-500),
+      y:rand(500,WORLD_H-500),
+      angle:rnd()*Math.PI*2,
+      type:rnd()>.7?"truck":"car",
+      occupied:false
+    });
   }
 }
 
@@ -723,29 +1125,40 @@ const equipmentTypes=[
 
 function createLoot(){
 
-  for(let i=0;i<240;i++){
+  for(let i=0;i<280;i++){
 
-    let b=world.buildings[
-      Math.floor(rnd()*world.buildings.length)
-    ];
+    const b=
+      world.buildings[
+        Math.floor(
+          rnd()*world.buildings.length
+        )
+      ];
 
     let type;
 
-    let roll=rnd();
+    const r=rnd();
 
-    if(roll<.22){
-      type=equipmentTypes[
-        Math.floor(rnd()*equipmentTypes.length)
-      ];
-    }else if(roll<.61){
+    if(r<.2){
+
+      type=
+        equipmentTypes[
+          Math.floor(
+            rnd()*equipmentTypes.length
+          )
+        ];
+
+    }else if(r<.6){
+
       type="food";
+
     }else{
+
       type="medkit";
     }
 
     world.loot.push({
-      x:b.x+rand(30,b.w-30),
-      y:b.y+rand(30,b.h-30),
+      x:b.x+rand(25,b.w-25),
+      y:b.y+rand(25,b.h-25),
       type,
       taken:false
     });
@@ -757,10 +1170,10 @@ function createLoot(){
    ========================================================= */
 
 const safeZone={
-  x:6000,
-  y:5000,
-  radius:4700,
-  target:4700,
+  x:6500,
+  y:5200,
+  radius:5100,
+  target:5100,
   timer:300
 };
 
@@ -768,13 +1181,20 @@ function updateZone(dt){
 
   safeZone.timer-=dt;
 
-  if(safeZone.timer<0){
-    safeZone.target=Math.max(900,safeZone.target-650);
-    safeZone.timer=70;
+  if(safeZone.timer<=0){
+
+    safeZone.target=
+      Math.max(
+        850,
+        safeZone.target-700
+      );
+
+    safeZone.timer=75;
   }
 
-  safeZone.radius +=
-    (safeZone.target-safeZone.radius)*dt*.025;
+  safeZone.radius+=
+    (safeZone.target-safeZone.radius)
+    *dt*.025;
 }
 
 /* =========================================================
@@ -782,16 +1202,16 @@ function updateZone(dt){
    ========================================================= */
 
 const player={
-  x:6000,
+  x:6500,
   y:5400,
-  vx:0,
-  vy:0,
-  speed:250,
+
   hp:100,
   stamina:100,
+
+  speed:250,
+
   crouch:false,
   sprint:false,
-  actionCooldown:0,
 
   equipment:{
     helmet:false,
@@ -821,27 +1241,37 @@ function spawnBots(){
     let x,y;
 
     do{
+
       x=rand(400,WORLD_W-400);
       y=rand(400,WORLD_H-400);
+
     }while(
-      Math.hypot(x-player.x,y-player.y)<500
+      Math.hypot(
+        x-player.x,
+        y-player.y
+      )<700
     );
 
     bots.push({
+
       id:i+1,
+
       x,y,
-      vx:0,
-      vy:0,
+
       hp:100,
+
       speed:rand(125,175),
+
       target:null,
+
       think:rand(.2,2),
-      state:"wander",
+
       wanderX:x,
       wanderY:y,
-      action:rand(0,3),
-      alive:true,
-      color:rnd()
+
+      action:rand(1,3),
+
+      alive:true
     });
   }
 }
@@ -850,25 +1280,27 @@ function spawnBots(){
    COLLISION
    ========================================================= */
 
-function pointInsideBuilding(x,y,b,pad=0){
-
-  return (
-    x>b.x-pad &&
-    x<b.x+b.w+pad &&
-    y>b.y-pad &&
-    y<b.y+b.h+pad
-  );
-}
-
 function blocked(x,y,r=14){
 
-  if(x<40||y<40||x>WORLD_W-40||y>WORLD_H-40)
+  if(
+    x<30 ||
+    y<30 ||
+    x>WORLD_W-30 ||
+    y>WORLD_H-30
+  ){
     return true;
+  }
 
   for(const b of world.buildings){
 
-    if(pointInsideBuilding(x,y,b,r))
+    if(
+      x>b.x-r &&
+      x<b.x+b.w+r &&
+      y>b.y-r &&
+      y<b.y+b.h+r
+    ){
       return true;
+    }
   }
 
   return false;
@@ -876,12 +1308,12 @@ function blocked(x,y,r=14){
 
 function moveEntity(e,dx,dy){
 
-  let nx=e.x+dx;
+  const nx=e.x+dx;
 
   if(!blocked(nx,e.y,14))
     e.x=nx;
 
-  let ny=e.y+dy;
+  const ny=e.y+dy;
 
   if(!blocked(e.x,ny,14))
     e.y=ny;
@@ -894,15 +1326,9 @@ function moveEntity(e,dx,dy){
 const camera={
   x:player.x,
   y:player.y,
-  zoom:1.15,
-  angle:0
+  angle:0,
+  zoom:1.12
 };
-
-/*
-  Ini bukan kamera top-down biasa.
-  Dunia diproyeksikan dengan sudut third-person
-  supaya karakter terasa berada di bawah-tengah layar.
-*/
 
 function worldToScreen(x,y){
 
@@ -912,94 +1338,164 @@ function worldToScreen(x,y){
   const ca=Math.cos(camera.angle);
   const sa=Math.sin(camera.angle);
 
-  const rx=dx*ca-dy*sa;
-  const ry=dx*sa+dy*ca;
+  const rx=
+    dx*ca-dy*sa;
 
-  const perspective=1-(ry/1800)*.18;
+  const ry=
+    dx*sa+dy*ca;
 
-  return {
-    x:W/2+rx*camera.zoom*perspective,
-    y:H*.56+ry*.58*camera.zoom*perspective
+  const perspective=
+    clamp(
+      1-(ry/2200)*.18,
+      .82,
+      1.2
+    );
+
+  return{
+    x:
+      W/2+
+      rx*
+      camera.zoom*
+      perspective,
+
+    y:
+      H*.56+
+      ry*
+      .60*
+      camera.zoom*
+      perspective
   };
 }
 
 /* =========================================================
-   DRAW TERRAIN
+   TERRAIN DRAW
    ========================================================= */
 
 function drawTerrain(){
 
-  ctx.fillStyle="#6e8a55";
+  ctx.fillStyle="#78905b";
   ctx.fillRect(0,0,W,H);
 
-  /* hills */
+  /*
+    terrain levels
+  */
+
   for(const h of world.hills){
 
-    const p=worldToScreen(h.x,h.y);
+    const p=worldToScreen(
+      h.x,
+      h.y
+    );
 
-    const r=h.r*camera.zoom;
+    const s=h.r*camera.zoom;
 
-    ctx.beginPath();
-    ctx.fillStyle="rgba(62,86,55,.35)";
-    ctx.arc(p.x,p.y,r,0,Math.PI*2);
-    ctx.fill();
+    for(let level=h.level;level>=1;level--){
+
+      ctx.beginPath();
+
+      ctx.fillStyle=
+        level===1
+        ?"rgba(61,85,52,.26)"
+        :"rgba(67,92,57,.18)";
+
+      ctx.arc(
+        p.x,
+        p.y,
+        s*(level/h.level),
+        0,
+        Math.PI*2
+      );
+
+      ctx.fill();
+    }
   }
 
-  /* water */
+  /* rivers */
+
   for(const river of world.water){
 
     ctx.beginPath();
 
     river.points.forEach((q,i)=>{
-      const p=worldToScreen(q.x,q.y);
 
-      if(i===0)ctx.moveTo(p.x,p.y);
-      else ctx.lineTo(p.x,p.y);
+      const p=worldToScreen(
+        q.x,
+        q.y
+      );
+
+      if(i===0)
+        ctx.moveTo(p.x,p.y);
+      else
+        ctx.lineTo(p.x,p.y);
     });
 
-    ctx.strokeStyle="#397a8a";
-    ctx.lineWidth=river.width*camera.zoom*.72;
+    ctx.strokeStyle="#397789";
+
+    ctx.lineWidth=
+      river.width*
+      camera.zoom*
+      .7;
+
     ctx.lineCap="round";
     ctx.stroke();
 
-    ctx.strokeStyle="rgba(180,230,235,.25)";
-    ctx.lineWidth=5;
+    ctx.strokeStyle=
+      "rgba(200,235,235,.22)";
+
+    ctx.lineWidth=4;
     ctx.stroke();
   }
 }
 
 /* =========================================================
-   DRAW ROADS
+   ROADS
    ========================================================= */
 
 function drawRoads(){
 
   for(const r of world.roads){
 
-    const a=worldToScreen(r.x1,r.y1);
-    const b=worldToScreen(r.x2,r.y2);
+    const a=worldToScreen(
+      r.x1,
+      r.y1
+    );
 
-    ctx.lineCap="butt";
+    const b=worldToScreen(
+      r.x2,
+      r.y2
+    );
 
-    ctx.strokeStyle="#4d5550";
-    ctx.lineWidth=r.width*camera.zoom;
+    let color="#555c57";
+
+    if(r.type==="highway")
+      color="#454d4a";
+
+    if(r.type==="mountain")
+      color="#59604f";
+
+    ctx.strokeStyle=color;
+
+    ctx.lineWidth=
+      r.width*
+      camera.zoom;
+
+    ctx.lineCap="round";
+
     ctx.beginPath();
     ctx.moveTo(a.x,a.y);
     ctx.lineTo(b.x,b.y);
     ctx.stroke();
 
-    ctx.strokeStyle="#6c746e";
-    ctx.lineWidth=r.width*camera.zoom*.75;
-    ctx.beginPath();
-    ctx.moveTo(a.x,a.y);
-    ctx.lineTo(b.x,b.y);
-    ctx.stroke();
+    ctx.strokeStyle=
+      "rgba(215,205,130,.7)";
 
-    /* road center line */
-    ctx.strokeStyle="rgba(225,205,115,.7)";
-    ctx.lineWidth=3;
+    ctx.lineWidth=2.5;
 
-    ctx.setLineDash([18,18]);
+    ctx.setLineDash(
+      r.type==="highway"
+      ?[22,18]
+      :[14,15]
+    );
 
     ctx.beginPath();
     ctx.moveTo(a.x,a.y);
@@ -1011,20 +1507,103 @@ function drawRoads(){
 }
 
 /* =========================================================
-   DRAW BUILDINGS
+   BRIDGES
+   ========================================================= */
+
+function drawBridges(){
+
+  for(const br of world.bridges){
+
+    const p=worldToScreen(
+      br.x,
+      br.y
+    );
+
+    ctx.save();
+
+    ctx.translate(
+      p.x,
+      p.y
+    );
+
+    ctx.rotate(br.angle);
+
+    const w=br.width*camera.zoom;
+    const l=br.length*camera.zoom;
+
+    /* bridge shadow */
+    ctx.fillStyle="rgba(0,0,0,.3)";
+
+    ctx.fillRect(
+      -l/2+8,
+      -w/2+9,
+      l,
+      w
+    );
+
+    /* bridge */
+    ctx.fillStyle="#73716a";
+
+    ctx.fillRect(
+      -l/2,
+      -w/2,
+      l,
+      w
+    );
+
+    /* railing */
+    ctx.strokeStyle="#343b3a";
+    ctx.lineWidth=5;
+
+    ctx.strokeRect(
+      -l/2,
+      -w/2,
+      l,
+      w
+    );
+
+    /* center */
+    ctx.strokeStyle="#d7c975";
+    ctx.lineWidth=2;
+
+    ctx.setLineDash([20,16]);
+
+    ctx.beginPath();
+    ctx.moveTo(-l/2,0);
+    ctx.lineTo(l/2,0);
+    ctx.stroke();
+
+    ctx.setLineDash([]);
+
+    ctx.restore();
+  }
+}
+
+/* =========================================================
+   BUILDINGS
    ========================================================= */
 
 function drawBuildings(){
 
   for(const b of world.buildings){
 
-    const p=worldToScreen(b.x+b.w/2,b.y+b.h/2);
+    const p=worldToScreen(
+      b.x+b.w/2,
+      b.y+b.h/2
+    );
 
-    const sx=b.w*camera.zoom;
-    const sy=b.h*camera.zoom*.65;
+    const sx=
+      b.w*
+      camera.zoom;
 
-    /* shadow */
-    ctx.fillStyle="rgba(0,0,0,.25)";
+    const sy=
+      b.h*
+      camera.zoom*
+      .65;
+
+    ctx.fillStyle=
+      "rgba(0,0,0,.25)";
+
     ctx.fillRect(
       p.x-sx/2+8,
       p.y-sy/2+10,
@@ -1032,16 +1611,24 @@ function drawBuildings(){
       sy
     );
 
-    /* wall */
-    if(b.type==="large"){
-      ctx.fillStyle="#9b9d95";
-    }else if(b.type==="industrial"){
-      ctx.fillStyle="#777d79";
-    }else if(b.type==="compound"){
-      ctx.fillStyle="#a59a82";
-    }else{
-      ctx.fillStyle="#b4a88d";
-    }
+    let wall="#b3a88d";
+
+    if(b.type==="large")
+      wall="#969995";
+
+    if(b.type==="industrial")
+      wall="#777d79";
+
+    if(b.type==="warehouse")
+      wall="#707774";
+
+    if(b.type==="compound")
+      wall="#a79b83";
+
+    if(b.type==="landmark")
+      wall="#777d7c";
+
+    ctx.fillStyle=wall;
 
     ctx.fillRect(
       p.x-sx/2,
@@ -1051,40 +1638,49 @@ function drawBuildings(){
     );
 
     /* roof */
+
     ctx.fillStyle=
-      b.type==="industrial"
-      ?"#555c59"
-      :"#55524b";
+      b.type==="industrial"||
+      b.type==="warehouse"
+      ?"#4e5654"
+      :"#55514b";
 
     ctx.beginPath();
+
     ctx.moveTo(
       p.x-sx/2,
       p.y-sy/2
     );
+
     ctx.lineTo(
       p.x,
-      p.y-sy/2-sy*.18
+      p.y-sy/2-sy*.2
     );
+
     ctx.lineTo(
       p.x+sx/2,
       p.y-sy/2
     );
+
     ctx.closePath();
+
     ctx.fill();
 
     /* windows */
-    const count=Math.max(
-      2,
-      Math.floor(b.w/130)
-    );
 
-    for(let i=0;i<count;i++){
+    const windows=
+      Math.max(
+        2,
+        Math.floor(b.w/120)
+      );
+
+    for(let i=0;i<windows;i++){
 
       const wx=
         p.x-sx/2+
-        (i+.5)*(sx/count);
+        (i+.5)*(sx/windows);
 
-      ctx.fillStyle="#293d45";
+      ctx.fillStyle="#29414a";
 
       ctx.fillRect(
         wx-5,
@@ -1097,43 +1693,291 @@ function drawBuildings(){
 }
 
 /* =========================================================
-   DRAW NATURE
+   COMPOUND FENCES
+   ========================================================= */
+
+function drawFences(){
+
+  for(const f of world.fences){
+
+    const a=worldToScreen(
+      f.x,
+      f.y
+    );
+
+    const b=worldToScreen(
+      f.x+f.w,
+      f.y
+    );
+
+    const c=worldToScreen(
+      f.x+f.w,
+      f.y+f.h
+    );
+
+    const d=worldToScreen(
+      f.x,
+      f.y+f.h
+    );
+
+    ctx.strokeStyle="#59615d";
+    ctx.lineWidth=3;
+
+    ctx.beginPath();
+
+    ctx.moveTo(a.x,a.y);
+    ctx.lineTo(b.x,b.y);
+    ctx.lineTo(c.x,c.y);
+    ctx.lineTo(d.x,d.y);
+    ctx.closePath();
+
+    ctx.stroke();
+  }
+}
+
+/* =========================================================
+   LANDMARKS
+   ========================================================= */
+
+function drawLandmarks(){
+
+  for(const l of world.landmarks){
+
+    const p=worldToScreen(
+      l.x,
+      l.y
+    );
+
+    const s=
+      l.size*
+      camera.zoom;
+
+    ctx.save();
+
+    if(l.type==="tower"){
+
+      ctx.fillStyle="#555e5b";
+
+      ctx.fillRect(
+        p.x-12,
+        p.y-s*.7,
+        24,
+        s*.7
+      );
+
+      ctx.strokeStyle="#323a38";
+      ctx.lineWidth=6;
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        p.x-s*.35,
+        p.y
+      );
+
+      ctx.lineTo(
+        p.x,
+        p.y-s*.7
+      );
+
+      ctx.lineTo(
+        p.x+s*.35,
+        p.y
+      );
+
+      ctx.stroke();
+
+    }else if(l.type==="radar"){
+
+      ctx.strokeStyle="#555f5c";
+      ctx.lineWidth=10;
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        p.x,
+        p.y+s*.2
+      );
+
+      ctx.lineTo(
+        p.x,
+        p.y-s*.35
+      );
+
+      ctx.stroke();
+
+      ctx.strokeStyle="#7b8680";
+
+      ctx.beginPath();
+
+      ctx.arc(
+        p.x,
+        p.y-s*.35,
+        s*.35,
+        Math.PI,
+        Math.PI*2
+      );
+
+      ctx.stroke();
+
+    }else if(l.type==="lighthouse"){
+
+      ctx.fillStyle="#ded8c5";
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        p.x-s*.12,
+        p.y+s*.35
+      );
+
+      ctx.lineTo(
+        p.x+s*.12,
+        p.y+s*.35
+      );
+
+      ctx.lineTo(
+        p.x+s*.08,
+        p.y-s*.35
+      );
+
+      ctx.lineTo(
+        p.x-s*.08,
+        p.y-s*.35
+      );
+
+      ctx.closePath();
+
+      ctx.fill();
+
+      ctx.fillStyle="#cf695d";
+
+      ctx.fillRect(
+        p.x-s*.1,
+        p.y-s*.35,
+        s*.2,
+        s*.13
+      );
+
+    }else if(l.type==="stadium"){
+
+      ctx.strokeStyle="#565d59";
+      ctx.lineWidth=35;
+
+      ctx.beginPath();
+
+      ctx.ellipse(
+        p.x,
+        p.y,
+        s*.55,
+        s*.35,
+        0,
+        0,
+        Math.PI*2
+      );
+
+      ctx.stroke();
+
+      ctx.fillStyle="#638254";
+
+      ctx.beginPath();
+
+      ctx.ellipse(
+        p.x,
+        p.y,
+        s*.38,
+        s*.2,
+        0,
+        0,
+        Math.PI*2
+      );
+
+      ctx.fill();
+
+    }else if(l.type==="quarry"){
+
+      ctx.fillStyle="#806f59";
+
+      ctx.beginPath();
+
+      ctx.arc(
+        p.x,
+        p.y,
+        s*.55,
+        0,
+        Math.PI*2
+      );
+
+      ctx.fill();
+
+      ctx.fillStyle="#69724e";
+
+      ctx.beginPath();
+
+      ctx.arc(
+        p.x,
+        p.y,
+        s*.32,
+        0,
+        Math.PI*2
+      );
+
+      ctx.fill();
+    }
+
+    ctx.restore();
+  }
+}
+
+/* =========================================================
+   TREES
    ========================================================= */
 
 function drawNature(){
 
   for(const t of world.trees){
 
-    const p=worldToScreen(t.x,t.y);
-    const s=t.r*camera.zoom;
+    const p=worldToScreen(
+      t.x,
+      t.y
+    );
 
-    /* shadow */
-    ctx.fillStyle="rgba(0,0,0,.22)";
+    const s=
+      t.r*
+      camera.zoom;
+
+    ctx.fillStyle="rgba(0,0,0,.2)";
+
     ctx.beginPath();
+
     ctx.ellipse(
       p.x,
       p.y+7,
       s*.8,
-      s*.35,
-      0,0,Math.PI*2
+      s*.32,
+      0,
+      0,
+      Math.PI*2
     );
+
     ctx.fill();
 
-    /* trunk */
-    ctx.fillStyle="#67523d";
+    ctx.fillStyle="#65503a";
+
     ctx.fillRect(
-      p.x-s*.13,
+      p.x-s*.12,
       p.y-s*.1,
-      s*.26,
-      s*.8
+      s*.24,
+      s*.75
     );
 
     ctx.fillStyle=
       t.type==="pine"
       ?"#315b42"
-      :"#3f6c43";
+      :"#416b43";
 
     ctx.beginPath();
+
     ctx.arc(
       p.x,
       p.y-s*.35,
@@ -1141,16 +1985,21 @@ function drawNature(){
       0,
       Math.PI*2
     );
+
     ctx.fill();
   }
 
   for(const r of world.rocks){
 
-    const p=worldToScreen(r.x,r.y);
+    const p=worldToScreen(
+      r.x,
+      r.y
+    );
 
-    ctx.fillStyle="#686e68";
+    ctx.fillStyle="#666d67";
 
     ctx.beginPath();
+
     ctx.arc(
       p.x,
       p.y,
@@ -1158,28 +2007,36 @@ function drawNature(){
       0,
       Math.PI*2
     );
+
     ctx.fill();
   }
 }
 
 /* =========================================================
-   DRAW VEHICLES
+   VEHICLES
    ========================================================= */
 
 function drawVehicles(){
 
   for(const v of world.vehicles){
 
-    const p=worldToScreen(v.x,v.y);
+    const p=worldToScreen(
+      v.x,
+      v.y
+    );
 
     ctx.save();
 
-    ctx.translate(p.x,p.y);
+    ctx.translate(
+      p.x,
+      p.y
+    );
+
     ctx.rotate(v.angle);
 
     const s=camera.zoom;
 
-    ctx.fillStyle="#273238";
+    ctx.fillStyle="#263136";
 
     ctx.fillRect(
       -27*s,
@@ -1188,7 +2045,7 @@ function drawVehicles(){
       28*s
     );
 
-    ctx.fillStyle="#7b8987";
+    ctx.fillStyle="#788685";
 
     ctx.fillRect(
       -15*s,
@@ -1197,31 +2054,31 @@ function drawVehicles(){
       20*s
     );
 
-    ctx.fillStyle="#151b1e";
+    ctx.fillStyle="#161c1e";
 
     ctx.fillRect(
-      -22*s,
+      -23*s,
       -17*s,
       11*s,
       5*s
     );
 
     ctx.fillRect(
-      11*s,
+      12*s,
       -17*s,
       11*s,
       5*s
     );
 
     ctx.fillRect(
-      -22*s,
+      -23*s,
       12*s,
       11*s,
       5*s
     );
 
     ctx.fillRect(
-      11*s,
+      12*s,
       12*s,
       11*s,
       5*s
@@ -1232,7 +2089,7 @@ function drawVehicles(){
 }
 
 /* =========================================================
-   DRAW LOOT
+   LOOT
    ========================================================= */
 
 function drawLoot(){
@@ -1241,16 +2098,30 @@ function drawLoot(){
 
     if(l.taken)continue;
 
-    const p=worldToScreen(l.x,l.y);
+    const p=worldToScreen(
+      l.x,
+      l.y
+    );
 
     let color="#ddd";
 
-    if(l.type==="helmet")color="#d6a84b";
-    if(l.type==="vest")color="#4e9a7b";
-    if(l.type==="backpack")color="#876fca";
-    if(l.type==="shoes")color="#bf765a";
-    if(l.type==="food")color="#d6c05a";
-    if(l.type==="medkit")color="#d96b6b";
+    if(l.type==="helmet")
+      color="#d4a84d";
+
+    if(l.type==="vest")
+      color="#4e9a7b";
+
+    if(l.type==="backpack")
+      color="#846bc0";
+
+    if(l.type==="shoes")
+      color="#bd765d";
+
+    if(l.type==="food")
+      color="#d5c05b";
+
+    if(l.type==="medkit")
+      color="#d86b6b";
 
     ctx.fillStyle=color;
 
@@ -1260,19 +2131,11 @@ function drawLoot(){
       14,
       14
     );
-
-    ctx.strokeStyle="rgba(255,255,255,.5)";
-    ctx.strokeRect(
-      p.x-8,
-      p.y-8,
-      16,
-      16
-    );
   }
 }
 
 /* =========================================================
-   DRAW BOTS
+   BOTS
    ========================================================= */
 
 function drawBots(){
@@ -1281,24 +2144,30 @@ function drawBots(){
 
     if(!b.alive)continue;
 
-    const p=worldToScreen(b.x,b.y);
+    const p=worldToScreen(
+      b.x,
+      b.y
+    );
 
     const s=camera.zoom;
 
-    /* shadow */
     ctx.fillStyle="rgba(0,0,0,.3)";
+
     ctx.beginPath();
+
     ctx.ellipse(
       p.x,
       p.y+13*s,
       14*s,
       6*s,
-      0,0,Math.PI*2
+      0,
+      0,
+      Math.PI*2
     );
+
     ctx.fill();
 
-    /* body */
-    ctx.fillStyle="#334b55";
+    ctx.fillStyle="#344d56";
 
     ctx.fillRect(
       p.x-9*s,
@@ -1307,7 +2176,6 @@ function drawBots(){
       29*s
     );
 
-    /* backpack */
     ctx.fillStyle="#202d32";
 
     ctx.fillRect(
@@ -1317,10 +2185,10 @@ function drawBots(){
       20*s
     );
 
-    /* head */
     ctx.fillStyle="#c49373";
 
     ctx.beginPath();
+
     ctx.arc(
       p.x,
       p.y-34*s,
@@ -1328,12 +2196,13 @@ function drawBots(){
       0,
       Math.PI*2
     );
+
     ctx.fill();
 
-    /* helmet */
     ctx.fillStyle="#343d42";
 
     ctx.beginPath();
+
     ctx.arc(
       p.x,
       p.y-37*s,
@@ -1341,21 +2210,38 @@ function drawBots(){
       Math.PI,
       Math.PI*2
     );
+
     ctx.fill();
 
-    /* legs */
     ctx.strokeStyle="#20292d";
     ctx.lineWidth=5*s;
 
     ctx.beginPath();
-    ctx.moveTo(p.x-4*s,p.y+4*s);
-    ctx.lineTo(p.x-7*s,p.y+18*s);
-    ctx.moveTo(p.x+4*s,p.y+4*s);
-    ctx.lineTo(p.x+7*s,p.y+18*s);
+
+    ctx.moveTo(
+      p.x-4*s,
+      p.y+4*s
+    );
+
+    ctx.lineTo(
+      p.x-7*s,
+      p.y+18*s
+    );
+
+    ctx.moveTo(
+      p.x+4*s,
+      p.y+4*s
+    );
+
+    ctx.lineTo(
+      p.x+7*s,
+      p.y+18*s
+    );
+
     ctx.stroke();
 
-    /* health */
     ctx.fillStyle="#202729";
+
     ctx.fillRect(
       p.x-18,
       p.y-52,
@@ -1375,7 +2261,7 @@ function drawBots(){
 }
 
 /* =========================================================
-   DRAW PLAYER
+   PLAYER
    ========================================================= */
 
 function drawPlayer(){
@@ -1387,19 +2273,24 @@ function drawPlayer(){
 
   const s=1.35;
 
-  /* shadow */
   ctx.fillStyle="rgba(0,0,0,.4)";
+
   ctx.beginPath();
+
   ctx.ellipse(
     p.x,
     p.y+26,
     28,
     11,
-    0,0,Math.PI*2
+    0,
+    0,
+    Math.PI*2
   );
+
   ctx.fill();
 
   /* backpack */
+
   ctx.fillStyle=
     player.equipment.backpack
     ?"#715b9a"
@@ -1413,6 +2304,7 @@ function drawPlayer(){
   );
 
   /* body */
+
   ctx.fillStyle=
     player.equipment.vest
     ?"#477b69"
@@ -1425,7 +2317,8 @@ function drawPlayer(){
     43*s
   );
 
-  /* shoulder */
+  /* shoulders */
+
   ctx.fillStyle="#29353a";
 
   ctx.fillRect(
@@ -1443,9 +2336,11 @@ function drawPlayer(){
   );
 
   /* head */
+
   ctx.fillStyle="#b98267";
 
   ctx.beginPath();
+
   ctx.arc(
     p.x,
     p.y-55*s,
@@ -1453,44 +2348,28 @@ function drawPlayer(){
     0,
     Math.PI*2
   );
+
   ctx.fill();
 
   /* helmet */
-  if(player.equipment.helmet){
 
-    ctx.fillStyle="#353e43";
+  ctx.fillStyle="#353e43";
 
-    ctx.beginPath();
-    ctx.arc(
-      p.x,
-      p.y-59*s,
-      13*s,
-      Math.PI,
-      Math.PI*2
-    );
-    ctx.fill();
+  ctx.beginPath();
 
-  }else{
+  ctx.arc(
+    p.x,
+    p.y-59*s,
+    13*s,
+    Math.PI,
+    Math.PI*2
+  );
 
-    ctx.fillStyle="#292523";
-
-    ctx.beginPath();
-    ctx.arc(
-      p.x,
-      p.y-60*s,
-      11*s,
-      Math.PI,
-      Math.PI*2
-    );
-    ctx.fill();
-  }
+  ctx.fill();
 
   /* legs */
-  ctx.strokeStyle=
-    player.equipment.shoes
-    ?"#4e4b43"
-    :"#252b2e";
 
+  ctx.strokeStyle="#292f32";
   ctx.lineWidth=9*s;
 
   ctx.beginPath();
@@ -1516,19 +2395,10 @@ function drawPlayer(){
   );
 
   ctx.stroke();
-
-  /* small direction marker */
-  ctx.strokeStyle="rgba(255,255,255,.65)";
-  ctx.lineWidth=2;
-
-  ctx.beginPath();
-  ctx.moveTo(p.x,p.y-75);
-  ctx.lineTo(p.x,p.y-94);
-  ctx.stroke();
 }
 
 /* =========================================================
-   PLAYER INPUT
+   INPUT
    ========================================================= */
 
 const keys={};
@@ -1544,19 +2414,28 @@ addEventListener("keyup",e=>{
   keys[e.key.toLowerCase()]=false;
 });
 
+/* JOYSTICK */
+
 let joyX=0;
 let joyY=0;
 let joyActive=false;
 
-const joyArea=document.getElementById("joyArea");
-const joyKnob=document.getElementById("joyKnob");
+const joyArea=
+  document.getElementById("joyArea");
+
+const joyKnob=
+  document.getElementById("joyKnob");
 
 function updateJoy(x,y){
 
-  const r=joyArea.getBoundingClientRect();
+  const r=
+    joyArea.getBoundingClientRect();
 
-  const cx=r.left+r.width/2;
-  const cy=r.top+r.height/2;
+  const cx=
+    r.left+r.width/2;
+
+  const cy=
+    r.top+r.height/2;
 
   let dx=x-cx;
   let dy=y-cy;
@@ -1566,8 +2445,12 @@ function updateJoy(x,y){
   const len=Math.hypot(dx,dy);
 
   if(len>max){
-    dx=dx/len*max;
-    dy=dy/len*max;
+
+    dx=
+      dx/len*max;
+
+    dy=
+      dy/len*max;
   }
 
   joyX=dx/max;
@@ -1577,60 +2460,103 @@ function updateJoy(x,y){
     `translate(${dx}px,${dy}px)`;
 }
 
-joyArea.addEventListener("pointerdown",e=>{
-  joyActive=true;
-  joyArea.setPointerCapture(e.pointerId);
-  updateJoy(e.clientX,e.clientY);
-});
+joyArea.addEventListener(
+  "pointerdown",
+  e=>{
+    joyActive=true;
+    joyArea.setPointerCapture(
+      e.pointerId
+    );
+    updateJoy(
+      e.clientX,
+      e.clientY
+    );
+  }
+);
 
-joyArea.addEventListener("pointermove",e=>{
-  if(joyActive)
-    updateJoy(e.clientX,e.clientY);
-});
-
-joyArea.addEventListener("pointerup",resetJoy);
-joyArea.addEventListener("pointercancel",resetJoy);
+joyArea.addEventListener(
+  "pointermove",
+  e=>{
+    if(joyActive)
+      updateJoy(
+        e.clientX,
+        e.clientY
+      );
+  }
+);
 
 function resetJoy(){
+
   joyActive=false;
+
   joyX=0;
   joyY=0;
-  joyKnob.style.transform="translate(0,0)";
+
+  joyKnob.style.transform=
+    "translate(0,0)";
 }
 
-/* =========================================================
-   CAMERA TOUCH
-   ========================================================= */
+joyArea.addEventListener(
+  "pointerup",
+  resetJoy
+);
+
+joyArea.addEventListener(
+  "pointercancel",
+  resetJoy
+);
+
+/* CAMERA */
 
 let lookActive=false;
 let lastLookX=0;
 
-canvas.addEventListener("pointerdown",e=>{
-  if(e.clientX>W*.45){
-    lookActive=true;
-    lastLookX=e.clientX;
-    canvas.setPointerCapture(e.pointerId);
+canvas.addEventListener(
+  "pointerdown",
+  e=>{
+
+    if(e.clientX>W*.45){
+
+      lookActive=true;
+
+      lastLookX=e.clientX;
+
+      canvas.setPointerCapture(
+        e.pointerId
+      );
+    }
   }
-});
+);
 
-canvas.addEventListener("pointermove",e=>{
+canvas.addEventListener(
+  "pointermove",
+  e=>{
 
-  if(!lookActive)return;
+    if(!lookActive)return;
 
-  const dx=e.clientX-lastLookX;
+    const dx=
+      e.clientX-lastLookX;
 
-  camera.angle+=dx*.006;
+    camera.angle+=
+      dx*.006;
 
-  lastLookX=e.clientX;
-});
+    lastLookX=e.clientX;
+  }
+);
 
-canvas.addEventListener("pointerup",()=>{
-  lookActive=false;
-});
+canvas.addEventListener(
+  "pointerup",
+  ()=>{
+    lookActive=false;
+  }
+);
 
-canvas.addEventListener("pointercancel",()=>{
-  lookActive=false;
-});
+canvas.addEventListener(
+  "pointercancel",
+  ()=>{
+    lookActive=false;
+  }
+);
 
 /* =========================================================
    BUTTONS
@@ -1638,54 +2564,69 @@ canvas.addEventListener("pointercancel",()=>{
 
 let sprintButton=false;
 
-document.getElementById("btnSprint")
-.addEventListener("pointerdown",()=>{
-  sprintButton=true;
-});
+const sprint=
+  document.getElementById("btnSprint");
 
-document.getElementById("btnSprint")
-.addEventListener("pointerup",()=>{
-  sprintButton=false;
-});
+sprint.addEventListener(
+  "pointerdown",
+  ()=>{
+    sprintButton=true;
+  }
+);
 
-document.getElementById("btnSprint")
-.addEventListener("pointercancel",()=>{
-  sprintButton=false;
-});
+sprint.addEventListener(
+  "pointerup",
+  ()=>{
+    sprintButton=false;
+  }
+);
+
+sprint.addEventListener(
+  "pointercancel",
+  ()=>{
+    sprintButton=false;
+  }
+);
 
 document.getElementById("btnCrouch")
-.addEventListener("click",()=>{
-  player.crouch=!player.crouch;
-});
-
-document.getElementById("btnJump")
-.addEventListener("click",()=>{
-  /* simple movement burst */
-  player.stamina=Math.max(0,player.stamina-8);
-});
+.addEventListener(
+  "click",
+  ()=>{
+    player.crouch=
+      !player.crouch;
+  }
+);
 
 document.getElementById("btnAction")
-.addEventListener("click",action);
+.addEventListener(
+  "click",
+  action
+);
 
 document.getElementById("btnBag")
-.addEventListener("click",()=>{
-  const inv=document.getElementById("inventory");
+.addEventListener(
+  "click",
+  ()=>{
+    const inv=
+      document.getElementById(
+        "inventory"
+      );
 
-  inv.style.display=
-    inv.style.display==="block"
-    ?"none"
-    :"block";
-});
+    inv.style.display=
+      inv.style.display==="block"
+      ?"none"
+      :"block";
+  }
+);
 
 /* =========================================================
-   ACTION
+   ACTION / LOOT
    ========================================================= */
 
 function action(){
 
-  /* pickup */
   let closest=null;
-  let best=65;
+  let best=70;
 
   for(const l of world.loot){
 
@@ -1697,6 +2638,7 @@ function action(){
     );
 
     if(d<best){
+
       best=d;
       closest=l;
     }
@@ -1704,25 +2646,24 @@ function action(){
 
   if(closest){
 
-    if(equipmentTypes.includes(closest.type)){
+    if(
+      equipmentTypes
+      .includes(closest.type)
+    ){
 
-      /*
-        EQUIPMENT LANGSUNG DIPAKAI.
-        Kalau slot sudah terisi:
-        loot tetap di tanah.
-      */
+      if(
+        !player.equipment[
+          closest.type
+        ]
+      ){
 
-      if(!player.equipment[closest.type]){
+        player.equipment[
+          closest.type
+        ]=true;
 
-        player.equipment[closest.type]=true;
         closest.taken=true;
 
       }else{
-
-        showLoot(
-          closest.type.toUpperCase()+
-          " SLOT SUDAH TERISI"
-        );
 
         return;
       }
@@ -1742,7 +2683,8 @@ function action(){
     return;
   }
 
-  /* abstract close combat interaction */
+  /* abstract close interaction */
+
   for(const b of bots){
 
     if(!b.alive)continue;
@@ -1757,51 +2699,49 @@ function action(){
       b.hp-=35;
 
       if(b.hp<=0){
+
         b.hp=0;
         b.alive=false;
       }
-
-      player.stamina=
-        Math.max(0,player.stamina-5);
 
       return;
     }
   }
 }
 
-function showLoot(text){
-
-  const box=document.getElementById("lootInfo");
-
-  box.textContent=text;
-  box.style.display="block";
-
-  clearTimeout(showLoot.timer);
-
-  showLoot.timer=setTimeout(()=>{
-    box.style.display="none";
-  },1000);
-}
-
 function updateInventory(){
 
   document.getElementById("medCount")
-    .textContent=player.inventory.medkit;
+    .textContent=
+      player.inventory.medkit;
 
   document.getElementById("foodCount")
-    .textContent=player.inventory.food;
+    .textContent=
+      player.inventory.food;
 
   document.getElementById("helmetSlot")
-    .textContent=player.equipment.helmet?"EQUIPPED":"-";
+    .textContent=
+      player.equipment.helmet
+      ?"EQUIPPED"
+      :"-";
 
   document.getElementById("vestSlot")
-    .textContent=player.equipment.vest?"EQUIPPED":"-";
+    .textContent=
+      player.equipment.vest
+      ?"EQUIPPED"
+      :"-";
 
   document.getElementById("bagSlot")
-    .textContent=player.equipment.backpack?"EQUIPPED":"-";
+    .textContent=
+      player.equipment.backpack
+      ?"EQUIPPED"
+      :"-";
 
   document.getElementById("shoeSlot")
-    .textContent=player.equipment.shoes?"EQUIPPED":"-";
+    .textContent=
+      player.equipment.shoes
+      ?"EQUIPPED"
+      :"-";
 }
 
 /* =========================================================
@@ -1810,27 +2750,14 @@ function updateInventory(){
 
 function nearestSurvivor(bot){
 
-  const candidates=[];
+  const list=[];
 
-  /* player */
-  const pd=Math.hypot(
-    player.x-bot.x,
-    player.y-bot.y
-  );
-
-  if(pd<900){
-    candidates.push({
-      entity:player,
-      d:pd,
-      player:true
-    });
-  }
-
-  /* other bots */
   for(const other of bots){
 
-    if(other===bot||!other.alive)
-      continue;
+    if(
+      other===bot ||
+      !other.alive
+    )continue;
 
     const d=Math.hypot(
       other.x-bot.x,
@@ -1838,45 +2765,62 @@ function nearestSurvivor(bot){
     );
 
     if(d<900){
-      candidates.push({
+
+      list.push({
         entity:other,
-        d,
-        player:false
+        d
       });
     }
   }
 
-  if(!candidates.length)
-    return null;
-
-  /*
-    IMPORTANT:
-    bot tidak otomatis mengejar player.
-    Kandidat bot lain mendapat peluang tinggi.
-  */
-
-  candidates.sort((a,b)=>a.d-b.d);
-
-  const nearby=candidates.slice(
-    0,
-    Math.min(5,candidates.length)
+  const pd=Math.hypot(
+    player.x-bot.x,
+    player.y-bot.y
   );
 
-  if(nearby.length>1 && rnd()<.72){
+  if(pd<900){
 
-    const botTargets=
-      nearby.filter(x=>!x.player);
+    list.push({
+      entity:player,
+      d:pd,
+      player:true
+    });
+  }
 
-    if(botTargets.length){
+  if(!list.length)
+    return null;
 
-      return botTargets[
-        Math.floor(rnd()*botTargets.length)
-      ].entity;
-    }
+  list.sort(
+    (a,b)=>a.d-b.d
+  );
+
+  const nearby=
+    list.slice(
+      0,
+      Math.min(5,list.length)
+    );
+
+  const botTargets=
+    nearby.filter(
+      x=>!x.player
+    );
+
+  if(
+    botTargets.length &&
+    rnd()<.75
+  ){
+
+    return botTargets[
+      Math.floor(
+        rnd()*botTargets.length
+      )
+    ].entity;
   }
 
   return nearby[
-    Math.floor(rnd()*nearby.length)
+    Math.floor(
+      rnd()*nearby.length
+    )
   ].entity;
 }
 
@@ -1890,19 +2834,13 @@ function updateBots(dt){
 
     if(b.think<=0){
 
-      b.think=rand(.6,2.4);
+      b.think=
+        rand(.7,2.5);
 
-      const target=nearestSurvivor(b);
+      b.target=
+        nearestSurvivor(b);
 
-      if(target){
-
-        b.target=target;
-        b.state="follow";
-
-      }else{
-
-        b.target=null;
-        b.state="wander";
+      if(!b.target){
 
         b.wanderX=
           clamp(
@@ -1925,10 +2863,13 @@ function updateBots(dt){
 
     if(
       b.target &&
-      (!b.target.alive || b.target.hp<=0)
+      (
+        !b.target.alive ||
+        b.target.hp<=0
+      )
     ){
+
       b.target=null;
-      b.state="wander";
     }
 
     if(b.target){
@@ -1941,16 +2882,18 @@ function updateBots(dt){
         ty-b.y
       );
 
-      /* abstract attack distance */
       if(d<75){
 
         b.action-=dt;
 
         if(b.action<=0){
 
-          b.action=rand(1.5,3.5);
+          b.action=
+            rand(1.5,3);
 
-          if(b.target===player){
+          if(
+            b.target===player
+          ){
 
             player.hp=
               Math.max(
@@ -1966,8 +2909,12 @@ function updateBots(dt){
                 b.target.hp-4
               );
 
-            if(b.target.hp<=0)
+            if(
+              b.target.hp<=0
+            ){
+
               b.target.alive=false;
+            }
           }
         }
 
@@ -1978,22 +2925,19 @@ function updateBots(dt){
     const dx=tx-b.x;
     const dy=ty-b.y;
 
-    const len=Math.hypot(dx,dy)||1;
-
-    const speed=
-      b.speed*
-      (b.state==="follow"?1.15:0.8);
+    const len=
+      Math.hypot(dx,dy)||1;
 
     moveEntity(
       b,
-      dx/len*speed*dt,
-      dy/len*speed*dt
+      dx/len*b.speed*dt,
+      dy/len*b.speed*dt
     );
   }
 }
 
 /* =========================================================
-   PLAYER UPDATE
+   PLAYER
    ========================================================= */
 
 function updatePlayer(dt){
@@ -2009,22 +2953,25 @@ function updatePlayer(dt){
   const len=Math.hypot(x,y);
 
   if(len>1){
+
     x/=len;
     y/=len;
   }
 
-  let moving=len>.05;
+  const moving=
+    Math.abs(x)+Math.abs(y)>.05;
 
   let speed=player.speed;
 
   player.sprint=
     sprintButton &&
-    player.stamina>1 &&
-    moving;
+    moving &&
+    player.stamina>1;
 
   if(player.sprint){
 
     speed*=1.55;
+
     player.stamina-=22*dt;
 
   }else{
@@ -2042,9 +2989,13 @@ function updatePlayer(dt){
       100
     );
 
-  /* camera-relative movement */
-  const ca=Math.cos(camera.angle);
-  const sa=Math.sin(camera.angle);
+  /* camera relative */
+
+  const ca=
+    Math.cos(camera.angle);
+
+  const sa=
+    Math.sin(camera.angle);
 
   const mx=
     x*ca-y*sa;
@@ -2058,13 +3009,14 @@ function updatePlayer(dt){
     my*speed*dt
   );
 
-  /* slow damage outside safe zone */
-  const zoneDist=Math.hypot(
+  /* zone damage */
+
+  const d=Math.hypot(
     player.x-safeZone.x,
     player.y-safeZone.y
   );
 
-  if(zoneDist>safeZone.radius){
+  if(d>safeZone.radius){
 
     player.hp=
       Math.max(
@@ -2074,42 +3026,75 @@ function updatePlayer(dt){
   }
 
   if(player.hp<=0){
+
     player.hp=100;
+
     player.x=safeZone.x;
     player.y=safeZone.y;
   }
 }
 
 /* =========================================================
-   CAMERA UPDATE
+   CAMERA
    ========================================================= */
 
-function updateCamera(dt){
+function updateCamera(){
 
-  const follow=.1;
+  camera.x+=
+    (player.x-camera.x)
+    *.10;
 
-  camera.x +=
-    (player.x-camera.x)*
-    follow;
-
-  camera.y +=
-    (player.y-camera.y)*
-    follow;
+  camera.y+=
+    (player.y-camera.y)
+    *.10;
 }
 
 /* =========================================================
-   ALIVE
+   HUD
    ========================================================= */
 
-function updateAlive(){
+function updateHUD(){
 
-  let count=player.hp>0?1:0;
+  document.getElementById("hp")
+    .style.width=
+      player.hp+"%";
+
+  document.getElementById("stamina")
+    .style.width=
+      player.stamina+"%";
+
+  const min=
+    Math.max(
+      0,
+      Math.floor(
+        safeZone.timer/60
+      )
+    );
+
+  const sec=
+    Math.max(
+      0,
+      Math.floor(
+        safeZone.timer%60
+      )
+    );
+
+  document.getElementById(
+    "zoneTimer"
+  ).textContent=
+    String(min).padStart(2,"0")+
+    ":"+
+    String(sec).padStart(2,"0");
+
+  let alive=
+    player.hp>0?1:0;
 
   for(const b of bots)
-    if(b.alive)count++;
+    if(b.alive)alive++;
 
-  document.getElementById("alive")
-    .textContent=count;
+  document.getElementById(
+    "alive"
+  ).textContent=alive;
 }
 
 /* =========================================================
@@ -2121,44 +3106,71 @@ function drawMinimap(){
   const mw=mini.width;
   const mh=mini.height;
 
-  mctx.clearRect(0,0,mw,mh);
+  mctx.clearRect(
+    0,
+    0,
+    mw,
+    mh
+  );
 
   const sx=mw/WORLD_W;
   const sy=mh/WORLD_H;
 
   mctx.fillStyle="#71865a";
-  mctx.fillRect(0,0,mw,mh);
+  mctx.fillRect(
+    0,
+    0,
+    mw,
+    mh
+  );
 
   /* water */
-  mctx.strokeStyle="#397a8a";
-  mctx.lineWidth=14;
 
   for(const river of world.water){
 
     mctx.beginPath();
 
-    river.points.forEach((q,i)=>{
+    river.points.forEach(
+      (q,i)=>{
 
-      if(i===0)
-        mctx.moveTo(
-          q.x*sx,
-          q.y*sy
-        );
-      else
-        mctx.lineTo(
-          q.x*sx,
-          q.y*sy
-        );
-    });
+        if(i===0)
+          mctx.moveTo(
+            q.x*sx,
+            q.y*sy
+          );
+        else
+          mctx.lineTo(
+            q.x*sx,
+            q.y*sy
+          );
+      }
+    );
 
+    mctx.strokeStyle="#397789";
+    mctx.lineWidth=
+      Math.max(
+        4,
+        river.width*sx
+      );
+
+    mctx.lineCap="round";
     mctx.stroke();
   }
 
   /* roads */
-  mctx.strokeStyle="#555c56";
-  mctx.lineWidth=3;
 
   for(const r of world.roads){
+
+    mctx.strokeStyle=
+      r.type==="highway"
+      ?"rgba(60,65,61,.9)"
+      :"rgba(82,88,79,.8)";
+
+    mctx.lineWidth=
+      Math.max(
+        1,
+        r.width*sx
+      );
 
     mctx.beginPath();
 
@@ -2175,8 +3187,28 @@ function drawMinimap(){
     mctx.stroke();
   }
 
-  /* zone */
-  mctx.strokeStyle="#b9d46d";
+  /* landmarks */
+
+  for(const l of world.landmarks){
+
+    mctx.fillStyle="#d2b45d";
+
+    mctx.beginPath();
+
+    mctx.arc(
+      l.x*sx,
+      l.y*sy,
+      3,
+      0,
+      Math.PI*2
+    );
+
+    mctx.fill();
+  }
+
+  /* safe zone */
+
+  mctx.strokeStyle="#c9dc72";
   mctx.lineWidth=3;
 
   mctx.beginPath();
@@ -2192,11 +3224,12 @@ function drawMinimap(){
   mctx.stroke();
 
   /* bots */
+
   for(const b of bots){
 
     if(!b.alive)continue;
 
-    mctx.fillStyle="#d45c5c";
+    mctx.fillStyle="#d05e5e";
 
     mctx.fillRect(
       b.x*sx-1.5,
@@ -2207,6 +3240,7 @@ function drawMinimap(){
   }
 
   /* player */
+
   mctx.fillStyle="#fff";
 
   mctx.beginPath();
@@ -2228,59 +3262,30 @@ function drawMinimap(){
 
 function render(){
 
-  ctx.clearRect(0,0,W,H);
+  ctx.clearRect(
+    0,
+    0,
+    W,
+    H
+  );
 
   drawTerrain();
   drawRoads();
+  drawBridges();
   drawNature();
   drawBuildings();
+  drawFences();
+  drawLandmarks();
   drawVehicles();
   drawLoot();
   drawBots();
-
-  /* player should remain foreground */
   drawPlayer();
 
   drawMinimap();
 }
 
 /* =========================================================
-   HUD
-   ========================================================= */
-
-function updateHUD(){
-
-  document.getElementById("hp")
-    .style.width=
-      player.hp+"%";
-
-  document.getElementById("stamina")
-    .style.width=
-      player.stamina+"%";
-
-  const minutes=
-    Math.max(
-      0,
-      Math.floor(safeZone.timer/60)
-    );
-
-  const seconds=
-    Math.max(
-      0,
-      Math.floor(safeZone.timer%60)
-    );
-
-  document.getElementById("zoneTimer")
-    .textContent=
-      String(minutes).padStart(2,"0")+
-      ":"+
-      String(seconds).padStart(2,"0");
-
-  updateAlive();
-}
-
-/* =========================================================
-   GAME LOOP
+   LOOP
    ========================================================= */
 
 let running=false;
@@ -2301,8 +3306,9 @@ function loop(t){
   updatePlayer(dt);
   updateBots(dt);
   updateZone(dt);
-  updateCamera(dt);
+  updateCamera();
   updateHUD();
+
   render();
 
   requestAnimationFrame(loop);
@@ -2316,7 +3322,12 @@ function startGame(){
 
   createTerrain();
   createRoadNetwork();
-  createPOI();
+  createBridges();
+  createCity();
+  createVillages();
+  createCompounds();
+  createIndustrial();
+  createLandmarks();
   createNature();
   createVehicles();
   createLoot();
@@ -2329,8 +3340,9 @@ function startGame(){
 
   running=true;
 
-  document.getElementById("startScreen")
-    .style.display="none";
+  document.getElementById(
+    "startScreen"
+  ).style.display="none";
 
   last=performance.now();
 
@@ -2338,7 +3350,10 @@ function startGame(){
 }
 
 document.getElementById("startBtn")
-  .addEventListener("click",startGame);
+.addEventListener(
+  "click",
+  startGame
+);
 
 </script>
 
