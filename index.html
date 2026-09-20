@@ -404,7 +404,7 @@ canvas{
   position:fixed;
   inset:0;
 
-  z-index:500;
+  z-index:100000;
 
   display:flex;
 
@@ -571,6 +571,10 @@ canvas{
 
 </style>
 
+<meta name="cache-control" content="no-cache, no-store, must-revalidate">
+<meta name="pragma" content="no-cache">
+<meta name="build-version" content="0.8.0">
+
 </head>
 
 <body>
@@ -600,7 +604,9 @@ canvas{
 
 </div>
 
-<div id="buildVersion">BUILD v0.7.0</div>\n\n<div id="hud">
+<div id="buildVersion">BUILD v0.8.0</div>
+
+<div id="hud">
 
   <div id="playerCard">
 
@@ -609,7 +615,7 @@ canvas{
     </div>
 
     <div class="version">
-      VIRELIA v0.7.0
+      VIRELIA v0.8.0
     </div>
 
     <div class="bar">
@@ -743,7 +749,7 @@ canvas{
     </div>
 
     <div class="versionStart">
-      VERSION 0.7.0
+      VERSION 0.8.0
     </div>
 
     <button id="startBtn">
@@ -807,6 +813,18 @@ startButton.addEventListener(
 );
 
 </script>
+
+<script>
+window.addEventListener("error",function(event){
+  const box=document.getElementById("bootError");
+  if(box){
+    box.style.display="block";
+    box.textContent="BUILD v0.8.0 • ERROR: "+(event.message||"unknown");
+  }
+});
+</script>
+
+<div id="bootError" style="display:none;position:fixed;left:8px;bottom:38px;z-index:100001;max-width:90%;padding:7px 9px;border-radius:7px;background:#6b2525;color:#fff;font:700 10px Arial;"></div>
 
 </body>
 </html>
