@@ -98,6 +98,26 @@ canvas{
   color:white;
 }
 
+#lookPad{
+  position:absolute;
+  top:0;
+  right:0;
+  width:58%;
+  height:100%;
+  z-index:1;
+  pointer-events:auto;
+  touch-action:none;
+}
+
+#joystick,
+#buttons{
+  z-index:20;
+}
+
+#inventory{
+  z-index:30;
+}
+
 #playerCard{
   position:absolute;
 
@@ -573,7 +593,7 @@ canvas{
 
 <meta name="cache-control" content="no-cache, no-store, must-revalidate">
 <meta name="pragma" content="no-cache">
-<meta name="build-version" content="0.8.0">
+<meta name="build-version" content="0.9.0">
 
 </head>
 
@@ -604,9 +624,11 @@ canvas{
 
 </div>
 
-<div id="buildVersion">BUILD v0.8.0</div>
+<div id="buildVersion">BUILD v0.9.0</div>
 
 <div id="hud">
+
+  <div id="lookPad" aria-label="Geser untuk memutar pandangan"></div>
 
   <div id="playerCard">
 
@@ -615,7 +637,7 @@ canvas{
     </div>
 
     <div class="version">
-      VIRELIA v0.8.0
+      VIRELIA v0.9.0
     </div>
 
     <div class="bar">
@@ -749,7 +771,7 @@ canvas{
     </div>
 
     <div class="versionStart">
-      VERSION 0.8.0
+      VERSION 0.9.0
     </div>
 
     <button id="startBtn">
@@ -764,7 +786,7 @@ canvas{
 
 import {
   startGame
-} from "./src/main.js";
+} from "./src/main.js?v=0.9.0";
 
 const startScreen =
   document.getElementById("start");
@@ -819,7 +841,7 @@ window.addEventListener("error",function(event){
   const box=document.getElementById("bootError");
   if(box){
     box.style.display="block";
-    box.textContent="BUILD v0.8.0 • ERROR: "+(event.message||"unknown");
+    box.textContent="BUILD v0.9.0 • ERROR: "+(event.message||"unknown");
   }
 });
 </script>
