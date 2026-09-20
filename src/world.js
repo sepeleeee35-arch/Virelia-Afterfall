@@ -9,6 +9,7 @@ export function createWorld(scene){
  box(scene,5350,0,2250,1300,.5,4500,mats.water);box(scene,4700,.04,2250,180,.08,4500,mats.sand);
  const roads=[[0,2050,6000,180],[2910,0,180,4500],[350,650,2300,120],[3650,650,1900,120],[450,3550,2000,120],[3500,3550,2050,120],[4300,2020,600,240],[1000,2050,140,1900],[4550,950,850,120]];
  for(const r of roads)addRoad(scene,...r);
+  addBridge(scene,4300,2020,600,240);
  const landmarks=[[2150,1050,900,620,"CENTRAL FORT",1],[2550,1830,420,280,"MARKET",0],[3350,1250,600,340,"WAREHOUSE",0],[4020,800,500,330,"DEPOT",0],[900,2450,600,390,"WEST COMPOUND",0],[3500,2500,650,390,"EAST COMPOUND",0],[1450,3450,760,350,"SOUTH ESTATE",1],[4450,1550,420,330,"COAST BASE",1]];
  for(const b of landmarks)addBuilding(scene,...b);
  for(let row=0;row<4;row++)for(let col=0;col<3;col++){addBuilding(scene,350+col*300,820+row*250+(col%2)*25,205,145,"HOMESTEAD");addBuilding(scene,3900+col*300,650+row*260+(col%2)*30,215,150,"COASTAL HOME");}
@@ -22,6 +23,11 @@ export function createWorld(scene){
  const ring=new THREE.Mesh(new THREE.RingGeometry(world.safeZone.radius-9,world.safeZone.radius,96),new THREE.MeshBasicMaterial({color:0xffffff,side:THREE.DoubleSide,transparent:true,opacity:.75}));ring.rotation.x=-Math.PI/2;ring.position.set(world.safeZone.x,1,world.safeZone.y);scene.add(ring);
 }
 function addRoad(scene,x,z,w,d){world.roads.push({x,z,w,d});box(scene,x+w/2,1,z+d/2,w,2,d,mats.road);const horizontal=w>d,count=Math.floor((horizontal?w:d)/85);for(let i=0;i<count;i++)box(scene,horizontal?x+i*85+20:x+w/2,2.2,horizontal?z+d/2:z+i*85+20,horizontal?38:4,.4,horizontal?4:38,mats.roadLine);}
+function addBridge(scene,x,z,w,d){
+ const deck=box(scene,x+w/2,8,z+d/2,w,10,d,mats.road);
+ box(scene,x+w/2,22,z+12,w,5,8,mats.roof); box(scene,x+w/2,22,z+d-12,w,5,8,mats.roof);
+ for(let i=0;i<Math.floor(w/70);i++){const px=x+35+i*70;box(scene,px,18,z+12,5,28,5,mats.roof);box(scene,px,18,z+d-12,5,28,5,mats.roof);}
+}
 function addBuilding(scene,x,z,w,d,label,landmark=false){const base=box(scene,x+w/2,45,z+d/2,w,90,d,landmark?material(0x666863):mats.house);box(scene,x+w/2,92,z+d/2,w+12,8,d+12,mats.roof);const cols=Math.max(1,Math.floor(w/75));for(let i=0;i<cols;i++){box(scene,x+25+i*70,55,z-1,22,18,3,mats.glass);box(scene,x+25+i*70,55,z+d+1,22,18,3,mats.glass);}box(scene,x+w/2,30,z+d+2,28,55,4,mats.roof);world.buildings.push({x,z,w,d,label,base});}
 function addTree(scene,x,z,s){const t=new THREE.Mesh(new THREE.CylinderGeometry(5*s,7*s,34*s,8),mats.trunk);t.position.set(x,17*s,z);scene.add(t);const c=new THREE.Mesh(new THREE.SphereGeometry(24*s,10,8),mats.tree);c.position.set(x,45*s,z);scene.add(c);world.trees.push({x,z});}
 function addVehicle(scene,x,z,angle){const g=new THREE.Group();g.position.set(x,18,z);g.rotation.y=angle;g.add(new THREE.Mesh(new THREE.BoxGeometry(70,24,38),mats.car));const glass=new THREE.Mesh(new THREE.BoxGeometry(38,16,32),mats.carGlass);glass.position.y=16;g.add(glass);scene.add(g);world.vehicles.push({x,z,angle,mesh:g,used:false});}
