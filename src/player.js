@@ -1,48 +1,17 @@
 import { input } from "./input.js";
 import { world } from "./world.js";
 
-export const player={
-  x:0,
-  y:0,
-  speed:250,
-  hp:100,
-  stamina:100,
-  crouch:false
-};
+export const player={x:0,y:0,speed:250,hp:100,stamina:100,crouch:false};
 
 export function updatePlayer(dt){
-  let x=input.x;
-  let y=input.y;
-
-  const length=Math.hypot(x,y);
-  if(length>1){
-    x/=length;
-    y/=length;
-  }
-
-  const cos=Math.cos(input.cameraYaw);
-  const sin=Math.sin(input.cameraYaw);
-
+  let x=input.x,y=input.y;
+  const len=Math.hypot(x,y);
+  if(len>1){x/=len;y/=len;}
+  const cos=Math.cos(input.cameraYaw),sin=Math.sin(input.cameraYaw);
   const worldX=-x*sin-y*cos;
   const worldY=x*cos-y*sin;
-
-  let speed=player.speed;
-  player.crouch=input.crouch;
-
-  if(player.crouch){
-    speed*=0.55;
-  }
-
-  if(input.run && !player.crouch && player.stamina>0){
-    speed*=1.55;
-    player.stamina=Math.max(0,player.stamina-28*dt);
-  }else{
-    player.stamina=Math.min(100,player.stamina+18*dt);
-  }
-
-  player.x+=worldX*speed*dt;
-  player.y+=worldY*speed*dt;
-
+  player.x+=worldX*player.speed*dt;
+  player.y+=worldY*player.speed*dt;
   player.x=Math.max(35,Math.min(world.width-35,player.x));
   player.y=Math.max(35,Math.min(world.height-35,player.y));
 }
