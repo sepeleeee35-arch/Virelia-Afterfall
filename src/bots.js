@@ -1,311 +1,154 @@
-import {
-  player,
-  damagePlayer
-} from "./player.js";
+export const bots = [];
 
-export const bots=[];
+export function createBots() {
+  bots.length = 0;
 
-export function createBots(world){
-
-  bots.length=0;
-
-  for(
-    let i=0;
-    i<69;
-    i++
-  ){
-
-    let x,y;
-
-    do{
-
-      x =
-        500 +
-        Math.random() *
-        (world.width-1000);
-
-      y =
-        500 +
-        Math.random() *
-        (world.height-1000);
-
-    }while(
-      Math.hypot(
-        x-player.x,
-        y-player.y
-      ) < 800
-    );
-
+  for (let i = 0; i < 69; i++) {
     bots.push({
+      x: 250 + Math.random() * 4200,
+      y: 250 + Math.random() * 3900,
 
-      id:i+1,
+      hp: 100,
 
-      x,
-      y,
+      targetX: 0,
+      targetY: 0,
 
-      radius:17,
-
-      hp:100,
-
-      speed:
-        105 +
-        Math.random()*45,
-
-      target:null,
-
-      think:
-        Math.random()*2,
-
-      attackCooldown:0,
-
-      wanderX:x,
-      wanderY:y,
-
-      alive:true
+      timer:
+        Math.random() * 3
     });
   }
 }
 
-function findTarget(bot){
+export function updateBots(dt) {
+  for (const bot of bots) {
+    bot.timer -= dt;
 
-  const candidates=[];
+    if (bot.timer <= 0) {
+      bot.timer =
+        1.5 + Math.random() * 3;
 
-  /* BOT KE BOT */
-
-  for(
-    const other of bots
-  ){
-
-    if(
-      other===bot ||
-      !other.alive
-    )
-      continue;
-
-    const d =
-      Math.hypot(
-        other.x-bot.x,
-        other.y-bot.y
-      );
-
-    if(d < 650){
-
-      candidates.push({
-        entity:other,
-        distance:d
-      });
-    }
-  }
-
-  /* PLAYER */
-
-  const pd =
-    Math.hypot(
-      player.x-bot.x,
-      player.y-bot.y
-    );
-
-  if(pd < 650){
-
-    candidates.push({
-      entity:player,
-      distance:pd,
-      player:true
-    });
-  }
-
-  if(!candidates.length)
-    return null;
-
-  /*
-    Tidak semua bot mengejar player.
-    Bot lebih sering memilih survivor
-    lain yang dekat.
-  */
-
-  const botTargets =
-    candidates.filter(
-      x=>!x.player
-    );
-
-  if(
-    botTargets.length &&
-    Math.random() < .78
-  ){
-
-    return botTargets[
-      Math.floor(
+      const angle =
         Math.random() *
-        botTargets.length
-      )
-    ].entity;
-  }
+        Math.PI * 2;
 
-  candidates.sort(
-    (a,b)=>
-      a.distance-b.distance
-  );
+      const distance =
+        120 + Math.random() * 450;
 
-  return candidates[0].entity;
-}
+      bot.targetX =
+        bot.x +
+        Math.cos(angle) *
+        distance;
 
-export function updateBots(
-  dt,
-  world
-){
-
-  for(
-    const bot of bots
-  ){
-
-    if(!bot.alive)
-      continue;
-
-    bot.think-=dt;
-
-    if(bot.think<=0){
-
-      bot.think =
-        .8 +
-        Math.random()*2;
-
-      bot.target =
-        findTarget(bot);
-
-      if(!bot.target){
-
-        bot.wanderX =
-          Math.max(
-            100,
-            Math.min(
-              world.width-100,
-              bot.x +
-              (Math.random()-.5) *
-              1000
-            )
-          );
-
-        bot.wanderY =
-          Math.max(
-            100,
-            Math.min(
-              world.height-100,
-              bot.y +
-              (Math.random()-.5) *
-              1000
-            )
-          );
-      }
+      bot.targetY =
+        bot.y +
+        Math.sin(angle) *
+        distance;
     }
 
-    let tx =
-      bot.wanderX;
+    let dx =
+      bot.targetX - bot.x;
 
-    let ty =
-      bot.wanderY;
-
-    if(
-      bot.target &&
-      !bot.target.alive &&
-      bot.target !== player
-    ){
-
-      bot.target=null;
-    }
-
-    if(
-      bot.target
-    ){
-
-      tx =
-        bot.target.x;
-
-      ty =
-        bot.target.y;
-    }
-
-    const dx =
-      tx-bot.x;
-
-    const dy =
-      ty-bot.y;
+    let dy =
+      bot.targetY - bot.y;
 
     const distance =
-      Math.hypot(dx,dy);
+      Math.hypot(dx, dy);
 
-    if(
-      bot.target &&
-      distance < 55
-    ){
+    if (distance > 5) {
+      dx /= distance;
+      dy /= distance;
 
-      bot.attackCooldown-=dt;
-
-      if(
-        bot.attackCooldown<=0
-      ){
-
-        bot.attackCooldown=1.7;
-
-        if(
-          bot.target === player
-        ){
-
-          damagePlayer(5);
-
-        }else{
-
-          bot.target.hp -= 5;
-
-          if(
-            bot.target.hp<=0
-          ){
-
-            bot.target.hp=0;
-            bot.target.alive=false;
-          }
-        }
-      }
-
-      continue;
+      bot.x += dx * 75 * dt;
+      bot.y += dy * 75 * dt;
     }
+  }
+}
 
-    const len =
-      distance || 1;
+export function drawBots(ctx) {
+  for (const bot of bots) {
+    ctx.fillStyle =
+      "rgba(0,0,0,.25)";
 
-    const vx =
-      dx/len *
-      bot.speed *
-      dt;
+    ctx.beginPath();
 
-    const vy =
-      dy/len *
-      bot.speed *
-      dt;
+    ctx.ellipse(
+      bot.x,
+      bot.y + 18,
+      18,
+      7,
+      0,
+      0,
+      Math.PI * 2
+    );
 
-    const nx =
-      bot.x+vx;
+    ctx.fill();
 
-    const ny =
-      bot.y+vy;
+    ctx.fillStyle = "#344b55";
 
-    if(
-      !world.isBlocked(
-        nx,
-        bot.y,
-        bot.radius
-      )
-    ){
-      bot.x=nx;
-    }
+    ctx.fillRect(
+      bot.x - 11,
+      bot.y - 27,
+      22,
+      30
+    );
 
-    if(
-      !world.isBlocked(
-        bot.x,
-        ny,
-        bot.radius
-      )
-    ){
-      bot.y=ny;
-    }
+    ctx.fillStyle = "#bd8971";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      bot.x,
+      bot.y - 38,
+      10,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fill();
+
+    ctx.strokeStyle = "#252c30";
+    ctx.lineWidth = 7;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      bot.x - 5,
+      bot.y + 2
+    );
+
+    ctx.lineTo(
+      bot.x - 9,
+      bot.y + 22
+    );
+
+    ctx.moveTo(
+      bot.x + 5,
+      bot.y + 2
+    );
+
+    ctx.lineTo(
+      bot.x + 9,
+      bot.y + 22
+    );
+
+    ctx.stroke();
+
+    ctx.fillStyle = "#202524";
+
+    ctx.fillRect(
+      bot.x - 18,
+      bot.y - 56,
+      36,
+      4
+    );
+
+    ctx.fillStyle = "#62d47a";
+
+    ctx.fillRect(
+      bot.x - 18,
+      bot.y - 56,
+      36,
+      4
+    );
   }
 }
