@@ -5,260 +5,327 @@ export class Player{
 
   constructor(scene,input,world){
 
-    this.scene = scene;
-    this.input = input;
-    this.world = world;
+    this.scene=scene;
+    this.input=input;
+    this.world=world;
 
-    this.group = new THREE.Group();
+    this.group=new THREE.Group();
 
     scene.add(this.group);
 
-    this.hp = 100;
-    this.stamina = 100;
+    this.hp=100;
+    this.stamina=100;
 
-    this.velocityY = 0;
-    this.grounded = true;
+    this.velocityY=0;
 
-    this.walkSpeed = 3.8;
-    this.runSpeed = 6.8;
-    this.crouchSpeed = 2.0;
+    this.grounded=true;
 
-    this.cameraSystem = null;
+    this.walkSpeed=3.5;
+    this.runSpeed=6.4;
+    this.crouchSpeed=1.8;
 
-    this.modelRoot = new THREE.Group();
+    this.jumpPower=5.2;
+    this.gravity=25;
 
-    this.group.add(this.modelRoot);
+    this.dodgeTimer=0;
+    this.dodgeDuration=.32;
+    this.dodgeSpeed=9;
+    this.dodgeDirection=
+      new THREE.Vector3();
 
-    this.mixer = null;
-    this.actions = {};
-    this.activeAction = null;
+    this.cameraSystem=null;
+
+    this.modelRoot=
+      new THREE.Group();
+
+    this.group.add(
+      this.modelRoot
+    );
+
+    this.mixer=null;
+
+    this.actions={};
+
+    this.activeAction=null;
 
     this.createFallback();
+
     this.loadGLB();
   }
 
-  setCamera(cameraSystem){
-    this.cameraSystem = cameraSystem;
+  setCamera(camera){
+    this.cameraSystem=camera;
   }
 
   createFallback(){
 
-    const root = new THREE.Group();
+    const root=
+      new THREE.Group();
 
-    const bodyMaterial =
+    const armor=
       new THREE.MeshStandardMaterial({
-        color:0x25282b,
-        roughness:.75
-      });
-
-    const armorMaterial =
-      new THREE.MeshStandardMaterial({
-        color:0x3d4247,
+        color:0x30363a,
         metalness:.55,
         roughness:.5
       });
 
-    const skinMaterial =
+    const dark=
       new THREE.MeshStandardMaterial({
-        color:0xb98265,
+        color:0x171a1d,
         roughness:.85
       });
 
-    const hairMaterial =
+    const skin=
       new THREE.MeshStandardMaterial({
-        color:0x151515,
+        color:0xb77d61,
         roughness:.9
       });
 
-    const body =
-      new THREE.Mesh(
-        new THREE.BoxGeometry(.58,.82,.34),
-        armorMaterial
-      );
-
-    body.position.y = 1.05;
-
-    const head =
-      new THREE.Mesh(
-        new THREE.SphereGeometry(.25,18,14),
-        skinMaterial
-      );
-
-    head.position.set(0,1.66,0);
-
-    const hair =
-      new THREE.Mesh(
-        new THREE.SphereGeometry(.26,18,12),
-        hairMaterial
-      );
-
-    hair.scale.set(1,.6,1);
-    hair.position.set(0,1.82,.015);
-
-    const scarf =
-      new THREE.Mesh(
-        new THREE.BoxGeometry(.64,.18,.42),
-        bodyMaterial
-      );
-
-    scarf.position.set(0,1.42,0);
-
-    const belt =
-      new THREE.Mesh(
-        new THREE.BoxGeometry(.66,.12,.39),
-        bodyMaterial
-      );
-
-    belt.position.set(0,.72,0);
-
-    const legMaterial =
+    const hair=
       new THREE.MeshStandardMaterial({
-        color:0x191b1d,
-        roughness:.9
+        color:0x121416,
+        roughness:1
       });
 
-    const leftLeg =
+    const torso=
       new THREE.Mesh(
-        new THREE.BoxGeometry(.2,.65,.23),
-        legMaterial
+        new THREE.BoxGeometry(
+          .54,.78,.32
+        ),
+        armor
       );
 
-    leftLeg.position.set(-.17,.34,0);
+    torso.position.y=1.02;
 
-    const rightLeg =
+    const head=
       new THREE.Mesh(
-        new THREE.BoxGeometry(.2,.65,.23),
-        legMaterial
+        new THREE.SphereGeometry(
+          .235,20,16
+        ),
+        skin
       );
 
-    rightLeg.position.set(.17,.34,0);
+    head.position.y=1.61;
 
-    const leftBoot =
+    const hairMesh=
       new THREE.Mesh(
-        new THREE.BoxGeometry(.25,.16,.42),
-        bodyMaterial
+        new THREE.SphereGeometry(
+          .25,20,12
+        ),
+        hair
       );
 
-    leftBoot.position.set(-.17,.05,-.05);
-
-    const rightBoot =
-      new THREE.Mesh(
-        new THREE.BoxGeometry(.25,.16,.42),
-        bodyMaterial
-      );
-
-    rightBoot.position.set(.17,.05,-.05);
-
-    const eyeMaterial =
-      new THREE.MeshBasicMaterial({
-        color:0x111111
-      });
-
-    const leftEye =
-      new THREE.Mesh(
-        new THREE.SphereGeometry(.035,8,8),
-        eyeMaterial
-      );
-
-    leftEye.position.set(-.09,1.68,-.235);
-
-    const rightEye =
-      new THREE.Mesh(
-        new THREE.SphereGeometry(.035,8,8),
-        eyeMaterial
-      );
-
-    rightEye.position.set(.09,1.68,-.235);
-
-    root.add(
-      body,
-      head,
-      hair,
-      scarf,
-      belt,
-      leftLeg,
-      rightLeg,
-      leftBoot,
-      rightBoot,
-      leftEye,
-      rightEye
+    hairMesh.scale.set(
+      1,.58,1
     );
 
-    root.traverse(object=>{
-      if(object.isMesh){
-        object.castShadow = true;
-        object.receiveShadow = true;
+    hairMesh.position.y=1.78;
+
+    const scarf=
+      new THREE.Mesh(
+        new THREE.BoxGeometry(
+          .61,.15,.39
+        ),
+        dark
+      );
+
+    scarf.position.y=1.39;
+
+    const shoulderL=
+      new THREE.Mesh(
+        new THREE.BoxGeometry(
+          .25,.17,.38
+        ),
+        armor
+      );
+
+    shoulderL.position.set(
+      -.36,1.29,0
+    );
+
+    const shoulderR=
+      shoulderL.clone();
+
+    shoulderR.position.x=.36;
+
+    const belt=
+      new THREE.Mesh(
+        new THREE.BoxGeometry(
+          .62,.11,.36
+        ),
+        dark
+      );
+
+    belt.position.y=.69;
+
+    const legL=
+      new THREE.Mesh(
+        new THREE.BoxGeometry(
+          .19,.61,.21
+        ),
+        dark
+      );
+
+    legL.position.set(
+      -.16,.32,0
+    );
+
+    const legR=
+      legL.clone();
+
+    legR.position.x=.16;
+
+    const bootL=
+      new THREE.Mesh(
+        new THREE.BoxGeometry(
+          .24,.15,.38
+        ),
+        dark
+      );
+
+    bootL.position.set(
+      -.16,.04,-.045
+    );
+
+    const bootR=
+      bootL.clone();
+
+    bootR.position.x=.16;
+
+    const eyeMat=
+      new THREE.MeshBasicMaterial({
+        color:0x101010
+      });
+
+    const eyeL=
+      new THREE.Mesh(
+        new THREE.SphereGeometry(
+          .032,8,8
+        ),
+        eyeMat
+      );
+
+    eyeL.position.set(
+      -.08,1.63,-.225
+    );
+
+    const eyeR=
+      eyeL.clone();
+
+    eyeR.position.x=.08;
+
+    root.add(
+      torso,
+      head,
+      hairMesh,
+      scarf,
+      shoulderL,
+      shoulderR,
+      belt,
+      legL,
+      legR,
+      bootL,
+      bootR,
+      eyeL,
+      eyeR
+    );
+
+    root.traverse(o=>{
+
+      if(o.isMesh){
+
+        o.castShadow=true;
+        o.receiveShadow=true;
       }
     });
 
     this.modelRoot.add(root);
 
-    this.fallback = root;
+    this.fallback=root;
   }
 
   async loadGLB(){
 
-    const loader = new GLTFLoader();
-
     try{
 
-      const gltf =
+      const loader=
+        new GLTFLoader();
+
+      const gltf=
         await loader.loadAsync(
           "https://threejs.org/examples/models/gltf/Soldier.glb"
         );
 
-      const model = gltf.scene;
+      const model=gltf.scene;
 
-      model.traverse(object=>{
-        if(object.isMesh){
-          object.castShadow = true;
-          object.receiveShadow = true;
+      model.traverse(o=>{
+
+        if(o.isMesh){
+
+          o.castShadow=true;
+          o.receiveShadow=true;
         }
       });
 
-      const box =
+      const box=
         new THREE.Box3()
           .setFromObject(model);
 
-      const size =
+      const size=
         box.getSize(
           new THREE.Vector3()
         );
 
-      const scale =
-        1.76 / size.y;
+      const scale=
+        1.76/size.y;
 
-      model.scale.setScalar(scale);
+      model.scale.setScalar(
+        scale
+      );
 
-      const scaledBox =
+      const scaledBox=
         new THREE.Box3()
           .setFromObject(model);
 
-      const center =
+      const center=
         scaledBox.getCenter(
           new THREE.Vector3()
         );
 
-      model.position.x = -center.x;
-      model.position.z = -center.z;
-      model.position.y = -scaledBox.min.y;
+      model.position.x=
+        -center.x;
 
-      model.rotation.y = Math.PI;
+      model.position.z=
+        -center.z;
 
-      this.modelRoot.add(model);
+      model.position.y=
+        -scaledBox.min.y;
 
-      this.fallback.visible = false;
+      model.rotation.y=
+        Math.PI;
 
-      this.mixer =
-        new THREE.AnimationMixer(model);
+      this.modelRoot.add(
+        model
+      );
 
-      for(const clip of gltf.animations){
+      this.fallback.visible=false;
 
-        const name =
+      this.mixer=
+        new THREE.AnimationMixer(
+          model
+        );
+
+      for(
+        const clip of gltf.animations
+      ){
+
+        const name=
           clip.name.toLowerCase();
 
-        this.actions[name] =
-          this.mixer.clipAction(clip);
+        this.actions[name]=
+          this.mixer.clipAction(
+            clip
+          );
       }
 
       this.playAnimation("idle");
@@ -266,39 +333,37 @@ export class Player{
     }catch(error){
 
       console.warn(
-        "GLB gagal dimuat. Fallback digunakan.",
+        "GLB tidak tersedia, memakai karakter fallback.",
         error
       );
     }
   }
 
-  findAction(type){
+  findAnimation(type){
 
-    const names =
-      Object.keys(this.actions);
+    const names=
+      Object.keys(
+        this.actions
+      );
 
-    if(type === "idle"){
+    if(type==="idle"){
 
       return names.find(
-        name => name.includes("idle")
+        n=>n.includes("idle")
       );
     }
 
-    if(type === "walk"){
+    if(type==="walk"){
 
       return names.find(
-        name => name.includes("walk")
+        n=>n.includes("walk")
       );
     }
 
-    if(type === "run"){
+    if(type==="run"){
 
       return names.find(
-        name =>
-          name.includes("run") &&
-          !name.includes("running")
-      ) || names.find(
-        name => name.includes("run")
+        n=>n.includes("run")
       );
     }
 
@@ -307,76 +372,236 @@ export class Player{
 
   playAnimation(type){
 
-    if(!this.mixer) return;
+    if(!this.mixer){
+      return;
+    }
 
-    const name =
-      this.findAction(type);
+    const name=
+      this.findAnimation(type);
 
-    if(!name) return;
+    if(!name){
+      return;
+    }
 
-    const next =
+    const next=
       this.actions[name];
 
-    if(this.activeAction === next){
+    if(
+      this.activeAction===next
+    ){
       return;
     }
 
     if(this.activeAction){
 
-      this.activeAction.fadeOut(.15);
+      this.activeAction
+        .fadeOut(.12);
     }
 
     next
       .reset()
-      .fadeIn(.15)
+      .fadeIn(.12)
       .play();
 
-    this.activeAction = next;
+    this.activeAction=next;
   }
 
   getCameraHeight(){
 
-    return this.input.state.crouch
-      ? .72
-      : 1.02;
+    if(this.dodgeTimer>0){
+      return .78;
+    }
+
+    if(this.input.state.crouch){
+      return .72;
+    }
+
+    if(!this.grounded){
+      return .94;
+    }
+
+    return 1.02;
   }
 
   damage(amount){
 
-    this.hp =
+    this.hp=
       Math.max(
         0,
-        this.hp - amount
+        this.hp-amount
       );
+  }
+
+  startDodge(){
+
+    if(
+      this.dodgeTimer>0 ||
+      this.stamina<25 ||
+      !this.grounded
+    ){
+      return;
+    }
+
+    const input=
+      this.input.state;
+
+    const yaw=
+      this.cameraSystem
+        ? this.cameraSystem.getYaw()
+        : 0;
+
+    const forward=
+      new THREE.Vector3(
+        -Math.sin(yaw),
+        0,
+        -Math.cos(yaw)
+      );
+
+    const right=
+      new THREE.Vector3(
+        Math.cos(yaw),
+        0,
+        -Math.sin(yaw)
+      );
+
+    this.dodgeDirection.set(0,0,0);
+
+    this.dodgeDirection
+      .addScaledVector(
+        right,
+        input.moveX
+      );
+
+    this.dodgeDirection
+      .addScaledVector(
+        forward,
+        -input.moveY
+      );
+
+    if(
+      this.dodgeDirection.lengthSq()<.01
+    ){
+      this.dodgeDirection.copy(
+        forward
+      );
+    }
+
+    this.dodgeDirection.normalize();
+
+    this.dodgeTimer=
+      this.dodgeDuration;
+
+    this.stamina-=25;
   }
 
   update(dt){
 
     this.input.update();
 
-    const input =
+    const input=
       this.input.state;
 
-    const cameraYaw =
+    if(
+      this.input.consumeAction()
+    ){
+
+      this.world.playerAction(
+        this
+      );
+    }
+
+    if(
+      this.input.consumeJump()
+    ){
+
+      if(
+        input.crouch &&
+        this.grounded
+      ){
+
+        this.startDodge();
+
+      }else if(
+        this.grounded &&
+        !input.crouch
+      ){
+
+        this.velocityY=
+          this.jumpPower;
+
+        this.grounded=false;
+      }
+    }
+
+    if(this.dodgeTimer>0){
+
+      this.dodgeTimer-=dt;
+
+      const amount=
+        this.dodgeSpeed*dt;
+
+      const nextX=
+        this.group.position.x+
+        this.dodgeDirection.x*
+        amount;
+
+      const nextZ=
+        this.group.position.z+
+        this.dodgeDirection.z*
+        amount;
+
+      if(
+        !this.world.isBlocked(
+          nextX,
+          this.group.position.z,
+          .35
+        )
+      ){
+
+        this.group.position.x=
+          nextX;
+      }
+
+      if(
+        !this.world.isBlocked(
+          this.group.position.x,
+          nextZ,
+          .35
+        )
+      ){
+
+        this.group.position.z=
+          nextZ;
+      }
+
+      this.updateAnimation(
+        false,
+        false
+      );
+
+      return;
+    }
+
+    const yaw=
       this.cameraSystem
         ? this.cameraSystem.getYaw()
         : 0;
 
-    const forward =
+    const forward=
       new THREE.Vector3(
-        -Math.sin(cameraYaw),
+        -Math.sin(yaw),
         0,
-        -Math.cos(cameraYaw)
+        -Math.cos(yaw)
       );
 
-    const right =
+    const right=
       new THREE.Vector3(
-        Math.cos(cameraYaw),
+        Math.cos(yaw),
         0,
-        -Math.sin(cameraYaw)
+        -Math.sin(yaw)
       );
 
-    const movement =
+    const movement=
       new THREE.Vector3();
 
     movement.addScaledVector(
@@ -389,151 +614,173 @@ export class Player{
       -input.moveY
     );
 
-    if(movement.lengthSq() > 1){
+    if(
+      movement.lengthSq()>1
+    ){
 
       movement.normalize();
     }
 
-    const moving =
-      movement.lengthSq() > .001;
+    const moving=
+      movement.lengthSq()>.001;
 
-    let speed =
+    let speed=
       this.walkSpeed;
 
     if(input.crouch){
 
-      speed =
+      speed=
         this.crouchSpeed;
 
-    }else if(input.sprint && moving){
+    }else if(
+      input.sprint &&
+      moving &&
+      this.stamina>0
+    ){
 
-      speed =
+      speed=
         this.runSpeed;
     }
 
     if(
       input.sprint &&
       moving &&
-      !input.crouch &&
-      this.stamina > 0
+      !input.crouch
     ){
 
-      this.stamina =
+      this.stamina=
         Math.max(
           0,
-          this.stamina - 25 * dt
+          this.stamina-
+          24*dt
         );
 
     }else{
 
-      this.stamina =
+      this.stamina=
         Math.min(
           100,
-          this.stamina + 16 * dt
+          this.stamina+
+          18*dt
         );
-    }
-
-    if(
-      this.input.consumeJump() &&
-      this.grounded &&
-      !input.crouch
-    ){
-
-      this.velocityY = 6.0;
-      this.grounded = false;
-    }
-
-    this.velocityY -= 24 * dt;
-
-    this.group.position.y +=
-      this.velocityY * dt;
-
-    if(this.group.position.y <= 0){
-
-      this.group.position.y = 0;
-      this.velocityY = 0;
-      this.grounded = true;
     }
 
     if(moving){
 
-      const desiredX =
-        this.group.position.x +
-        movement.x * speed * dt;
+      const nextX=
+        this.group.position.x+
+        movement.x*speed*dt;
 
-      const desiredZ =
-        this.group.position.z +
-        movement.z * speed * dt;
+      const nextZ=
+        this.group.position.z+
+        movement.z*speed*dt;
 
       if(
         !this.world.isBlocked(
-          desiredX,
+          nextX,
           this.group.position.z,
           .38
         )
       ){
 
-        this.group.position.x =
-          desiredX;
+        this.group.position.x=
+          nextX;
       }
 
       if(
         !this.world.isBlocked(
           this.group.position.x,
-          desiredZ,
+          nextZ,
           .38
         )
       ){
 
-        this.group.position.z =
-          desiredZ;
+        this.group.position.z=
+          nextZ;
       }
 
-      const targetRotation =
+      const targetRotation=
         Math.atan2(
           movement.x,
           movement.z
         );
 
-      let difference =
-        targetRotation -
+      let difference=
+        targetRotation-
         this.group.rotation.y;
 
-      difference =
+      difference=
         Math.atan2(
           Math.sin(difference),
           Math.cos(difference)
         );
 
-      this.group.rotation.y +=
-        difference *
-        Math.min(1,dt * 12);
+      this.group.rotation.y+=
+        difference*
+        Math.min(
+          1,
+          dt*14
+        );
     }
 
-    if(this.mixer){
+    this.velocityY-=
+      this.gravity*dt;
 
-      if(!this.grounded){
+    this.group.position.y+=
+      this.velocityY*dt;
 
-        this.playAnimation("idle");
+    if(
+      this.group.position.y<=0
+    ){
 
-      }else if(!moving){
+      this.group.position.y=0;
+      this.velocityY=0;
+      this.grounded=true;
 
-        this.playAnimation("idle");
+    }else{
 
-      }else if(
-        input.sprint &&
-        !input.crouch &&
-        this.stamina > 0
-      ){
-
-        this.playAnimation("run");
-
-      }else{
-
-        this.playAnimation("walk");
-      }
-
-      this.mixer.update(dt);
+      this.grounded=false;
     }
+
+    this.updateAnimation(
+      moving,
+      input.sprint &&
+      !input.crouch &&
+      this.stamina>0
+    );
+  }
+
+  updateAnimation(
+    moving,
+    running
+  ){
+
+    if(!this.mixer){
+      return;
+    }
+
+    if(!this.grounded){
+
+      this.playAnimation("idle");
+
+    }else if(!moving){
+
+      this.playAnimation("idle");
+
+    }else if(running){
+
+      this.playAnimation("run");
+
+    }else{
+
+      this.playAnimation("walk");
+    }
+
+    this.mixer.update(
+      Math.min(
+        .05,
+        1/60
+      )
+    );
   }
 }
