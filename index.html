@@ -2,9 +2,10 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 
-<title>Virelia Afterfall</title>
+<title>Virelia: Afterfall</title>
 
 <style>
 *{
@@ -19,274 +20,155 @@ html,body{
   height:100%;
   overflow:hidden;
   background:#111;
-  font-family:Arial,sans-serif;
-}
-
-body{
+  font-family:Arial,Helvetica,sans-serif;
   touch-action:none;
 }
 
+body{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+#game{
+  position:relative;
+  width:100vw;
+  height:100vh;
+  overflow:hidden;
+  background:#26352b;
+}
+
 canvas{
-  display:block;
+  position:absolute;
+  inset:0;
   width:100%;
   height:100%;
   image-rendering:auto;
 }
 
 #hud{
-  position:fixed;
+  position:absolute;
   inset:0;
   pointer-events:none;
-  color:#fff;
 }
 
 .panel{
-  background:rgba(10,14,18,.72);
-  border:1px solid rgba(255,255,255,.12);
+  background:rgba(10,14,12,.72);
+  border:1px solid rgba(255,255,255,.14);
   border-radius:10px;
-  backdrop-filter:blur(4px);
+  color:white;
+  backdrop-filter:blur(5px);
 }
 
-#topLeft{
+#top{
   position:absolute;
-  left:10px;
   top:10px;
-  padding:8px;
-  min-width:190px;
+  left:10px;
+  right:10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
 }
 
-.name{
-  font-weight:bold;
-  font-size:13px;
+#stats{
+  width:220px;
+  padding:9px;
+}
+
+.label{
+  font-size:11px;
+  color:#bbb;
 }
 
 .bar{
-  width:175px;
-  height:8px;
-  margin-top:5px;
-  background:#333;
-  border-radius:10px;
+  height:9px;
+  background:#252525;
+  border-radius:5px;
   overflow:hidden;
+  margin:3px 0 7px;
 }
 
-#hp{
+.fill{
   height:100%;
   width:100%;
-  background:#58c879;
 }
 
-#stamina{
-  height:100%;
-  width:100%;
-  background:#5da6ed;
-}
+#hpFill{background:#e05252}
+#staminaFill{background:#e5c94f}
 
-#topRight{
-  position:absolute;
-  right:10px;
-  top:10px;
-  padding:9px 12px;
+#info{
   text-align:right;
-  font-size:12px;
-  line-height:1.6;
+  padding:9px;
+  min-width:160px;
 }
 
-#zone{
-  color:#7fc3ff;
+#alive{
+  font-size:18px;
+  font-weight:bold;
+}
+
+#timer{
+  font-size:12px;
+  color:#ccc;
 }
 
 #equipment{
   position:absolute;
-  right:10px;
-  top:102px;
-  width:160px;
-  padding:9px;
+  top:105px;
+  left:10px;
+  width:190px;
+  padding:8px;
   font-size:12px;
 }
 
-.eq{
+.equip{
   display:flex;
   justify-content:space-between;
-  padding:5px 0;
-  border-bottom:1px solid rgba(255,255,255,.08);
+  margin:5px 0;
 }
 
-.eq:last-child{
-  border-bottom:0;
-}
-
-#message{
-  position:absolute;
-  left:50%;
-  top:14%;
-  transform:translateX(-50%);
-  padding:9px 15px;
-  background:rgba(5,8,11,.85);
-  border-radius:10px;
-  opacity:0;
-  transition:opacity .15s;
-  font-size:13px;
+.equip span:last-child{
+  color:#ddd;
 }
 
 #minimap{
   position:absolute;
   right:10px;
-  bottom:145px;
-  width:135px;
-  height:135px;
-  border-radius:50%;
-  border:2px solid rgba(255,255,255,.45);
-  background:#1b281c;
-}
-
-#joy{
-  position:absolute;
-  left:18px;
-  bottom:20px;
+  top:105px;
   width:145px;
   height:145px;
-  pointer-events:auto;
+  border-radius:8px;
+  overflow:hidden;
+  border:2px solid rgba(255,255,255,.35);
+  background:#253226;
 }
 
-.jbtn{
-  position:absolute;
-  width:52px;
-  height:52px;
-  border-radius:50%;
-  background:rgba(255,255,255,.15);
-  border:1px solid rgba(255,255,255,.15);
-  color:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:20px;
+#mapCanvas{
+  width:100%;
+  height:100%;
 }
 
-#up{
-  left:46px;
-  top:0;
-}
-
-#down{
-  left:46px;
-  bottom:0;
-}
-
-#left{
-  left:0;
-  top:46px;
-}
-
-#right{
-  right:0;
-  top:46px;
-}
-
-#actions{
-  position:absolute;
-  right:14px;
-  bottom:18px;
-  width:180px;
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:8px;
-  pointer-events:auto;
-}
-
-.action{
-  min-height:52px;
-  border:0;
-  border-radius:13px;
-  background:rgba(15,20,26,.82);
-  color:#fff;
-  font-weight:bold;
-}
-
-.action:active{
-  transform:scale(.95);
-}
-
-#inventory{
-  display:none;
+#message{
   position:absolute;
   left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  width:min(430px,92vw);
-  max-height:80vh;
-  overflow:auto;
-  padding:18px;
-  background:#151a21;
-  border:1px solid #45505e;
-  border-radius:18px;
-  pointer-events:auto;
+  top:18%;
+  transform:translateX(-50%);
+  padding:10px 18px;
+  opacity:0;
+  transition:.2s;
+  font-size:13px;
 }
 
-.inventoryGrid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:8px;
-  margin-top:12px;
-}
-
-.item{
-  background:#252d37;
-  padding:12px;
-  border-radius:10px;
-}
-
-.item small{
-  color:#a4adb8;
-}
-
-.close{
-  margin-top:12px;
-  padding:10px 16px;
-  border:0;
-  border-radius:9px;
-}
-
-#startOverlay{
-  position:fixed;
-  inset:0;
-  z-index:20;
-  background:#11161b;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:white;
-}
-
-.startBox{
-  text-align:center;
-}
-
-.startBox h1{
-  margin:0;
-  font-size:35px;
-  letter-spacing:3px;
-}
-
-.startBox p{
-  color:#9da8b3;
-}
-
-#start{
-  padding:14px 35px;
-  border:0;
-  border-radius:12px;
-  background:#397fd4;
-  color:white;
-  font-weight:bold;
-  font-size:17px;
+#message.show{
+  opacity:1;
 }
 
 #crosshair{
   position:absolute;
   left:50%;
   top:50%;
-  width:20px;
-  height:20px;
+  width:18px;
+  height:18px;
   transform:translate(-50%,-50%);
 }
 
@@ -299,36 +181,185 @@ canvas{
 
 #crosshair:before{
   width:2px;
-  height:20px;
-  left:9px;
-  top:0;
+  height:18px;
+  left:8px;
 }
 
 #crosshair:after{
+  width:18px;
   height:2px;
-  width:20px;
-  top:9px;
-  left:0;
+  top:8px;
+}
+
+#controls{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+
+button{
+  border:1px solid rgba(255,255,255,.2);
+  background:rgba(15,18,16,.72);
+  color:#fff;
+  border-radius:12px;
+  font-weight:bold;
+  min-width:58px;
+  min-height:48px;
+  font-size:11px;
+}
+
+button:active{
+  transform:scale(.94);
+  background:rgba(80,90,80,.85);
+}
+
+#move{
+  position:absolute;
+  left:18px;
+  bottom:18px;
+  width:180px;
+  height:180px;
+  pointer-events:auto;
+}
+
+.moveBtn{
+  position:absolute;
+  width:56px;
+  height:56px;
+  min-width:56px;
+}
+
+#up{left:62px;top:0}
+#left{left:0;top:62px}
+#down{left:62px;top:124px}
+#right{left:124px;top:62px}
+
+#actions{
+  position:absolute;
+  right:18px;
+  bottom:18px;
+  display:grid;
+  grid-template-columns:repeat(2,70px);
+  gap:8px;
+  pointer-events:auto;
+}
+
+.action{
+  min-width:70px;
+  min-height:52px;
+}
+
+#inventoryPanel{
+  display:none;
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:min(420px,90vw);
+  padding:16px;
+  pointer-events:auto;
+}
+
+#inventoryPanel.show{
+  display:block;
+}
+
+#inventoryItems{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:8px;
+  margin-top:10px;
+}
+
+.item{
+  padding:10px;
+  background:rgba(255,255,255,.07);
+  border-radius:8px;
+}
+
+#start{
+  position:absolute;
+  inset:0;
+  z-index:10;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:
+    radial-gradient(circle at center,#344a3b,#101512 70%);
+  color:white;
+}
+
+.startBox{
+  width:min(430px,90vw);
+  text-align:center;
+  padding:30px;
+}
+
+.startBox h1{
+  font-size:38px;
+  margin:0;
+  letter-spacing:4px;
+}
+
+.startBox h2{
+  font-size:14px;
+  font-weight:normal;
+  letter-spacing:5px;
+  color:#aeb7ad;
+  margin:4px 0 24px;
+}
+
+.startBox p{
+  color:#aaa;
+  font-size:13px;
+  line-height:1.6;
+}
+
+#startBtn{
+  margin-top:15px;
+  width:100%;
+  min-height:55px;
+  background:#71856c;
+  border:none;
+}
+
+#loading{
+  position:absolute;
+  inset:0;
+  z-index:20;
+  display:none;
+  justify-content:center;
+  align-items:center;
+  background:#111;
+  color:white;
+  text-align:center;
+}
+
+#loading.show{
+  display:flex;
 }
 
 @media(max-width:600px){
   #equipment{
-    top:95px;
-    width:145px;
+    display:none;
   }
 
   #minimap{
     width:115px;
     height:115px;
-    bottom:155px;
+    top:105px;
   }
 
-  #topLeft{
-    min-width:160px;
+  #stats{
+    width:170px;
   }
 
-  .bar{
-    width:145px;
+  #info{
+    min-width:120px;
+  }
+
+  .startBox h1{
+    font-size:29px;
   }
 }
 </style>
@@ -336,374 +367,565 @@ canvas{
 
 <body>
 
-<div id="startOverlay">
-  <div class="startBox">
-    <h1>VIRELIA</h1>
-    <p>AFTERFALL • SURVIVAL MAP</p>
-    <button id="start">MASUK MAP</button>
-  </div>
-</div>
+<div id="game">
 
-<canvas id="game"></canvas>
+<canvas id="canvas"></canvas>
 
 <div id="hud">
 
-  <div id="topLeft" class="panel">
-    <div class="name">SURVIVOR</div>
+  <div id="top">
 
-    <div class="bar">
-      <div id="hp"></div>
+    <div id="stats" class="panel">
+      <div class="label">HP</div>
+      <div class="bar">
+        <div id="hpFill" class="fill"></div>
+      </div>
+
+      <div class="label">STAMINA</div>
+      <div class="bar">
+        <div id="staminaFill" class="fill"></div>
+      </div>
     </div>
 
-    <div class="bar">
-      <div id="stamina"></div>
+    <div id="info" class="panel">
+      <div id="alive">PLAYERS 70</div>
+      <div id="timer">20:00</div>
     </div>
-  </div>
 
-  <div id="topRight" class="panel">
-    <div>ALIVE: <b id="alive">31</b></div>
-    <div>TIME: <b id="timer">20:00</b></div>
-    <div id="zone">ZONE: STABLE</div>
   </div>
 
   <div id="equipment" class="panel">
-    <b>EQUIPMENT</b>
 
-    <div class="eq">
+    <div class="equip">
       <span>Helmet</span>
-      <b id="helmet">0</b>
+      <span id="helmet">Kosong</span>
     </div>
 
-    <div class="eq">
+    <div class="equip">
       <span>Vest</span>
-      <b id="vest">0</b>
+      <span id="vest">Kosong</span>
     </div>
 
-    <div class="eq">
+    <div class="equip">
       <span>Shoes</span>
-      <b id="shoes">0</b>
+      <span id="shoes">Kosong</span>
     </div>
 
-    <div class="eq">
+    <div class="equip">
       <span>Backpack</span>
-      <b id="backpack">0</b>
+      <span id="backpack">Kosong</span>
     </div>
+
   </div>
 
-  <div id="message">-</div>
+  <div id="minimap">
+    <canvas id="mapCanvas"></canvas>
+  </div>
 
   <div id="crosshair"></div>
 
-  <canvas id="minimap"></canvas>
+  <div id="message" class="panel">
+    -
+  </div>
 
-  <div id="joy">
-    <div class="jbtn" id="up">▲</div>
-    <div class="jbtn" id="down">▼</div>
-    <div class="jbtn" id="left">◀</div>
-    <div class="jbtn" id="right">▶</div>
+</div>
+
+<div id="controls">
+
+  <div id="move">
+
+    <button class="moveBtn" id="up">▲</button>
+    <button class="moveBtn" id="left">◀</button>
+    <button class="moveBtn" id="down">▼</button>
+    <button class="moveBtn" id="right">▶</button>
+
   </div>
 
   <div id="actions">
-    <button class="action" id="run">LARI</button>
-    <button class="action" id="pickup">LOOT</button>
-    <button class="action" id="bag">TAS</button>
+
+    <button class="action" id="sprint">LARI</button>
+    <button class="action" id="loot">LOOT</button>
+
     <button class="action" id="vehicle">KENDARAAN</button>
+    <button class="action" id="bag">TAS</button>
+
   </div>
 
 </div>
 
-
-<div id="inventory">
+<div id="inventoryPanel" class="panel">
 
   <h3>INVENTORY</h3>
 
-  <div class="inventoryGrid">
+  <div id="inventoryItems"></div>
 
-    <div class="item">
-      <b>Helmet</b><br>
-      <small>Perlindungan</small>
-    </div>
+  <br>
 
-    <div class="item">
-      <b>Vest</b><br>
-      <small>Perlindungan</small>
-    </div>
-
-    <div class="item">
-      <b>Shoes</b><br>
-      <small>Kecepatan</small>
-    </div>
-
-    <div class="item">
-      <b>Backpack</b><br>
-      <small>Kapasitas</small>
-    </div>
-
-  </div>
-
-  <button class="close" id="closeBag">
-    TUTUP
-  </button>
+  <button id="closeBag">TUTUP</button>
 
 </div>
 
+<div id="start">
+
+  <div class="startBox">
+
+    <h1>VIRELIA</h1>
+    <h2>AFTERFALL</h2>
+
+    <p>
+      LARGE-SCALE SURVIVAL WORLD
+    </p>
+
+    <p>
+      Map besar • 70 entitas maksimal •
+      bot dinamis • kendaraan • loot • equipment
+    </p>
+
+    <button id="startBtn">
+      MASUK MAP
+    </button>
+
+  </div>
+
+</div>
+
+<div id="loading">
+  <div>
+    <h2>MEMUAT VIRELIA</h2>
+    <p id="loadingText">Membangun dunia...</p>
+  </div>
+</div>
+
+</div>
 
 <script>
-"use strict";
 
 /* =========================================================
-   CORE
-   ========================================================= */
+   VIRELIA AFTERFALL
+   LARGE MAP CORE
+   MAX 70 PLAYERS / BOTS
+========================================================= */
 
-const canvas=document.getElementById("game");
-const ctx=canvas.getContext("2d");
+const canvas =
+  document.getElementById("canvas");
 
-const minimap=document.getElementById("minimap");
-const mctx=minimap.getContext("2d");
+const ctx =
+  canvas.getContext("2d");
 
-let screenW=innerWidth;
-let screenH=innerHeight;
+const mapCanvas =
+  document.getElementById("mapCanvas");
+
+const mapCtx =
+  mapCanvas.getContext("2d");
+
+
+/* =========================================================
+   CONFIG
+========================================================= */
+
+const CONFIG = {
+
+  MAP_W: 12000,
+  MAP_H: 10000,
+
+  MAX_PLAYERS: 70,
+
+  BOT_COUNT: 69,
+
+  CHUNK: 500,
+
+  VIEW_DISTANCE: 1500,
+
+  BUILDINGS: 220,
+
+  TREES: 850,
+
+  LOOT: 650,
+
+  VEHICLES: 110,
+
+  ROAD_SIZE: 120,
+
+  GAME_TIME: 1200
+
+};
+
+
+/* =========================================================
+   RESIZE
+========================================================= */
 
 function resize(){
 
-  screenW=innerWidth;
-  screenH=innerHeight;
+  canvas.width =
+    Math.floor(innerWidth * devicePixelRatio);
 
-  canvas.width=screenW;
-  canvas.height=screenH;
+  canvas.height =
+    Math.floor(innerHeight * devicePixelRatio);
 
-  minimap.width=135;
-  minimap.height=135;
+  canvas.style.width =
+    innerWidth + "px";
+
+  canvas.style.height =
+    innerHeight + "px";
+
+  ctx.setTransform(
+    devicePixelRatio,
+    0,
+    0,
+    devicePixelRatio,
+    0,
+    0
+  );
+
+  mapCanvas.width = 230;
+  mapCanvas.height = 230;
+
 }
 
 addEventListener("resize",resize);
+
 resize();
 
 
 /* =========================================================
-   MAP
-   ========================================================= */
+   UTIL
+========================================================= */
 
-const MAP_W=4200;
-const MAP_H=3600;
+function rand(min,max){
+  return min + Math.random()*(max-min);
+}
 
-const map={
+function clamp(v,min,max){
+  return Math.max(min,Math.min(max,v));
+}
+
+function dist(a,b){
+
+  const dx=a.x-b.x;
+  const dy=a.y-b.y;
+
+  return Math.hypot(dx,dy);
+
+}
+
+function formatTime(seconds){
+
+  seconds=Math.max(0,Math.floor(seconds));
+
+  const m=Math.floor(seconds/60)
+    .toString().padStart(2,"0");
+
+  const s=(seconds%60)
+    .toString().padStart(2,"0");
+
+  return m+":"+s;
+
+}
+
+
+/* =========================================================
+   WORLD
+========================================================= */
+
+const world={
+
+  width:CONFIG.MAP_W,
+
+  height:CONFIG.MAP_H,
+
   buildings:[],
-  roads:[],
+
   trees:[],
+
   loot:[],
-  cars:[],
+
+  vehicles:[],
+
   bots:[],
-  zones:[]
+
+  roads:[],
+
+  chunks:new Map()
+
 };
 
 
 /* =========================================================
    PLAYER
-   ========================================================= */
+========================================================= */
 
 const player={
-  x:MAP_W/2,
-  y:MAP_H/2,
 
-  speed:210,
-  sprintSpeed:315,
+  x:CONFIG.MAP_W/2,
+
+  y:CONFIG.MAP_H/2,
+
+  radius:16,
+
+  speed:3.2,
+
+  sprintSpeed:5.2,
 
   hp:100,
+
+  maxHp:100,
+
   stamina:100,
 
-  helmet:0,
-  vest:0,
-  shoes:0,
-  backpack:0,
+  maxStamina:100,
+
+  helmet:null,
+
+  vest:null,
+
+  shoes:null,
+
+  backpack:null,
 
   inventory:[],
-  vehicle:null,
 
-  alive:true
+  vehicle:null
+
+};
+
+
+/* =========================================================
+   CAMERA
+========================================================= */
+
+const camera={
+
+  x:player.x,
+
+  y:player.y
+
 };
 
 
 /* =========================================================
    INPUT
-   ========================================================= */
+========================================================= */
 
-const input={
+const keys={
+
   up:false,
+
   down:false,
+
   left:false,
+
   right:false,
-  run:false
+
+  sprint:false
+
 };
 
-function hold(id,key){
 
-  const el=document.getElementById(id);
+function keyState(key,state){
 
-  const on=e=>{
-    e.preventDefault();
-    input[key]=true;
-  };
+  if(key==="ArrowUp" || key==="w")
+    keys.up=state;
 
-  const off=e=>{
-    e.preventDefault();
-    input[key]=false;
-  };
+  if(key==="ArrowDown" || key==="s")
+    keys.down=state;
 
-  el.addEventListener("pointerdown",on);
-  el.addEventListener("pointerup",off);
-  el.addEventListener("pointercancel",off);
-  el.addEventListener("pointerleave",off);
+  if(key==="ArrowLeft" || key==="a")
+    keys.left=state;
+
+  if(key==="ArrowRight" || key==="d")
+    keys.right=state;
+
+  if(key==="Shift")
+    keys.sprint=state;
+
 }
-
-hold("up","up");
-hold("down","down");
-hold("left","left");
-hold("right","right");
-hold("run","run");
 
 
 addEventListener("keydown",e=>{
 
-  if(e.key==="w"||e.key==="ArrowUp")input.up=true;
-  if(e.key==="s"||e.key==="ArrowDown")input.down=true;
-  if(e.key==="a"||e.key==="ArrowLeft")input.left=true;
-  if(e.key==="d"||e.key==="ArrowRight")input.right=true;
-  if(e.key==="Shift")input.run=true;
+  keyState(e.key,true);
 
 });
 
 
 addEventListener("keyup",e=>{
 
-  if(e.key==="w"||e.key==="ArrowUp")input.up=false;
-  if(e.key==="s"||e.key==="ArrowDown")input.down=false;
-  if(e.key==="a"||e.key==="ArrowLeft")input.left=false;
-  if(e.key==="d"||e.key==="ArrowRight")input.right=false;
-  if(e.key==="Shift")input.run=false;
+  keyState(e.key,false);
 
 });
 
 
-/* =========================================================
-   RANDOM
-   ========================================================= */
+function holdButton(id,key){
 
-function random(a,b){
-  return a+Math.random()*(b-a);
+  const b=document.getElementById(id);
+
+  const start=e=>{
+
+    e.preventDefault();
+
+    keys[key]=true;
+
+  };
+
+  const stop=e=>{
+
+    e.preventDefault();
+
+    keys[key]=false;
+
+  };
+
+  b.addEventListener("pointerdown",start);
+
+  b.addEventListener("pointerup",stop);
+
+  b.addEventListener("pointercancel",stop);
+
+  b.addEventListener("pointerleave",stop);
+
 }
 
 
+holdButton("up","up");
+holdButton("down","down");
+holdButton("left","left");
+holdButton("right","right");
+
+
+document
+  .getElementById("sprint")
+  .addEventListener("pointerdown",()=>{
+    keys.sprint=true;
+  });
+
+document
+  .getElementById("sprint")
+  .addEventListener("pointerup",()=>{
+    keys.sprint=false;
+  });
+
+
 /* =========================================================
-   MAP GENERATION
-   ========================================================= */
+   BUILD WORLD
+========================================================= */
 
-function generateMap(){
+function buildWorld(){
 
-  map.buildings=[];
-  map.roads=[];
-  map.trees=[];
-  map.loot=[];
-  map.cars=[];
-  map.bots=[];
-  map.zones=[];
+  world.buildings.length=0;
+  world.trees.length=0;
+  world.loot.length=0;
+  world.vehicles.length=0;
+  world.bots.length=0;
+  world.roads.length=0;
 
+  /*
+     ROAD GRID
+  */
 
-  /* -------------------------
-     ROADS
-     ------------------------- */
+  for(
+    let x=500;
+    x<CONFIG.MAP_W;
+    x+=1000
+  ){
 
-  for(let x=300;x<MAP_W;x+=700){
-
-    map.roads.push({
+    world.roads.push({
       x,
-      y:0,
-      w:100,
-      h:MAP_H
+      y:CONFIG.MAP_H/2,
+      w:CONFIG.ROAD_SIZE,
+      h:CONFIG.MAP_H
     });
 
   }
 
-  for(let y=300;y<MAP_H;y+=600){
 
-    map.roads.push({
-      x:0,
+  for(
+    let y=500;
+    y<CONFIG.MAP_H;
+    y+=1000
+  ){
+
+    world.roads.push({
+      x:CONFIG.MAP_W/2,
       y,
-      w:MAP_W,
-      h:100
+      w:CONFIG.MAP_W,
+      h:CONFIG.ROAD_SIZE
     });
 
   }
 
 
-  /* -------------------------
+  /*
      BUILDINGS
-     ------------------------- */
+  */
 
-  for(let i=0;i<95;i++){
+  for(
+    let i=0;
+    i<CONFIG.BUILDINGS;
+    i++
+  ){
 
-    let x;
-    let y;
+    let x,y;
 
     let tries=0;
 
     do{
 
-      x=random(120,MAP_W-300);
-      y=random(120,MAP_H-260);
+      x=rand(150,CONFIG.MAP_W-150);
+      y=rand(150,CONFIG.MAP_H-150);
 
       tries++;
 
     }while(
-      tooCloseToRoad(x,y,190)
-      && tries<30
+      nearRoad(x,y,170) &&
+      tries<30
     );
 
-    const type=Math.random();
 
-    let w;
-    let h;
+    const large=Math.random()<.35;
 
-    if(type<.25){
+    world.buildings.push({
 
-      // gedung besar
-      w=random(230,360);
-      h=random(180,300);
-
-    }else{
-
-      w=random(90,180);
-      h=random(80,160);
-
-    }
-
-    map.buildings.push({
       x,
+
       y,
-      w,
-      h,
-      type:type<.25?"large":"house",
-      entered:false
+
+      w:large?rand(180,330):rand(80,170),
+
+      h:large?rand(180,330):rand(80,170),
+
+      type:large?"large":"house",
+
+      roof:Math.random()
+
     });
 
   }
 
 
-  /* -------------------------
+  /*
      TREES
-     ------------------------- */
+  */
 
-  for(let i=0;i<260;i++){
+  for(
+    let i=0;
+    i<CONFIG.TREES;
+    i++
+  ){
 
-    const x=random(30,MAP_W-30);
-    const y=random(30,MAP_H-30);
+    const x=rand(30,CONFIG.MAP_W-30);
+    const y=rand(30,CONFIG.MAP_H-30);
 
-    if(!insideBuilding(x,y)){
+    if(!nearRoad(x,y,90)){
 
-      map.trees.push({
+      world.trees.push({
+
         x,
+
         y,
-        r:random(8,16)
+
+        r:rand(10,24)
+
       });
 
     }
@@ -711,676 +933,510 @@ function generateMap(){
   }
 
 
-  /* -------------------------
-     LOOT
-     ------------------------- */
-
-  const lootTypes=[
-    "Helmet",
-    "Vest",
-    "Shoes",
-    "Backpack",
-    "Food",
-    "Medical"
-  ];
-
-  for(let i=0;i<180;i++){
-
-    let x=random(50,MAP_W-50);
-    let y=random(50,MAP_H-50);
-
-    if(insideBuilding(x,y)){
-
-      const b=findBuilding(x,y);
-
-      x=random(
-        b.x+15,
-        b.x+b.w-15
-      );
-
-      y=random(
-        b.y+15,
-        b.y+b.h-15
-      );
-
-    }
-
-    map.loot.push({
-      x,
-      y,
-      type:lootTypes[
-        Math.floor(Math.random()*lootTypes.length)
-      ],
-      taken:false
-    });
-
-  }
-
-
-  /* -------------------------
+  /*
      VEHICLES
-     ------------------------- */
+  */
 
-  for(let i=0;i<35;i++){
+  for(
+    let i=0;
+    i<CONFIG.VEHICLES;
+    i++
+  ){
 
     const horizontal=Math.random()<.5;
 
+    let x,y;
+
     if(horizontal){
 
-      map.cars.push({
-        x:random(0,MAP_W),
-        y:300+Math.floor(
-          random(0,5)
-        )*600+random(15,85),
-        angle:0,
-        speed:0
-      });
+      y=
+        Math.round(
+          (rand(500,CONFIG.MAP_H-500))/1000
+        )*1000;
+
+      x=rand(80,CONFIG.MAP_W-80);
 
     }else{
 
-      map.cars.push({
-        x:300+Math.floor(
-          random(0,6)
-        )*700+random(15,85),
-        y:random(0,MAP_H),
-        angle:Math.PI/2,
-        speed:0
-      });
+      x=
+        Math.round(
+          (rand(500,CONFIG.MAP_W-500))/1000
+        )*1000;
+
+      y=rand(80,CONFIG.MAP_H-80);
 
     }
 
+    world.vehicles.push({
+
+      x,
+
+      y,
+
+      angle:horizontal?0:Math.PI/2,
+
+      occupied:false,
+
+      speed:0
+
+    });
+
   }
 
 
-  /* -------------------------
+  /*
+     LOOT
+  */
+
+  const lootTypes=[
+
+    {
+      name:"Helmet",
+      slot:"helmet"
+    },
+
+    {
+      name:"Vest",
+      slot:"vest"
+    },
+
+    {
+      name:"Shoes",
+      slot:"shoes"
+    },
+
+    {
+      name:"Backpack",
+      slot:"backpack"
+    },
+
+    {
+      name:"Food",
+      slot:"food"
+    },
+
+    {
+      name:"Medical",
+      slot:"medical"
+    }
+
+  ];
+
+
+  for(
+    let i=0;
+    i<CONFIG.LOOT;
+    i++
+  ){
+
+    world.loot.push({
+
+      x:rand(50,CONFIG.MAP_W-50),
+
+      y:rand(50,CONFIG.MAP_H-50),
+
+      type:
+        lootTypes[
+          Math.floor(
+            Math.random()*lootTypes.length
+          )
+        ],
+
+      taken:false
+
+    });
+
+  }
+
+
+  /*
      BOTS
-     ------------------------- */
+  */
 
-  for(let i=0;i<30;i++){
+  for(
+    let i=0;
+    i<CONFIG.BOT_COUNT;
+    i++
+  ){
 
-    let x;
-    let y;
-
-    do{
-
-      x=random(100,MAP_W-100);
-      y=random(100,MAP_H-100);
-
-    }while(
-      Math.hypot(
-        x-player.x,
-        y-player.y
-      )<350
-    );
-
-    map.bots.push(createBot(x,y));
+    world.bots.push(createBot(i));
 
   }
 
 
-  /* -------------------------
-     ZONE
-     ------------------------- */
+  /*
+     CHUNKS
+  */
 
-  map.zones.push({
-
-    x:MAP_W/2,
-    y:MAP_H/2,
-    radius:1450,
-    targetRadius:1450
-
-  });
+  buildChunks();
 
 }
 
 
 /* =========================================================
-   MAP HELPERS
-   ========================================================= */
+   ROAD CHECK
+========================================================= */
 
-function tooCloseToRoad(x,y,distance){
+function nearRoad(x,y,padding){
 
-  for(const r of map.roads){
+  for(const r of world.roads){
 
     if(
-      x<r.x+r.w+distance &&
-      x+r.w>r.x-distance &&
-      y<r.y+r.h+distance &&
-      y+r.h>r.y-distance
+      x>r.x-r.w/2-padding &&
+      x<r.x+r.w/2+padding &&
+      y>r.y-r.h/2-padding &&
+      y<r.y+r.h/2+padding
     ){
+
       return true;
+
     }
 
   }
 
   return false;
-}
 
-
-function insideBuilding(x,y){
-
-  return !!findBuilding(x,y);
-}
-
-
-function findBuilding(x,y){
-
-  for(const b of map.buildings){
-
-    if(
-      x>b.x &&
-      x<b.x+b.w &&
-      y>b.y &&
-      y<b.y+b.h
-    ){
-      return b;
-    }
-
-  }
-
-  return null;
 }
 
 
 /* =========================================================
-   BOT
-   ========================================================= */
+   CHUNK SYSTEM
+========================================================= */
 
-function createBot(x,y){
+function chunkKey(x,y){
 
-  return {
-    x,
-    y,
+  const cx=Math.floor(x/CONFIG.CHUNK);
+  const cy=Math.floor(y/CONFIG.CHUNK);
 
-    speed:random(120,175),
+  return cx+","+cy;
+
+}
+
+
+function buildChunks(){
+
+  world.chunks.clear();
+
+  function add(type,obj){
+
+    const key=chunkKey(obj.x,obj.y);
+
+    if(!world.chunks.has(key)){
+
+      world.chunks.set(key,{
+
+        buildings:[],
+        trees:[],
+        loot:[],
+        vehicles:[],
+        bots:[]
+
+      });
+
+    }
+
+    world.chunks
+      .get(key)[type]
+      .push(obj);
+
+  }
+
+
+  world.buildings.forEach(x=>add("buildings",x));
+  world.trees.forEach(x=>add("trees",x));
+  world.loot.forEach(x=>add("loot",x));
+  world.vehicles.forEach(x=>add("vehicles",x));
+  world.bots.forEach(x=>add("bots",x));
+
+}
+
+
+/* =========================================================
+   BOT SYSTEM
+========================================================= */
+
+function createBot(id){
+
+  const angle=rand(0,Math.PI*2);
+
+  const radius=rand(
+    400,
+    CONFIG.MAP_W*.45
+  );
+
+  const x=
+    CONFIG.MAP_W/2+
+    Math.cos(angle)*radius;
+
+  const y=
+    CONFIG.MAP_H/2+
+    Math.sin(angle)*radius;
+
+
+  return{
+
+    id,
+
+    x:clamp(x,30,CONFIG.MAP_W-30),
+
+    y:clamp(y,30,CONFIG.MAP_H-30),
 
     targetX:x,
-    targetY:y,
 
-    think:0,
+    targetY:y,
 
     hp:100,
 
-    state:"wander"
+    speed:rand(1.8,2.8),
+
+    think:rand(.2,1),
+
+    active:true,
+
+    state:"wander",
+
+    radius:14,
+
+    direction:rand(0,Math.PI*2)
+
   };
 
 }
 
 
+/*
+   BOT AI OPTIMIZATION
+
+   Bot hanya melakukan keputusan AI
+   setiap beberapa ratus ms.
+   Tidak setiap frame.
+*/
+
 function updateBots(dt){
 
-  for(const bot of map.bots){
+  for(const bot of world.bots){
 
-    if(bot.hp<=0)continue;
+    if(!bot.active)
+      continue;
+
+
+    const dx=bot.x-player.x;
+    const dy=bot.y-player.y;
+
+    const d=Math.hypot(dx,dy);
+
+
+    /*
+       Bot jauh dari player:
+       AI dibuat jauh lebih jarang.
+    */
+
+    if(d>1800){
+
+      bot.think-=dt;
+
+      if(bot.think<=0){
+
+        bot.think=rand(1.5,3);
+
+        bot.direction+=rand(-1,1);
+
+      }
+
+      bot.x+=
+        Math.cos(bot.direction)*
+        bot.speed*
+        dt*60;
+
+      bot.y+=
+        Math.sin(bot.direction)*
+        bot.speed*
+        dt*60;
+
+      clampBot(bot);
+
+      continue;
+
+    }
+
+
+    /*
+       Bot dekat player:
+       update AI lebih sering.
+    */
 
     bot.think-=dt;
 
+
     if(bot.think<=0){
 
-      bot.think=random(.35,.75);
+      bot.think=rand(.3,.65);
 
-      const d=Math.hypot(
-        player.x-bot.x,
-        player.y-bot.y
-      );
 
-      if(d<500){
+      if(d<450){
 
         bot.state="follow";
+
+      }else{
+
+        bot.state="wander";
+
+      }
+
+
+      if(bot.state==="follow"){
 
         bot.targetX=player.x;
         bot.targetY=player.y;
 
       }else{
 
-        bot.state="wander";
+        bot.targetX=
+          bot.x+
+          rand(-350,350);
 
-        bot.targetX+=random(-350,350);
-        bot.targetY+=random(-350,350);
-
-        bot.targetX=Math.max(
-          40,
-          Math.min(
-            MAP_W-40,
-            bot.targetX
-          )
-        );
-
-        bot.targetY=Math.max(
-          40,
-          Math.min(
-            MAP_H-40,
-            bot.targetY
-          )
-        );
+        bot.targetY=
+          bot.y+
+          rand(-350,350);
 
       }
 
     }
 
 
-    const dx=bot.targetX-bot.x;
-    const dy=bot.targetY-bot.y;
+    const tx=bot.targetX-bot.x;
+    const ty=bot.targetY-bot.y;
 
-    const distance=Math.hypot(dx,dy);
+    const td=Math.hypot(tx,ty);
 
-    if(distance>8){
 
-      const nx=
-        bot.x+
-        dx/distance*
+    if(td>10){
+
+      bot.x+=
+        tx/td*
         bot.speed*
-        dt;
+        dt*60;
 
-      const ny=
-        bot.y+
-        dy/distance*
+      bot.y+=
+        ty/td*
         bot.speed*
-        dt;
-
-      if(!collision(nx,bot.y,14))
-        bot.x=nx;
-
-      if(!collision(bot.x,ny,14))
-        bot.y=ny;
+        dt*60;
 
     }
+
+
+    clampBot(bot);
 
   }
 
 }
 
 
-/* =========================================================
-   COLLISION
-   ========================================================= */
+function clampBot(bot){
 
-function collision(x,y,r){
+  bot.x=
+    clamp(bot.x,20,CONFIG.MAP_W-20);
 
-  if(
-    x<r ||
-    y<r ||
-    x>MAP_W-r ||
-    y>MAP_H-r
-  ){
-    return true;
-  }
+  bot.y=
+    clamp(bot.y,20,CONFIG.MAP_H-20);
 
-
-  for(const b of map.buildings){
-
-    if(
-      x+r>b.x &&
-      x-r<b.x+b.w &&
-      y+r>b.y &&
-      y-r<b.y+b.h
-    ){
-      return true;
-    }
-
-  }
-
-
-  return false;
 }
 
 
 /* =========================================================
    PLAYER
-   ========================================================= */
+========================================================= */
 
 function updatePlayer(dt){
-
-  if(!player.alive)return;
 
   let dx=0;
   let dy=0;
 
-  if(input.up)dy--;
-  if(input.down)dy++;
-  if(input.left)dx--;
-  if(input.right)dx++;
-
-  if(dx===0&&dy===0){
-
-    player.stamina+=
-      20*dt;
-
-    player.stamina=Math.min(
-      100,
-      player.stamina
-    );
-
-    return;
-  }
+  if(keys.up)dy--;
+  if(keys.down)dy++;
+  if(keys.left)dx--;
+  if(keys.right)dx++;
 
 
-  const len=Math.hypot(dx,dy);
+  if(dx!==0 || dy!==0){
 
-  dx/=len;
-  dy/=len;
+    const length=
+      Math.hypot(dx,dy);
 
-
-  let speed=player.speed;
-
-  if(
-    input.run &&
-    player.stamina>0
-  ){
-
-    speed=
-      player.sprintSpeed+
-      player.shoes*8;
-
-    player.stamina-=
-      30*dt;
-
-  }else{
-
-    player.stamina+=
-      17*dt;
-
-  }
-
-  player.stamina=Math.max(
-    0,
-    Math.min(
-      100,
-      player.stamina
-    )
-  );
+    dx/=length;
+    dy/=length;
 
 
-  const nx=
-    player.x+
-    dx*
-    speed*
-    dt;
-
-  const ny=
-    player.y+
-    dy*
-    speed*
-    dt;
+    let speed=player.speed;
 
 
-  if(!collision(nx,player.y,18))
-    player.x=nx;
+    if(
+      keys.sprint &&
+      player.stamina>0
+    ){
 
-  if(!collision(player.x,ny,18))
-    player.y=ny;
+      speed=player.sprintSpeed;
 
-}
+      player.stamina=
+        Math.max(
+          0,
+          player.stamina-
+          25*dt
+        );
 
+    }else{
 
-/* =========================================================
-   LOOT
-   ========================================================= */
-
-function pickup(){
-
-  let found=false;
-
-  for(const item of map.loot){
-
-    if(item.taken)continue;
-
-    const d=Math.hypot(
-      item.x-player.x,
-      item.y-player.y
-    );
-
-    if(d<55){
-
-      item.taken=true;
-
-      player.inventory.push(
-        item.type
-      );
-
-      if(item.type==="Helmet")
-        player.helmet=
-          Math.min(3,player.helmet+1);
-
-      if(item.type==="Vest")
-        player.vest=
-          Math.min(3,player.vest+1);
-
-      if(item.type==="Shoes")
-        player.shoes=
-          Math.min(3,player.shoes+1);
-
-      if(item.type==="Backpack")
-        player.backpack=
-          Math.min(3,player.backpack+1);
-
-      showMessage(
-        "LOOT: "+item.type
-      );
-
-      found=true;
-
-      break;
+      player.stamina=
+        Math.min(
+          player.maxStamina,
+          player.stamina+
+          14*dt
+        );
 
     }
 
+
+    const multiplier=
+      player.shoes ? 1.08 : 1;
+
+
+    player.x+=
+      dx*speed*multiplier*dt*60;
+
+    player.y+=
+      dy*speed*multiplier*dt*60;
+
+  }else{
+
+    player.stamina=
+      Math.min(
+        player.maxStamina,
+        player.stamina+
+        18*dt
+      );
+
   }
 
-  if(!found)
-    showMessage("Tidak ada loot dekat kamu.");
 
-}
+  player.x=
+    clamp(
+      player.x,
+      20,
+      CONFIG.MAP_W-20
+    );
 
+  player.y=
+    clamp(
+      player.y,
+      20,
+      CONFIG.MAP_H-20
+    );
 
-/* =========================================================
-   VEHICLE
-   ========================================================= */
-
-function vehicleAction(){
 
   if(player.vehicle){
 
-    player.x=
-      player.vehicle.x+40;
-
-    player.y=
-      player.vehicle.y;
-
-    player.vehicle=null;
-
-    showMessage(
-      "Keluar kendaraan"
-    );
-
-    return;
-  }
-
-
-  let nearest=null;
-  let distance=65;
-
-  for(const car of map.cars){
-
-    const d=Math.hypot(
-      car.x-player.x,
-      car.y-player.y
-    );
-
-    if(d<distance){
-
-      distance=d;
-      nearest=car;
-
-    }
-
-  }
-
-
-  if(nearest){
-
-    player.vehicle=nearest;
-
-    showMessage(
-      "Masuk kendaraan"
-    );
-
-  }else{
-
-    showMessage(
-      "Tidak ada kendaraan dekat kamu."
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   VEHICLE UPDATE
-   ========================================================= */
-
-function updateVehicle(dt){
-
-  if(!player.vehicle)
-    return;
-
-  const car=player.vehicle;
-
-  let moving=false;
-
-  if(input.up){
-
-    car.speed+=
-      240*dt;
-
-    moving=true;
-
-  }
-
-  if(input.down){
-
-    car.speed-=
-      160*dt;
-
-    moving=true;
-
-  }
-
-
-  car.speed*=
-    Math.pow(.08,dt);
-
-  car.speed=Math.max(
-    -100,
-    Math.min(
-      300,
-      car.speed
-    )
-  );
-
-
-  if(input.left)
-    car.angle-=
-      1.8*dt;
-
-  if(input.right)
-    car.angle+=
-      1.8*dt;
-
-
-  const nx=
-    car.x+
-    Math.sin(car.angle)*
-    car.speed*
-    dt;
-
-  const ny=
-    car.y-
-    Math.cos(car.angle)*
-    car.speed*
-    dt;
-
-
-  if(
-    !collision(nx,ny,25)
-  ){
-
-    car.x=nx;
-    car.y=ny;
-
-  }
-
-
-  player.x=car.x;
-  player.y=car.y;
-
-}
-
-
-/* =========================================================
-   SAFE ZONE
-   ========================================================= */
-
-function updateZone(dt){
-
-  const zone=map.zones[0];
-
-  const elapsed=
-    gameTime;
-
-  if(elapsed>45){
-
-    zone.targetRadius=
-      Math.max(
-        300,
-        1450-
-        ((elapsed-45)/60)*180
-      );
-
-  }
-
-
-  zone.radius+=
-    (
-      zone.targetRadius-
-      zone.radius
-    )*
-    dt*
-    .12;
-
-
-  const d=Math.hypot(
-    player.x-zone.x,
-    player.y-zone.y
-  );
-
-
-  if(d>zone.radius){
-
-    player.hp-=
-      5*dt;
-
-    document.getElementById("zone")
-      .textContent=
-      "ZONE: KELUAR!";
-
-  }else{
-
-    document.getElementById("zone")
-      .textContent=
-      "ZONE: AMAN";
-
-  }
-
-
-  if(player.hp<=0){
-
-    player.hp=0;
-    player.alive=false;
-
-    showMessage(
-      "KAMU TERELIMINASI"
-    );
+    player.vehicle.x=player.x;
+    player.vehicle.y=player.y;
 
   }
 
@@ -1389,234 +1445,448 @@ function updateZone(dt){
 
 /* =========================================================
    CAMERA
-   ========================================================= */
+========================================================= */
 
-function camera(){
+function updateCamera(){
 
-  let x=
-    player.x-
-    screenW/2;
+  camera.x+=
+    (player.x-camera.x)*.12;
 
-  let y=
-    player.y-
-    screenH/2;
-
-
-  x=Math.max(
-    0,
-    Math.min(
-      MAP_W-screenW,
-      x
-    )
-  );
-
-  y=Math.max(
-    0,
-    Math.min(
-      MAP_H-screenH,
-      y
-    )
-  );
-
-
-  return {x,y};
+  camera.y+=
+    (player.y-camera.y)*.12;
 
 }
 
 
 /* =========================================================
-   DRAW WORLD
-   ========================================================= */
+   LOOT
+========================================================= */
+
+function takeLoot(){
+
+  let nearest=null;
+  let best=70;
+
+
+  for(const item of world.loot){
+
+    if(item.taken)
+      continue;
+
+    const d=dist(player,item);
+
+    if(d<best){
+
+      best=d;
+      nearest=item;
+
+    }
+
+  }
+
+
+  if(!nearest){
+
+    showMessage("Tidak ada loot di dekatmu");
+
+    return;
+
+  }
+
+
+  nearest.taken=true;
+
+  const type=nearest.type;
+
+
+  if(
+    type.slot==="helmet" ||
+    type.slot==="vest" ||
+    type.slot==="shoes" ||
+    type.slot==="backpack"
+  ){
+
+    player[type.slot]=type.name;
+
+    document.getElementById(type.slot)
+      .textContent=type.name;
+
+  }
+
+
+  player.inventory.push(type.name);
+
+  showMessage("Mengambil "+type.name);
+
+}
+
+
+/* =========================================================
+   VEHICLES
+========================================================= */
+
+function vehicleAction(){
+
+  if(player.vehicle){
+
+    player.vehicle.occupied=false;
+
+    player.vehicle=null;
+
+    showMessage("Keluar kendaraan");
+
+    return;
+
+  }
+
+
+  let nearest=null;
+  let best=75;
+
+
+  for(const v of world.vehicles){
+
+    if(v.occupied)
+      continue;
+
+    const d=dist(player,v);
+
+    if(d<best){
+
+      best=d;
+      nearest=v;
+
+    }
+
+  }
+
+
+  if(!nearest){
+
+    showMessage("Tidak ada kendaraan");
+
+    return;
+
+  }
+
+
+  nearest.occupied=true;
+
+  player.vehicle=nearest;
+
+  showMessage("Masuk kendaraan");
+
+}
+
+
+/* =========================================================
+   INVENTORY
+========================================================= */
+
+function updateInventory(){
+
+  const box=
+    document.getElementById("inventoryItems");
+
+  box.innerHTML="";
+
+
+  if(player.inventory.length===0){
+
+    box.innerHTML=
+      '<div class="item">Inventory kosong</div>';
+
+    return;
+
+  }
+
+
+  const counts={};
+
+
+  for(const item of player.inventory){
+
+    counts[item]=
+      (counts[item]||0)+1;
+
+  }
+
+
+  for(const name in counts){
+
+    const div=
+      document.createElement("div");
+
+    div.className="item";
+
+    div.textContent=
+      name+" × "+counts[name];
+
+    box.appendChild(div);
+
+  }
+
+}
+
+
+/* =========================================================
+   SAFE ZONE
+========================================================= */
+
+const zone={
+
+  x:CONFIG.MAP_W/2,
+
+  y:CONFIG.MAP_H/2,
+
+  radius:4700,
+
+  targetRadius:4700,
+
+  timer:0
+
+};
+
+
+function updateZone(dt){
+
+  zone.timer+=dt;
+
+
+  /*
+     Zona mulai mengecil setelah
+     beberapa menit.
+  */
+
+  if(zone.timer>120){
+
+    zone.targetRadius=
+      Math.max(
+        650,
+        4700-
+        (zone.timer-120)*2.2
+      );
+
+  }
+
+
+  zone.radius+=
+    (zone.targetRadius-zone.radius)*
+    dt*.15;
+
+
+  const dx=player.x-zone.x;
+  const dy=player.y-zone.y;
+
+  const d=Math.hypot(dx,dy);
+
+
+  if(d>zone.radius){
+
+    player.hp=
+      Math.max(
+        0,
+        player.hp-5*dt
+      );
+
+  }
+
+}
+
+
+/* =========================================================
+   DRAW
+========================================================= */
 
 function draw(){
 
-  const cam=camera();
-
-  ctx.clearRect(
-    0,
-    0,
-    screenW,
-    screenH
-  );
+  const w=innerWidth;
+  const h=innerHeight;
 
 
-  // ground
-  ctx.fillStyle="#526b45";
+  ctx.clearRect(0,0,w,h);
+
+
+  const zoom=
+    Math.min(
+      w/900,
+      h/650
+    );
+
+
+  const ox=
+    w/2-camera.x*zoom;
+
+  const oy=
+    h/2-camera.y*zoom;
+
+
+  /*
+     GROUND
+  */
+
+  ctx.fillStyle="#52634f";
 
   ctx.fillRect(
     0,
     0,
-    screenW,
-    screenH
+    w,
+    h
   );
 
 
-  // roads
-  ctx.fillStyle="#35383d";
+  /*
+     GRID TERRAIN
+  */
 
-  for(const road of map.roads){
+  const grid=200;
+
+
+  ctx.strokeStyle=
+    "rgba(255,255,255,.025)";
+
+  ctx.lineWidth=1;
+
+
+  for(
+    let x=Math.floor(camera.x/grid)*grid;
+    x<camera.x+1000;
+    x+=grid
+  ){
+
+    const sx=ox+x*zoom;
+
+    ctx.beginPath();
+
+    ctx.moveTo(sx,0);
+    ctx.lineTo(sx,h);
+
+    ctx.stroke();
+
+  }
+
+
+  for(
+    let y=Math.floor(camera.y/grid)*grid;
+    y<camera.y+1000;
+    y+=grid
+  ){
+
+    const sy=oy+y*zoom;
+
+    ctx.beginPath();
+
+    ctx.moveTo(0,sy);
+    ctx.lineTo(w,sy);
+
+    ctx.stroke();
+
+  }
+
+
+  /*
+     ROADS
+  */
+
+  for(const r of world.roads){
+
+    ctx.fillStyle="#333936";
 
     ctx.fillRect(
-      road.x-cam.x,
-      road.y-cam.y,
-      road.w,
-      road.h
+      ox+(r.x-r.w/2)*zoom,
+      oy+(r.y-r.h/2)*zoom,
+      r.w*zoom,
+      r.h*zoom
     );
 
   }
 
 
-  // road lines
-  ctx.strokeStyle="rgba(230,220,150,.45)";
-  ctx.lineWidth=3;
-  ctx.setLineDash([22,22]);
+  /*
+     BUILDINGS
+  */
 
-  for(const road of map.roads){
-
-    if(road.w<road.h){
-
-      const x=
-        road.x+
-        road.w/2-
-        cam.x;
-
-      ctx.beginPath();
-
-      ctx.moveTo(
-        x,
-        0
-      );
-
-      ctx.lineTo(
-        x,
-        screenH
-      );
-
-      ctx.stroke();
-
-    }else{
-
-      const y=
-        road.y+
-        road.h/2-
-        cam.y;
-
-      ctx.beginPath();
-
-      ctx.moveTo(
-        0,
-        y
-      );
-
-      ctx.lineTo(
-        screenW,
-        y
-      );
-
-      ctx.stroke();
-
-    }
-
-  }
-
-  ctx.setLineDash([]);
-
-
-  // buildings
-  for(const b of map.buildings){
-
-    const x=b.x-cam.x;
-    const y=b.y-cam.y;
+  for(const b of world.buildings){
 
     if(
-      x+b.w<0||
-      y+b.h<0||
-      x>screenW||
-      y>screenH
-    )continue;
+      Math.abs(b.x-camera.x)>CONFIG.VIEW_DISTANCE ||
+      Math.abs(b.y-camera.y)>CONFIG.VIEW_DISTANCE
+    )
+      continue;
 
+
+    const x=
+      ox+(b.x-b.w/2)*zoom;
+
+    const y=
+      oy+(b.y-b.h/2)*zoom;
 
     ctx.fillStyle=
       b.type==="large"
-      ?"#66696d"
-      :"#80776d";
+      ? "#77736a"
+      : "#8a8174";
+
 
     ctx.fillRect(
       x,
       y,
-      b.w,
-      b.h
+      b.w*zoom,
+      b.h*zoom
     );
 
+
+    ctx.strokeStyle=
+      "rgba(20,20,20,.8)";
+
+    ctx.strokeRect(
+      x,
+      y,
+      b.w*zoom,
+      b.h*zoom
+    );
+
+
+    /*
+       roof/detail
+    */
 
     ctx.fillStyle=
-      b.type==="large"
-      ?"#7f858b"
-      :"#9b9185";
+      "rgba(40,40,40,.25)";
 
     ctx.fillRect(
-      x+7,
-      y+7,
-      b.w-14,
-      17
+      x+5,
+      y+5,
+      b.w*zoom-10,
+      8
     );
-
-
-    // windows
-    ctx.fillStyle="#2d4a5d";
-
-    const columns=
-      Math.max(
-        1,
-        Math.floor(b.w/45)
-      );
-
-    for(let c=0;c<columns;c++){
-
-      ctx.fillRect(
-        x+15+c*42,
-        y+35,
-        24,
-        18
-      );
-
-    }
 
   }
 
 
-  // trees
-  for(const t of map.trees){
+  /*
+     TREES
+  */
 
-    const x=t.x-cam.x;
-    const y=t.y-cam.y;
+  for(const t of world.trees){
 
     if(
-      x<-30||
-      y<-30||
-      x>screenW+30||
-      y>screenH+30
-    )continue;
+      Math.abs(t.x-camera.x)>CONFIG.VIEW_DISTANCE ||
+      Math.abs(t.y-camera.y)>CONFIG.VIEW_DISTANCE
+    )
+      continue;
 
 
-    ctx.fillStyle="#5a402d";
+    const x=ox+t.x*zoom;
+    const y=oy+t.y*zoom;
 
-    ctx.fillRect(
-      x-3,
-      y,
-      6,
-      14
-    );
-
-
-    ctx.fillStyle="#2c5d31";
+    ctx.fillStyle="#263c27";
 
     ctx.beginPath();
 
     ctx.arc(
       x,
       y,
-      t.r,
+      t.r*zoom,
       0,
       Math.PI*2
     );
@@ -1626,34 +1896,47 @@ function draw(){
   }
 
 
-  // cars
-  for(const car of map.cars){
+  /*
+     VEHICLES
+  */
 
-    const x=car.x-cam.x;
-    const y=car.y-cam.y;
+  for(const v of world.vehicles){
+
+    if(
+      Math.abs(v.x-camera.x)>CONFIG.VIEW_DISTANCE ||
+      Math.abs(v.y-camera.y)>CONFIG.VIEW_DISTANCE
+    )
+      continue;
+
+
+    const x=ox+v.x*zoom;
+    const y=oy+v.y*zoom;
 
     ctx.save();
 
     ctx.translate(x,y);
 
-    ctx.rotate(car.angle);
+    ctx.rotate(v.angle);
 
-    ctx.fillStyle="#536271";
+    ctx.fillStyle=
+      v.occupied
+      ? "#c4a75d"
+      : "#59666a";
 
     ctx.fillRect(
-      -25,
-      -13,
-      50,
-      26
+      -22*zoom,
+      -11*zoom,
+      44*zoom,
+      22*zoom
     );
 
-    ctx.fillStyle="#202a32";
+    ctx.fillStyle="#20282a";
 
     ctx.fillRect(
-      -14,
-      -9,
-      28,
-      18
+      -8*zoom,
+      -8*zoom,
+      16*zoom,
+      16*zoom
     );
 
     ctx.restore();
@@ -1661,314 +1944,291 @@ function draw(){
   }
 
 
-  // loot
-  for(const item of map.loot){
+  /*
+     LOOT
+  */
 
-    if(item.taken)continue;
+  for(const item of world.loot){
 
-    const x=item.x-cam.x;
-    const y=item.y-cam.y;
+    if(item.taken)
+      continue;
 
-    ctx.fillStyle="#e4bd45";
+    if(
+      Math.abs(item.x-camera.x)>900 ||
+      Math.abs(item.y-camera.y)>900
+    )
+      continue;
+
+
+    const x=ox+item.x*zoom;
+    const y=oy+item.y*zoom;
+
+    ctx.fillStyle="#d9bd64";
 
     ctx.fillRect(
-      x-6,
-      y-6,
-      12,
-      12
+      x-4,
+      y-4,
+      8,
+      8
     );
 
   }
 
 
-  // bots
-  for(const bot of map.bots){
+  /*
+     BOTS
+  */
 
-    if(bot.hp<=0)continue;
+  for(const bot of world.bots){
 
-    const x=bot.x-cam.x;
-    const y=bot.y-cam.y;
+    if(!bot.active)
+      continue;
 
-    ctx.fillStyle="#cf6863";
+    if(
+      Math.abs(bot.x-camera.x)>CONFIG.VIEW_DISTANCE ||
+      Math.abs(bot.y-camera.y)>CONFIG.VIEW_DISTANCE
+    )
+      continue;
+
+
+    const x=ox+bot.x*zoom;
+    const y=oy+bot.y*zoom;
+
+
+    ctx.fillStyle="#a6a6a6";
 
     ctx.beginPath();
 
     ctx.arc(
       x,
       y,
-      16,
+      12*zoom,
       0,
       Math.PI*2
     );
 
     ctx.fill();
 
-    ctx.fillStyle="#262626";
+
+    ctx.fillStyle="#333";
 
     ctx.fillRect(
-      x-8,
-      y-3,
-      16,
-      5
+      x-7*zoom,
+      y-16*zoom,
+      14*zoom,
+      7*zoom
     );
 
   }
 
 
-  // player
-  const px=
-    player.x-cam.x;
+  /*
+     PLAYER
+  */
 
-  const py=
-    player.y-cam.y;
-
-
-  if(!player.vehicle){
-
-    ctx.fillStyle="#4d9bff";
-
-    ctx.beginPath();
-
-    ctx.arc(
-      px,
-      py,
-      19,
-      0,
-      Math.PI*2
-    );
-
-    ctx.fill();
+  const px=w/2;
+  const py=h/2;
 
 
-    ctx.fillStyle="#e0ecff";
-
-    ctx.beginPath();
-
-    ctx.arc(
-      px,
-      py-5,
-      7,
-      0,
-      Math.PI*2
-    );
-
-    ctx.fill();
-
-  }
-
-
-  // zone overlay
-  drawZone(cam);
-
-}
-
-
-/* =========================================================
-   ZONE DRAW
-   ========================================================= */
-
-function drawZone(cam){
-
-  const zone=map.zones[0];
-
-  ctx.save();
-
-  ctx.fillStyle="rgba(55,110,200,.16)";
-
-  ctx.fillRect(
-    0,
-    0,
-    screenW,
-    screenH
-  );
-
-
-  ctx.globalCompositeOperation=
-    "destination-out";
+  ctx.fillStyle="#e8e0c9";
 
   ctx.beginPath();
 
   ctx.arc(
-    zone.x-cam.x,
-    zone.y-cam.y,
-    zone.radius,
+    px,
+    py,
+    15,
     0,
     Math.PI*2
   );
 
   ctx.fill();
 
-  ctx.restore();
+
+  ctx.fillStyle="#39453d";
+
+  ctx.fillRect(
+    px-10,
+    py-18,
+    20,
+    7
+  );
 
 
-  ctx.strokeStyle="rgba(80,170,255,.85)";
-  ctx.lineWidth=4;
+  /*
+     SAFE ZONE
+  */
+
+  ctx.save();
+
+  ctx.fillStyle=
+    "rgba(50,80,120,.10)";
+
+  ctx.beginPath();
+
+  ctx.rect(0,0,w,h);
+
+  ctx.arc(
+    ox+zone.x*zoom,
+    oy+zone.y*zoom,
+    zone.radius*zoom,
+    0,
+    Math.PI*2,
+    true
+  );
+
+  ctx.fill("evenodd");
+
+
+  ctx.strokeStyle=
+    "rgba(120,180,255,.65)";
+
+  ctx.lineWidth=3;
 
   ctx.beginPath();
 
   ctx.arc(
-    zone.x-cam.x,
-    zone.y-cam.y,
-    zone.radius,
+    ox+zone.x*zoom,
+    oy+zone.y*zoom,
+    zone.radius*zoom,
     0,
     Math.PI*2
   );
 
   ctx.stroke();
 
+  ctx.restore();
+
+
+  drawMinimap();
+
 }
 
 
 /* =========================================================
    MINIMAP
-   ========================================================= */
+========================================================= */
 
 function drawMinimap(){
 
-  mctx.clearRect(
-    0,
-    0,
-    135,
-    135
-  );
+  const s=230;
+
+  mapCtx.clearRect(0,0,s,s);
+
+  mapCtx.fillStyle="#334334";
+
+  mapCtx.fillRect(0,0,s,s);
 
 
-  mctx.fillStyle="#243322";
-
-  mctx.fillRect(
-    0,
-    0,
-    135,
-    135
-  );
+  const scale=
+    s/CONFIG.MAP_W;
 
 
-  const sx=135/MAP_W;
-  const sy=135/MAP_H;
+  /*
+     roads
+  */
 
+  mapCtx.fillStyle="#444b48";
 
-  // buildings
-  mctx.fillStyle="#777";
+  for(const r of world.roads){
 
-  for(const b of map.buildings){
-
-    mctx.fillRect(
-      b.x*sx,
-      b.y*sy,
-      b.w*sx,
-      b.h*sy
+    mapCtx.fillRect(
+      (r.x-r.w/2)*scale,
+      (r.y-r.h/2)*scale,
+      r.w*scale,
+      r.h*scale
     );
 
   }
 
 
-  // bots
-  mctx.fillStyle="#e56a62";
+  /*
+     buildings
+  */
 
-  for(const bot of map.bots){
+  mapCtx.fillStyle="#77746b";
 
-    if(bot.hp<=0)continue;
+  for(const b of world.buildings){
 
-    mctx.fillRect(
-      bot.x*sx-2,
-      bot.y*sy-2,
-      4,
-      4
+    mapCtx.fillRect(
+      (b.x-b.w/2)*scale,
+      (b.y-b.h/2)*scale,
+      b.w*scale,
+      b.h*scale
     );
 
   }
 
 
-  // zone
-  const zone=map.zones[0];
+  /*
+     zone
+  */
 
-  mctx.strokeStyle="#69b5ff";
-  mctx.lineWidth=1.5;
+  mapCtx.strokeStyle="#8fc4ff";
 
-  mctx.beginPath();
+  mapCtx.lineWidth=2;
 
-  mctx.arc(
-    zone.x*sx,
-    zone.y*sy,
-    zone.radius*sx,
+  mapCtx.beginPath();
+
+  mapCtx.arc(
+    zone.x*scale,
+    zone.y*scale,
+    zone.radius*scale,
     0,
     Math.PI*2
   );
 
-  mctx.stroke();
+  mapCtx.stroke();
 
 
-  // player
-  mctx.fillStyle="#65aaff";
+  /*
+     bots
+  */
 
-  mctx.beginPath();
+  mapCtx.fillStyle="#ddd";
 
-  mctx.arc(
-    player.x*sx,
-    player.y*sy,
-    4,
+  for(const bot of world.bots){
+
+    if(!bot.active)
+      continue;
+
+    mapCtx.fillRect(
+      bot.x*scale-1,
+      bot.y*scale-1,
+      2,
+      2
+    );
+
+  }
+
+
+  /*
+     player
+  */
+
+  mapCtx.fillStyle="#fff";
+
+  mapCtx.beginPath();
+
+  mapCtx.arc(
+    player.x*scale,
+    player.y*scale,
+    3,
     0,
     Math.PI*2
   );
 
-  mctx.fill();
+  mapCtx.fill();
 
 }
 
 
 /* =========================================================
-   HUD
-   ========================================================= */
-
-function updateHUD(){
-
-  document.getElementById("hp")
-    .style.width=
-    Math.max(0,player.hp)+"%";
-
-
-  document.getElementById("stamina")
-    .style.width=
-    player.stamina+"%";
-
-
-  document.getElementById("helmet")
-    .textContent=
-    player.helmet;
-
-
-  document.getElementById("vest")
-    .textContent=
-    player.vest;
-
-
-  document.getElementById("shoes")
-    .textContent=
-    player.shoes;
-
-
-  document.getElementById("backpack")
-    .textContent=
-    player.backpack;
-
-
-  const alive=
-    map.bots.filter(
-      b=>b.hp>0
-    ).length+1;
-
-
-  document.getElementById("alive")
-    .textContent=alive;
-
-}
-
-
-/* =========================================================
-   MESSAGE
-   ========================================================= */
+   UI
+========================================================= */
 
 let messageTimer=0;
+
 
 function showMessage(text){
 
@@ -1977,122 +2237,127 @@ function showMessage(text){
 
   el.textContent=text;
 
-  el.style.opacity="1";
+  el.classList.add("show");
 
   messageTimer=2;
 
 }
 
 
+function updateMessage(dt){
+
+  if(messageTimer<=0)
+    return;
+
+  messageTimer-=dt;
+
+  if(messageTimer<=0){
+
+    document
+      .getElementById("message")
+      .classList.remove("show");
+
+  }
+
+}
+
+
 /* =========================================================
-   TIMER
-   ========================================================= */
+   HUD
+========================================================= */
 
-let gameTime=0;
+function updateHUD(){
 
-function updateTimer(dt){
+  document
+    .getElementById("hpFill")
+    .style.width=
+      player.hp+"%";
 
-  gameTime+=dt;
 
-  const remaining=
-    Math.max(
-      0,
-      1200-gameTime
-    );
+  document
+    .getElementById("staminaFill")
+    .style.width=
+      player.stamina+"%";
 
-  const minutes=
-    Math.floor(
-      remaining/60
-    );
 
-  const seconds=
-    Math.floor(
-      remaining%60
-    );
+  const alive=
+    1+
+    world.bots.filter(
+      b=>b.active
+    ).length;
 
-  document.getElementById("timer")
+
+  document
+    .getElementById("alive")
     .textContent=
-    String(minutes).padStart(2,"0")+
-    ":"+
-    String(seconds).padStart(2,"0");
+      "PLAYERS "+alive;
+
+
+  document
+    .getElementById("timer")
+    .textContent=
+      formatTime(gameTime);
+
 
 }
 
 
 /* =========================================================
-   LOOP
-   ========================================================= */
+   GAME LOOP
+========================================================= */
 
-let playing=false;
-let last=0;
+let running=false;
 
-function startGame(){
+let lastTime=0;
 
-  generateMap();
-
-  player.x=MAP_W/2;
-  player.y=MAP_H/2;
-
-  player.hp=100;
-  player.stamina=100;
-
-  player.inventory=[];
-
-  player.helmet=0;
-  player.vest=0;
-  player.shoes=0;
-  player.backpack=0;
-
-  player.vehicle=null;
-
-  gameTime=0;
-  playing=true;
-
-  last=performance.now();
-
-  requestAnimationFrame(loop);
-
-  showMessage(
-    "MASUK MAP — CARI EQUIPMENT"
-  );
-
-}
+let gameTime=CONFIG.GAME_TIME;
 
 
-function loop(now){
+function loop(time){
 
-  if(!playing)return;
+  if(!running)
+    return;
+
 
   const dt=
     Math.min(
       .033,
-      (now-last)/1000
+      (time-lastTime)/1000
     );
 
-  last=now;
+  lastTime=time;
+
+
+  gameTime-=dt;
 
 
   updatePlayer(dt);
-  updateVehicle(dt);
-  updateBots(dt);
-  updateZone(dt);
-  updateTimer(dt);
 
-  draw();
-  drawMinimap();
+  updateBots(dt);
+
+  updateCamera();
+
+  updateZone(dt);
+
+  updateMessage(dt);
+
   updateHUD();
 
+  draw();
 
-  if(messageTimer>0){
 
-    messageTimer-=dt;
+  if(
+    player.hp<=0 ||
+    gameTime<=0
+  ){
 
-    if(messageTimer<=0){
+    running=false;
 
-      document.getElementById("message")
-        .style.opacity="0";
-
-    }
+    showMessage(
+      player.hp<=0
+      ? "Kamu tereliminasi"
+      : "Waktu pertandingan selesai"
+    );
 
   }
 
@@ -2104,40 +2369,117 @@ function loop(now){
 
 /* =========================================================
    BUTTONS
-   ========================================================= */
+========================================================= */
 
-document.getElementById("start").onclick=()=>{
-
-  document.getElementById("startOverlay")
-    .style.display="none";
-
-  startGame();
-
-};
+document
+  .getElementById("loot")
+  .addEventListener(
+    "click",
+    takeLoot
+  );
 
 
-document.getElementById("pickup").onclick=
-  pickup;
+document
+  .getElementById("vehicle")
+  .addEventListener(
+    "click",
+    vehicleAction
+  );
 
 
-document.getElementById("vehicle").onclick=
-  vehicleAction;
+document
+  .getElementById("bag")
+  .addEventListener(
+    "click",
+    ()=>{
+
+      updateInventory();
+
+      document
+        .getElementById("inventoryPanel")
+        .classList.add("show");
+
+    }
+  );
 
 
-document.getElementById("bag").onclick=()=>{
+document
+  .getElementById("closeBag")
+  .addEventListener(
+    "click",
+    ()=>{
 
-  document.getElementById("inventory")
-    .style.display="block";
+      document
+        .getElementById("inventoryPanel")
+        .classList.remove("show");
 
-};
+    }
+  );
 
 
-document.getElementById("closeBag").onclick=()=>{
+/* =========================================================
+   START
+========================================================= */
 
-  document.getElementById("inventory")
-    .style.display="none";
+document
+  .getElementById("startBtn")
+  .addEventListener(
+    "click",
+    ()=>{
 
-};
+      document
+        .getElementById("start")
+        .style.display="none";
+
+      document
+        .getElementById("loading")
+        .classList.add("show");
+
+
+      setTimeout(()=>{
+
+        document
+          .getElementById("loadingText")
+          .textContent=
+            "Membangun kota...";
+
+      },100);
+
+
+      setTimeout(()=>{
+
+        buildWorld();
+
+      },200);
+
+
+      setTimeout(()=>{
+
+        document
+          .getElementById("loadingText")
+          .textContent=
+            "Menyiapkan 70 entitas...";
+
+      },400);
+
+
+      setTimeout(()=>{
+
+        document
+          .getElementById("loading")
+          .classList.remove("show");
+
+        running=true;
+
+        lastTime=performance.now();
+
+        requestAnimationFrame(loop);
+
+      },700);
+
+    }
+  );
+
 </script>
 
 </body>
