@@ -1,405 +1,244 @@
-export function createInput(renderer){
+export const input = {
 
-  const state={
-    moveX:0,
-    moveY:0,
-    sprint:false,
-    crouch:false,
-    jumpPressed:false,
-    actionPressed:false,
-    enterPressed:false,
-    exitPressed:false,
-    cameraDX:0,
-    cameraDY:0
-  };
+  x: 0,
+  y: 0,
 
-  const joystick=
+  run: false,
+  crouch: false,
+
+  actionPressed: false,
+  bagPressed: false
+};
+
+let joystick;
+let stick;
+
+export function setupInput(){
+
+  joystick =
     document.getElementById("joystick");
 
-  const stick=
+  stick =
     document.getElementById("stick");
 
-  let joystickPointer=null;
-
-  function moveJoystick(x,y){
-
-    const rect=
-      joystick.getBoundingClientRect();
-
-    const cx=
-      rect.left+rect.width/2;
-
-    const cy=
-      rect.top+rect.height/2;
-
-    let dx=x-cx;
-    let dy=y-cy;
-
-    const max=
-      rect.width*.36;
-
-    const length=
-      Math.hypot(dx,dy);
-
-    if(length>max){
-
-      dx=dx/length*max;
-      dy=dy/length*max;
-    }
-
-    state.moveX=dx/max;
-    state.moveY=dy/max;
-
-    stick.style.transform=
-      `translate(${dx}px,${dy}px)`;
-  }
-
-  function resetJoystick(){
-
-    joystickPointer=null;
-
-    state.moveX=0;
-    state.moveY=0;
-
-    stick.style.transform=
-      "translate(0px,0px)";
-  }
-
-  joystick.addEventListener(
-    "pointerdown",
-    e=>{
-      joystickPointer=e.pointerId;
-      joystick.setPointerCapture(
-        e.pointerId
-      );
-      moveJoystick(
-        e.clientX,
-        e.clientY
-      );
-    }
-  );
-
-  joystick.addEventListener(
-    "pointermove",
-    e=>{
-      if(
-        e.pointerId===joystickPointer
-      ){
-        moveJoystick(
-          e.clientX,
-          e.clientY
-        );
-      }
-    }
-  );
-
-  joystick.addEventListener(
-    "pointerup",
-    e=>{
-      if(
-        e.pointerId===joystickPointer
-      ){
-        resetJoystick();
-      }
-    }
-  );
-
-  joystick.addEventListener(
-    "pointercancel",
-    resetJoystick
-  );
-
-  let cameraPointer=null;
-  let lastX=0;
-  let lastY=0;
-
-  renderer.domElement.addEventListener(
-    "pointerdown",
-    e=>{
-
-      if(
-        e.clientX<
-        window.innerWidth*.38
-      ){
-        return;
-      }
-
-      cameraPointer=e.pointerId;
-      lastX=e.clientX;
-      lastY=e.clientY;
-
-      renderer.domElement.setPointerCapture(
-        e.pointerId
-      );
-    }
-  );
-
-  renderer.domElement.addEventListener(
-    "pointermove",
-    e=>{
-
-      if(
-        e.pointerId!==cameraPointer
-      ){
-        return;
-      }
-
-      state.cameraDX+=
-        e.clientX-lastX;
-
-      state.cameraDY+=
-        e.clientY-lastY;
-
-      lastX=e.clientX;
-      lastY=e.clientY;
-    }
-  );
-
-  renderer.domElement.addEventListener(
-    "pointerup",
-    e=>{
-      if(
-        e.pointerId===cameraPointer
-      ){
-        cameraPointer=null;
-      }
-    }
-  );
-
-  function press(id,callback){
-
-    document
-      .getElementById(id)
-      .addEventListener(
-        "pointerdown",
-        e=>{
-          e.preventDefault();
-          callback();
-        }
-      );
-  }
-
-  press(
-    "jump",
-    ()=>{
-      state.jumpPressed=true;
-    }
-  );
-
-  press(
-    "punch",
-    ()=>{
-      state.actionPressed=true;
-    }
-  );
-
-  press(
-    "enter",
-    ()=>{
-      state.enterPressed=true;
-    }
-  );
-
-  press(
-    "exit",
-    ()=>{
-      state.exitPressed=true;
-    }
-  );
-
-  const sprint=
-    document.getElementById(
-      "sprint"
-    );
-
-  sprint.addEventListener(
-    "pointerdown",
-    ()=>{
-      state.sprint=true;
-    }
-  );
-
-  sprint.addEventListener(
-    "pointerup",
-    ()=>{
-      state.sprint=false;
-    }
-  );
-
-  sprint.addEventListener(
-    "pointercancel",
-    ()=>{
-      state.sprint=false;
-    }
-  );
+  setupJoystick();
 
   document
-    .getElementById("crouch")
+    .getElementById("runBtn")
     .addEventListener(
       "pointerdown",
-      ()=>{
-        state.crouch=
-          !state.crouch;
+      () => {
+        input.run = true;
       }
     );
 
-  const keys=new Set();
+  document
+    .getElementById("runBtn")
+    .addEventListener(
+      "pointerup",
+      () => {
+        input.run = false;
+      }
+    );
+
+  document
+    .getElementById("runBtn")
+    .addEventListener(
+      "pointercancel",
+      () => {
+        input.run = false;
+      }
+    );
+
+  document
+    .getElementById("crouchBtn")
+    .addEventListener(
+      "click",
+      () => {
+        input.crouch =
+          !input.crouch;
+      }
+    );
+
+  document
+    .getElementById("actionBtn")
+    .addEventListener(
+      "click",
+      () => {
+        input.actionPressed = true;
+      }
+    );
+
+  document
+    .getElementById("bagBtn")
+    .addEventListener(
+      "click",
+      () => {
+        input.bagPressed = true;
+      }
+    );
 
   window.addEventListener(
     "keydown",
-    e=>{
+    e => {
 
-      keys.add(
-        e.key.toLowerCase()
-      );
+      const k =
+        e.key.toLowerCase();
 
-      if(e.key===" "){
-        state.jumpPressed=true;
-      }
+      if(k === "w")
+        input.y = -1;
 
-      if(
-        e.key.toLowerCase()==="e"
-      ){
-        state.enterPressed=true;
-      }
+      if(k === "s")
+        input.y = 1;
 
-      if(
-        e.key.toLowerCase()==="q"
-      ){
-        state.exitPressed=true;
-      }
+      if(k === "a")
+        input.x = -1;
 
-      if(
-        e.key.toLowerCase()==="c" &&
-        !e.repeat
-      ){
-        state.crouch=
-          !state.crouch;
-      }
+      if(k === "d")
+        input.x = 1;
+
+      if(k === "shift")
+        input.run = true;
+
+      if(k === "e")
+        input.actionPressed = true;
+
+      if(k === "c")
+        input.crouch =
+          !input.crouch;
     }
   );
 
   window.addEventListener(
     "keyup",
-    e=>{
-      keys.delete(
-        e.key.toLowerCase()
+    e => {
+
+      const k =
+        e.key.toLowerCase();
+
+      if(k === "w" && input.y < 0)
+        input.y = 0;
+
+      if(k === "s" && input.y > 0)
+        input.y = 0;
+
+      if(k === "a" && input.x < 0)
+        input.x = 0;
+
+      if(k === "d" && input.x > 0)
+        input.x = 0;
+
+      if(k === "shift")
+        input.run = false;
+    }
+  );
+}
+
+function setupJoystick(){
+
+  let active = false;
+
+  function move(e){
+
+    const rect =
+      joystick.getBoundingClientRect();
+
+    const cx =
+      rect.left +
+      rect.width / 2;
+
+    const cy =
+      rect.top +
+      rect.height / 2;
+
+    let dx =
+      e.clientX - cx;
+
+    let dy =
+      e.clientY - cy;
+
+    const max = 47;
+
+    const distance =
+      Math.hypot(dx,dy);
+
+    if(distance > max){
+
+      dx =
+        dx / distance * max;
+
+      dy =
+        dy / distance * max;
+    }
+
+    input.x = dx / max;
+    input.y = dy / max;
+
+    stick.style.transform =
+      `translate(${dx}px,${dy}px)`;
+  }
+
+  function reset(){
+
+    active = false;
+
+    input.x = 0;
+    input.y = 0;
+
+    stick.style.transform =
+      "translate(0,0)";
+  }
+
+  joystick.addEventListener(
+    "pointerdown",
+    e => {
+
+      active = true;
+
+      joystick.setPointerCapture(
+        e.pointerId
       );
+
+      move(e);
     }
   );
 
-  return{
+  joystick.addEventListener(
+    "pointermove",
+    e => {
 
-    state,
-
-    update(){
-
-      if(
-        joystickPointer===null
-      ){
-
-        let x=0;
-        let y=0;
-
-        if(
-          keys.has("a") ||
-          keys.has("arrowleft")
-        ){
-          x-=1;
-        }
-
-        if(
-          keys.has("d") ||
-          keys.has("arrowright")
-        ){
-          x+=1;
-        }
-
-        if(
-          keys.has("w") ||
-          keys.has("arrowup")
-        ){
-          y-=1;
-        }
-
-        if(
-          keys.has("s") ||
-          keys.has("arrowdown")
-        ){
-          y+=1;
-        }
-
-        if(x!==0 || y!==0){
-
-          const length=
-            Math.hypot(x,y);
-
-          state.moveX=x/length;
-          state.moveY=y/length;
-
-        }else{
-
-          state.moveX=0;
-          state.moveY=0;
-        }
-      }
-
-      state.sprint=
-        state.sprint ||
-        keys.has("shift");
-    },
-
-    consumeJump(){
-
-      const value=
-        state.jumpPressed;
-
-      state.jumpPressed=false;
-
-      return value;
-    },
-
-    consumeAction(){
-
-      const value=
-        state.actionPressed;
-
-      state.actionPressed=false;
-
-      return value;
-    },
-
-    consumeEnter(){
-
-      const value=
-        state.enterPressed;
-
-      state.enterPressed=false;
-
-      return value;
-    },
-
-    consumeExit(){
-
-      const value=
-        state.exitPressed;
-
-      state.exitPressed=false;
-
-      return value;
-    },
-
-    consumeCameraDelta(){
-
-      const result={
-        x:state.cameraDX,
-        y:state.cameraDY
-      };
-
-      state.cameraDX=0;
-      state.cameraDY=0;
-
-      return result;
+      if(active)
+        move(e);
     }
-  };
+  );
+
+  joystick.addEventListener(
+    "pointerup",
+    reset
+  );
+
+  joystick.addEventListener(
+    "pointercancel",
+    reset
+  );
+}
+
+export function consumeAction(){
+
+  const value =
+    input.actionPressed;
+
+  input.actionPressed = false;
+
+  return value;
+}
+
+export function consumeBag(){
+
+  const value =
+    input.bagPressed;
+
+  input.bagPressed = false;
+
+  return value;
 }
