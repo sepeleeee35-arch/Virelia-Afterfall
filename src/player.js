@@ -23,8 +23,8 @@ export function updatePlayer(dt){
   const cos=Math.cos(input.cameraYaw);
   const sin=Math.sin(input.cameraYaw);
 
-  const worldX=x*cos-y*sin;
-  const worldY=x*sin+y*cos;
+  const worldX=-x*sin-y*cos;
+  const worldY=x*cos-y*sin;
 
   let speed=player.speed;
   player.crouch=input.crouch;
