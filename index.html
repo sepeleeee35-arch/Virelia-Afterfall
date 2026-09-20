@@ -3,364 +3,504 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport"
-      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 
 <title>Virelia: Afterfall</title>
 
 <style>
 *{
-  box-sizing:border-box;
-  -webkit-tap-highlight-color:transparent;
-  user-select:none;
+ box-sizing:border-box;
+ user-select:none;
+ -webkit-tap-highlight-color:transparent;
 }
 
 html,body{
-  margin:0;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background:#111;
-  font-family:Arial,Helvetica,sans-serif;
-  touch-action:none;
-}
-
-body{
-  display:flex;
-  justify-content:center;
-  align-items:center;
+ margin:0;
+ width:100%;
+ height:100%;
+ overflow:hidden;
+ background:#111;
+ font-family:Arial,sans-serif;
+ touch-action:none;
 }
 
 #game{
-  position:relative;
-  width:100vw;
-  height:100vh;
-  overflow:hidden;
-  background:#26352b;
+ position:relative;
+ width:100vw;
+ height:100vh;
+ overflow:hidden;
+ background:#202b25;
 }
 
 canvas{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  image-rendering:auto;
+ position:absolute;
+ inset:0;
+ width:100%;
+ height:100%;
 }
 
 #hud{
-  position:absolute;
-  inset:0;
-  pointer-events:none;
+ position:absolute;
+ inset:0;
+ pointer-events:none;
 }
 
-.panel{
-  background:rgba(10,14,12,.72);
-  border:1px solid rgba(255,255,255,.14);
-  border-radius:10px;
-  color:white;
-  backdrop-filter:blur(5px);
+/* =========================
+   TOP HUD
+========================= */
+
+#topLeft{
+ position:absolute;
+ left:14px;
+ top:14px;
+ width:235px;
 }
 
-#top{
-  position:absolute;
-  top:10px;
-  left:10px;
-  right:10px;
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
+.playerCard{
+ display:flex;
+ align-items:center;
+ gap:9px;
 }
 
-#stats{
-  width:220px;
-  padding:9px;
+.avatar{
+ width:42px;
+ height:42px;
+ border-radius:50%;
+ background:
+ linear-gradient(#879487 0 45%,#343d37 45%);
+ border:2px solid rgba(255,255,255,.65);
 }
 
-.label{
-  font-size:11px;
-  color:#bbb;
+.playerName{
+ color:white;
+ font-weight:bold;
+ font-size:13px;
 }
 
-.bar{
-  height:9px;
-  background:#252525;
-  border-radius:5px;
-  overflow:hidden;
-  margin:3px 0 7px;
+.smallText{
+ color:#bfc6c1;
+ font-size:10px;
 }
 
-.fill{
-  height:100%;
-  width:100%;
+.hpBox{
+ margin-top:7px;
+ height:14px;
+ background:rgba(0,0,0,.55);
+ border-radius:8px;
+ overflow:hidden;
+ border:1px solid rgba(255,255,255,.15);
 }
 
-#hpFill{background:#e05252}
-#staminaFill{background:#e5c94f}
+#hpFill{
+ height:100%;
+ width:100%;
+ background:#69b36b;
+}
 
-#info{
-  text-align:right;
-  padding:9px;
-  min-width:160px;
+#armorRow{
+ margin-top:4px;
+ height:6px;
+ display:flex;
+ gap:3px;
+}
+
+.armorPiece{
+ height:100%;
+ flex:1;
+ background:#5d6562;
+ border-radius:3px;
+}
+
+.armorPiece.active{
+ background:#aebd9c;
+}
+
+/* =========================
+   MATCH INFO
+========================= */
+
+#matchInfo{
+ position:absolute;
+ top:14px;
+ right:14px;
+ text-align:right;
+ color:white;
 }
 
 #alive{
-  font-size:18px;
-  font-weight:bold;
+ font-size:20px;
+ font-weight:bold;
 }
 
 #timer{
-  font-size:12px;
-  color:#ccc;
+ font-size:12px;
+ color:#c9ceca;
+ margin-top:2px;
 }
+
+/* =========================
+   MINIMAP
+========================= */
+
+#miniWrap{
+ position:absolute;
+ top:70px;
+ right:14px;
+ width:145px;
+ height:145px;
+ border-radius:12px;
+ overflow:hidden;
+ border:2px solid rgba(255,255,255,.5);
+ background:#334233;
+}
+
+#mini{
+ width:100%;
+ height:100%;
+}
+
+/* =========================
+   EQUIPMENT
+========================= */
 
 #equipment{
-  position:absolute;
-  top:105px;
-  left:10px;
-  width:190px;
-  padding:8px;
-  font-size:12px;
+ position:absolute;
+ top:70px;
+ left:14px;
+ width:150px;
+ padding:7px;
+ background:rgba(10,14,12,.65);
+ border-radius:9px;
+ color:white;
+ font-size:10px;
 }
 
-.equip{
-  display:flex;
-  justify-content:space-between;
-  margin:5px 0;
+.eq{
+ display:flex;
+ justify-content:space-between;
+ padding:5px 2px;
+ border-bottom:1px solid rgba(255,255,255,.08);
 }
 
-.equip span:last-child{
-  color:#ddd;
+.eq:last-child{
+ border-bottom:0;
 }
 
-#minimap{
-  position:absolute;
-  right:10px;
-  top:105px;
-  width:145px;
-  height:145px;
-  border-radius:8px;
-  overflow:hidden;
-  border:2px solid rgba(255,255,255,.35);
-  background:#253226;
+.eqName{
+ color:#9da69f;
 }
 
-#mapCanvas{
-  width:100%;
-  height:100%;
+.eqValue{
+ color:white;
+ font-weight:bold;
 }
 
-#message{
-  position:absolute;
-  left:50%;
-  top:18%;
-  transform:translateX(-50%);
-  padding:10px 18px;
-  opacity:0;
-  transition:.2s;
-  font-size:13px;
+/* =========================
+   CAMERA AREA
+========================= */
+
+#cameraTouch{
+ position:absolute;
+ right:0;
+ top:0;
+ width:58%;
+ height:72%;
+ pointer-events:auto;
 }
 
-#message.show{
-  opacity:1;
+/* =========================
+   ACTIONS
+========================= */
+
+#actions{
+ position:absolute;
+ right:16px;
+ bottom:18px;
+ display:grid;
+ grid-template-columns:repeat(2,72px);
+ gap:9px;
+ pointer-events:auto;
 }
+
+button{
+ min-width:64px;
+ min-height:50px;
+ border-radius:13px;
+ border:1px solid rgba(255,255,255,.18);
+ background:rgba(12,16,14,.72);
+ color:white;
+ font-size:10px;
+ font-weight:bold;
+}
+
+button:active{
+ transform:scale(.94);
+ background:rgba(100,110,100,.85);
+}
+
+.bigAction{
+ width:76px;
+ height:58px;
+}
+
+#attack{
+ border-radius:50%;
+ width:76px;
+ height:76px;
+ min-width:76px;
+}
+
+/* =========================
+   MOVEMENT
+========================= */
+
+#movePad{
+ position:absolute;
+ left:18px;
+ bottom:20px;
+ width:175px;
+ height:175px;
+ pointer-events:auto;
+}
+
+.move{
+ position:absolute;
+ width:56px;
+ height:56px;
+ min-width:56px;
+ border-radius:50%;
+}
+
+#up{
+ left:60px;
+ top:0;
+}
+
+#left{
+ left:0;
+ top:60px;
+}
+
+#down{
+ left:60px;
+ top:120px;
+}
+
+#right{
+ right:0;
+ top:60px;
+}
+
+/* =========================
+   STAMINA
+========================= */
+
+#staminaBox{
+ position:absolute;
+ left:50%;
+ bottom:18px;
+ transform:translateX(-50%);
+ width:180px;
+ height:7px;
+ background:rgba(0,0,0,.55);
+ border-radius:5px;
+ overflow:hidden;
+}
+
+#staminaFill{
+ height:100%;
+ width:100%;
+ background:#d8c65d;
+}
+
+/* =========================
+   CENTER
+========================= */
 
 #crosshair{
-  position:absolute;
-  left:50%;
-  top:50%;
-  width:18px;
-  height:18px;
-  transform:translate(-50%,-50%);
+ position:absolute;
+ left:50%;
+ top:50%;
+ transform:translate(-50%,-50%);
+ width:18px;
+ height:18px;
 }
 
 #crosshair:before,
 #crosshair:after{
-  content:"";
-  position:absolute;
-  background:rgba(255,255,255,.75);
+ content:"";
+ position:absolute;
+ background:rgba(255,255,255,.72);
 }
 
 #crosshair:before{
-  width:2px;
-  height:18px;
-  left:8px;
+ width:2px;
+ height:18px;
+ left:8px;
 }
 
 #crosshair:after{
-  width:18px;
-  height:2px;
-  top:8px;
+ height:2px;
+ width:18px;
+ top:8px;
 }
 
-#controls{
-  position:absolute;
-  inset:0;
-  pointer-events:none;
+/* =========================
+   MESSAGE
+========================= */
+
+#message{
+ position:absolute;
+ left:50%;
+ top:17%;
+ transform:translateX(-50%);
+ padding:9px 15px;
+ color:white;
+ background:rgba(10,12,11,.78);
+ border-radius:9px;
+ opacity:0;
+ transition:.2s;
+ font-size:12px;
 }
 
-button{
-  border:1px solid rgba(255,255,255,.2);
-  background:rgba(15,18,16,.72);
-  color:#fff;
-  border-radius:12px;
-  font-weight:bold;
-  min-width:58px;
-  min-height:48px;
-  font-size:11px;
+#message.show{
+ opacity:1;
 }
 
-button:active{
-  transform:scale(.94);
-  background:rgba(80,90,80,.85);
+/* =========================
+   INVENTORY
+========================= */
+
+#inventory{
+ display:none;
+ position:absolute;
+ left:50%;
+ top:50%;
+ transform:translate(-50%,-50%);
+ width:min(430px,88vw);
+ max-height:75vh;
+ overflow:auto;
+ background:rgba(12,16,14,.94);
+ border:1px solid rgba(255,255,255,.18);
+ border-radius:15px;
+ padding:16px;
+ color:white;
+ pointer-events:auto;
 }
 
-#move{
-  position:absolute;
-  left:18px;
-  bottom:18px;
-  width:180px;
-  height:180px;
-  pointer-events:auto;
+#inventory.show{
+ display:block;
 }
 
-.moveBtn{
-  position:absolute;
-  width:56px;
-  height:56px;
-  min-width:56px;
+.invGrid{
+ display:grid;
+ grid-template-columns:repeat(2,1fr);
+ gap:8px;
 }
 
-#up{left:62px;top:0}
-#left{left:0;top:62px}
-#down{left:62px;top:124px}
-#right{left:124px;top:62px}
-
-#actions{
-  position:absolute;
-  right:18px;
-  bottom:18px;
-  display:grid;
-  grid-template-columns:repeat(2,70px);
-  gap:8px;
-  pointer-events:auto;
+.invItem{
+ padding:12px;
+ background:rgba(255,255,255,.06);
+ border-radius:9px;
 }
 
-.action{
-  min-width:70px;
-  min-height:52px;
+.invTitle{
+ font-weight:bold;
 }
 
-#inventoryPanel{
-  display:none;
-  position:absolute;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  width:min(420px,90vw);
-  padding:16px;
-  pointer-events:auto;
+.invSub{
+ color:#aeb5b0;
+ font-size:10px;
+ margin-top:3px;
 }
 
-#inventoryPanel.show{
-  display:block;
-}
-
-#inventoryItems{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:8px;
-  margin-top:10px;
-}
-
-.item{
-  padding:10px;
-  background:rgba(255,255,255,.07);
-  border-radius:8px;
-}
+/* =========================
+   START
+========================= */
 
 #start{
-  position:absolute;
-  inset:0;
-  z-index:10;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background:
-    radial-gradient(circle at center,#344a3b,#101512 70%);
-  color:white;
+ position:absolute;
+ inset:0;
+ z-index:50;
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ background:
+ radial-gradient(circle at center,#35483a,#101411 72%);
+ color:white;
 }
 
 .startBox{
-  width:min(430px,90vw);
-  text-align:center;
-  padding:30px;
+ width:min(440px,90vw);
+ text-align:center;
+ padding:30px;
 }
 
 .startBox h1{
-  font-size:38px;
-  margin:0;
-  letter-spacing:4px;
+ margin:0;
+ font-size:38px;
+ letter-spacing:5px;
 }
 
 .startBox h2{
-  font-size:14px;
-  font-weight:normal;
-  letter-spacing:5px;
-  color:#aeb7ad;
-  margin:4px 0 24px;
+ margin:3px 0 20px;
+ font-size:12px;
+ letter-spacing:6px;
+ color:#aeb8b0;
 }
 
 .startBox p{
-  color:#aaa;
-  font-size:13px;
-  line-height:1.6;
+ color:#aeb6b0;
+ font-size:12px;
+ line-height:1.6;
 }
 
-#startBtn{
-  margin-top:15px;
-  width:100%;
-  min-height:55px;
-  background:#71856c;
-  border:none;
+#startButton{
+ width:100%;
+ height:55px;
+ margin-top:16px;
+ background:#687d67;
 }
+
+/* =========================
+   LOADING
+========================= */
 
 #loading{
-  position:absolute;
-  inset:0;
-  z-index:20;
-  display:none;
-  justify-content:center;
-  align-items:center;
-  background:#111;
-  color:white;
-  text-align:center;
+ display:none;
+ position:absolute;
+ inset:0;
+ z-index:60;
+ justify-content:center;
+ align-items:center;
+ text-align:center;
+ background:#111;
+ color:white;
 }
 
 #loading.show{
-  display:flex;
+ display:flex;
 }
 
 @media(max-width:600px){
-  #equipment{
-    display:none;
-  }
 
-  #minimap{
-    width:115px;
-    height:115px;
-    top:105px;
-  }
+ #equipment{
+  display:none;
+ }
 
-  #stats{
-    width:170px;
-  }
+ #miniWrap{
+  width:115px;
+  height:115px;
+ }
 
-  #info{
-    min-width:120px;
-  }
+ #topLeft{
+  width:190px;
+ }
 
-  .startBox h1{
-    font-size:29px;
-  }
+ .playerName{
+  font-size:11px;
+ }
+
 }
 </style>
 </head>
@@ -373,213 +513,257 @@ button:active{
 
 <div id="hud">
 
-  <div id="top">
+ <!-- PLAYER -->
+ <div id="topLeft">
 
-    <div id="stats" class="panel">
-      <div class="label">HP</div>
-      <div class="bar">
-        <div id="hpFill" class="fill"></div>
-      </div>
+  <div class="playerCard">
 
-      <div class="label">STAMINA</div>
-      <div class="bar">
-        <div id="staminaFill" class="fill"></div>
-      </div>
-    </div>
+   <div class="avatar"></div>
 
-    <div id="info" class="panel">
-      <div id="alive">PLAYERS 70</div>
-      <div id="timer">20:00</div>
-    </div>
+   <div>
+    <div class="playerName">VIRELIA SURVIVOR</div>
+    <div class="smallText">PLAYER 01</div>
+   </div>
 
   </div>
 
-  <div id="equipment" class="panel">
-
-    <div class="equip">
-      <span>Helmet</span>
-      <span id="helmet">Kosong</span>
-    </div>
-
-    <div class="equip">
-      <span>Vest</span>
-      <span id="vest">Kosong</span>
-    </div>
-
-    <div class="equip">
-      <span>Shoes</span>
-      <span id="shoes">Kosong</span>
-    </div>
-
-    <div class="equip">
-      <span>Backpack</span>
-      <span id="backpack">Kosong</span>
-    </div>
-
+  <div class="hpBox">
+   <div id="hpFill"></div>
   </div>
 
-  <div id="minimap">
-    <canvas id="mapCanvas"></canvas>
+  <div id="armorRow">
+   <div id="helmetArmor" class="armorPiece"></div>
+   <div id="vestArmor" class="armorPiece"></div>
+   <div id="shoesArmor" class="armorPiece"></div>
+   <div id="backpackArmor" class="armorPiece"></div>
   </div>
 
-  <div id="crosshair"></div>
+ </div>
 
-  <div id="message" class="panel">
-    -
+ <!-- MATCH -->
+ <div id="matchInfo">
+  <div id="alive">70 ALIVE</div>
+  <div id="timer">20:00</div>
+ </div>
+
+ <!-- EQUIPMENT -->
+ <div id="equipment">
+
+  <div class="eq">
+   <span class="eqName">HELMET</span>
+   <span id="helmetText" class="eqValue">—</span>
   </div>
+
+  <div class="eq">
+   <span class="eqName">VEST</span>
+   <span id="vestText" class="eqValue">—</span>
+  </div>
+
+  <div class="eq">
+   <span class="eqName">SHOES</span>
+   <span id="shoesText" class="eqValue">—</span>
+  </div>
+
+  <div class="eq">
+   <span class="eqName">BACKPACK</span>
+   <span id="backpackText" class="eqValue">—</span>
+  </div>
+
+ </div>
+
+ <!-- MINIMAP -->
+ <div id="miniWrap">
+  <canvas id="mini"></canvas>
+ </div>
+
+ <div id="crosshair"></div>
+
+ <div id="message"></div>
+
+ <!-- STAMINA -->
+ <div id="staminaBox">
+  <div id="staminaFill"></div>
+ </div>
 
 </div>
 
-<div id="controls">
 
-  <div id="move">
+<!-- CAMERA TOUCH -->
+<div id="cameraTouch"></div>
 
-    <button class="moveBtn" id="up">▲</button>
-    <button class="moveBtn" id="left">◀</button>
-    <button class="moveBtn" id="down">▼</button>
-    <button class="moveBtn" id="right">▶</button>
 
-  </div>
+<!-- MOVEMENT -->
+<div id="movePad">
 
-  <div id="actions">
-
-    <button class="action" id="sprint">LARI</button>
-    <button class="action" id="loot">LOOT</button>
-
-    <button class="action" id="vehicle">KENDARAAN</button>
-    <button class="action" id="bag">TAS</button>
-
-  </div>
+ <button id="up" class="move">▲</button>
+ <button id="left" class="move">◀</button>
+ <button id="down" class="move">▼</button>
+ <button id="right" class="move">▶</button>
 
 </div>
 
-<div id="inventoryPanel" class="panel">
 
-  <h3>INVENTORY</h3>
+<!-- ACTIONS -->
+<div id="actions">
 
-  <div id="inventoryItems"></div>
+ <button id="sprint" class="bigAction">
+  LARI
+ </button>
 
-  <br>
+ <button id="loot" class="bigAction">
+  AMBIL
+ </button>
 
-  <button id="closeBag">TUTUP</button>
+ <button id="attack">
+  AKSI
+ </button>
+
+ <button id="vehicle" class="bigAction">
+  KENDARAAN
+ </button>
+
+ <button id="bag" class="bigAction">
+  TAS
+ </button>
 
 </div>
 
+
+<!-- INVENTORY -->
+<div id="inventory">
+
+ <h3>INVENTORY</h3>
+
+ <div id="inventoryGrid"
+      class="invGrid"></div>
+
+ <br>
+
+ <button id="closeInventory">
+  TUTUP
+ </button>
+
+</div>
+
+
+<!-- START -->
 <div id="start">
 
-  <div class="startBox">
+ <div class="startBox">
 
-    <h1>VIRELIA</h1>
-    <h2>AFTERFALL</h2>
+  <h1>VIRELIA</h1>
 
-    <p>
-      LARGE-SCALE SURVIVAL WORLD
-    </p>
+  <h2>AFTERFALL</h2>
 
-    <p>
-      Map besar • 70 entitas maksimal •
-      bot dinamis • kendaraan • loot • equipment
-    </p>
+  <p>
+   LARGE-SCALE SURVIVAL WORLD
+  </p>
 
-    <button id="startBtn">
-      MASUK MAP
-    </button>
+  <p>
+   70 survivors • large map •
+   dynamic bots • equipment • vehicles
+  </p>
 
-  </div>
+  <button id="startButton">
+   MASUK MAP
+  </button>
+
+ </div>
 
 </div>
 
+
+<!-- LOADING -->
 <div id="loading">
-  <div>
-    <h2>MEMUAT VIRELIA</h2>
-    <p id="loadingText">Membangun dunia...</p>
-  </div>
-</div>
+
+ <div>
+  <h2>VIRELIA</h2>
+  <p id="loadingText">
+   Menyiapkan dunia...
+  </p>
+ </div>
 
 </div>
+
 
 <script>
 
 /* =========================================================
    VIRELIA AFTERFALL
-   LARGE MAP CORE
-   MAX 70 PLAYERS / BOTS
+   THIRD PERSON SURVIVAL CORE
 ========================================================= */
 
-const canvas =
-  document.getElementById("canvas");
 
-const ctx =
-  canvas.getContext("2d");
-
-const mapCanvas =
-  document.getElementById("mapCanvas");
-
-const mapCtx =
-  mapCanvas.getContext("2d");
-
-
-/* =========================================================
+/* =========================
    CONFIG
-========================================================= */
+========================= */
 
-const CONFIG = {
+const CFG={
 
-  MAP_W: 12000,
-  MAP_H: 10000,
+ MAP_W:12000,
+ MAP_H:10000,
 
-  MAX_PLAYERS: 70,
+ MAX_PLAYERS:70,
 
-  BOT_COUNT: 69,
+ BOT_COUNT:69,
 
-  CHUNK: 500,
+ VIEW:1700,
 
-  VIEW_DISTANCE: 1500,
+ BUILDINGS:220,
 
-  BUILDINGS: 220,
+ TREES:850,
 
-  TREES: 850,
+ LOOT:700,
 
-  LOOT: 650,
+ VEHICLES:110,
 
-  VEHICLES: 110,
+ ROAD:120,
 
-  ROAD_SIZE: 120,
-
-  GAME_TIME: 1200
+ MATCH_TIME:1200
 
 };
 
 
-/* =========================================================
-   RESIZE
-========================================================= */
+/* =========================
+   CANVAS
+========================= */
+
+const canvas=
+ document.getElementById("canvas");
+
+const ctx=
+ canvas.getContext("2d");
+
+const mini=
+ document.getElementById("mini");
+
+const mctx=
+ mini.getContext("2d");
+
 
 function resize(){
 
-  canvas.width =
-    Math.floor(innerWidth * devicePixelRatio);
+ const dpr=
+  Math.min(devicePixelRatio||1,2);
 
-  canvas.height =
-    Math.floor(innerHeight * devicePixelRatio);
+ canvas.width=
+  innerWidth*dpr;
 
-  canvas.style.width =
-    innerWidth + "px";
+ canvas.height=
+  innerHeight*dpr;
 
-  canvas.style.height =
-    innerHeight + "px";
+ canvas.style.width=
+  innerWidth+"px";
 
-  ctx.setTransform(
-    devicePixelRatio,
-    0,
-    0,
-    devicePixelRatio,
-    0,
-    0
-  );
+ canvas.style.height=
+  innerHeight+"px";
 
-  mapCanvas.width = 230;
-  mapCanvas.height = 230;
+ ctx.setTransform(
+  dpr,0,0,dpr,0,0
+ );
+
+ mini.width=230;
+ mini.height=230;
 
 }
 
@@ -588,67 +772,44 @@ addEventListener("resize",resize);
 resize();
 
 
-/* =========================================================
-   UTIL
-========================================================= */
+/* =========================
+   HELPERS
+========================= */
 
-function rand(min,max){
-  return min + Math.random()*(max-min);
+function rand(a,b){
+ return a+Math.random()*(b-a);
 }
 
-function clamp(v,min,max){
-  return Math.max(min,Math.min(max,v));
+function clamp(v,a,b){
+ return Math.max(a,Math.min(b,v));
 }
 
-function dist(a,b){
+function distance(a,b){
 
-  const dx=a.x-b.x;
-  const dy=a.y-b.y;
-
-  return Math.hypot(dx,dy);
-
-}
-
-function formatTime(seconds){
-
-  seconds=Math.max(0,Math.floor(seconds));
-
-  const m=Math.floor(seconds/60)
-    .toString().padStart(2,"0");
-
-  const s=(seconds%60)
-    .toString().padStart(2,"0");
-
-  return m+":"+s;
+ return Math.hypot(
+  a.x-b.x,
+  a.y-b.y
+ );
 
 }
 
+function timeText(v){
 
-/* =========================================================
-   WORLD
-========================================================= */
+ v=Math.max(0,Math.floor(v));
 
-const world={
+ const m=
+  Math.floor(v/60)
+   .toString()
+   .padStart(2,"0");
 
-  width:CONFIG.MAP_W,
+ const s=
+  (v%60)
+   .toString()
+   .padStart(2,"0");
 
-  height:CONFIG.MAP_H,
+ return m+":"+s;
 
-  buildings:[],
-
-  trees:[],
-
-  loot:[],
-
-  vehicles:[],
-
-  bots:[],
-
-  roads:[],
-
-  chunks:new Map()
-
-};
+}
 
 
 /* =========================================================
@@ -657,35 +818,39 @@ const world={
 
 const player={
 
-  x:CONFIG.MAP_W/2,
+ x:CFG.MAP_W/2,
 
-  y:CONFIG.MAP_H/2,
+ y:CFG.MAP_H/2,
 
-  radius:16,
+ radius:18,
 
-  speed:3.2,
+ hp:100,
 
-  sprintSpeed:5.2,
+ maxHp:100,
 
-  hp:100,
+ stamina:100,
 
-  maxHp:100,
+ maxStamina:100,
 
-  stamina:100,
+ speed:3.2,
 
-  maxStamina:100,
+ sprint:5.4,
 
-  helmet:null,
+ direction:0,
 
-  vest:null,
+ helmet:null,
 
-  shoes:null,
+ vest:null,
 
-  backpack:null,
+ shoes:null,
 
-  inventory:[],
+ backpack:null,
 
-  vehicle:null
+ inventory:[],
+
+ vehicle:null,
+
+ attackCooldown:0
 
 };
 
@@ -696,114 +861,286 @@ const player={
 
 const camera={
 
-  x:player.x,
+ x:player.x,
 
-  y:player.y
+ y:player.y,
+
+ angle:0,
+
+ distance:230,
+
+ height:100,
+
+ zoom:1
 
 };
+
+
+/*
+   Camera bukan lagi kamera top-down.
+
+   Dunia diproyeksikan berdasarkan arah kamera.
+   Player selalu berada dekat bawah-tengah layar.
+*/
+
+function worldToScreen(x,y){
+
+ const dx=x-camera.x;
+ const dy=y-camera.y;
+
+ const cos=Math.cos(camera.angle);
+ const sin=Math.sin(camera.angle);
+
+ const rx=
+  dx*cos-
+  dy*sin;
+
+ const ry=
+  dx*sin+
+  dy*cos;
+
+ const horizon=
+  innerHeight*.57;
+
+ return{
+
+  x:
+   innerWidth/2+
+   rx*camera.zoom,
+
+  y:
+   horizon+
+   ry*camera.zoom
+
+ };
+
+}
+
+
+/* =========================================================
+   CAMERA TOUCH
+========================================================= */
+
+let camDragging=false;
+let camLastX=0;
+let camLastY=0;
+
+
+const cameraTouch=
+ document.getElementById("cameraTouch");
+
+
+cameraTouch.addEventListener(
+ "pointerdown",
+ e=>{
+
+  camDragging=true;
+
+  camLastX=e.clientX;
+  camLastY=e.clientY;
+
+  cameraTouch.setPointerCapture(
+   e.pointerId
+  );
+
+ }
+);
+
+
+cameraTouch.addEventListener(
+ "pointermove",
+ e=>{
+
+  if(!camDragging)return;
+
+  const dx=
+   e.clientX-camLastX;
+
+  const dy=
+   e.clientY-camLastY;
+
+  camLastX=e.clientX;
+  camLastY=e.clientY;
+
+  camera.angle+=dx*.008;
+
+  camera.height=
+   clamp(
+    camera.height-dy*.35,
+    55,
+    150
+   );
+
+ }
+);
+
+
+cameraTouch.addEventListener(
+ "pointerup",
+ ()=>{
+
+  camDragging=false;
+
+ }
+);
 
 
 /* =========================================================
    INPUT
 ========================================================= */
 
-const keys={
+const input={
 
-  up:false,
-
-  down:false,
-
-  left:false,
-
-  right:false,
-
-  sprint:false
+ up:false,
+ down:false,
+ left:false,
+ right:false,
+ sprint:false
 
 };
 
 
-function keyState(key,state){
+function bindMove(id,key){
 
-  if(key==="ArrowUp" || key==="w")
-    keys.up=state;
+ const el=
+  document.getElementById(id);
 
-  if(key==="ArrowDown" || key==="s")
-    keys.down=state;
+ el.addEventListener(
+  "pointerdown",
+  e=>{
 
-  if(key==="ArrowLeft" || key==="a")
-    keys.left=state;
+   e.preventDefault();
 
-  if(key==="ArrowRight" || key==="d")
-    keys.right=state;
+   input[key]=true;
 
-  if(key==="Shift")
-    keys.sprint=state;
+ }
+ );
 
-}
+ el.addEventListener(
+  "pointerup",
+  e=>{
 
+   e.preventDefault();
 
-addEventListener("keydown",e=>{
+   input[key]=false;
 
-  keyState(e.key,true);
+ }
+ );
 
-});
-
-
-addEventListener("keyup",e=>{
-
-  keyState(e.key,false);
-
-});
-
-
-function holdButton(id,key){
-
-  const b=document.getElementById(id);
-
-  const start=e=>{
-
-    e.preventDefault();
-
-    keys[key]=true;
-
-  };
-
-  const stop=e=>{
-
-    e.preventDefault();
-
-    keys[key]=false;
-
-  };
-
-  b.addEventListener("pointerdown",start);
-
-  b.addEventListener("pointerup",stop);
-
-  b.addEventListener("pointercancel",stop);
-
-  b.addEventListener("pointerleave",stop);
+ el.addEventListener(
+  "pointercancel",
+  ()=>{
+   input[key]=false;
+ }
+ );
 
 }
 
 
-holdButton("up","up");
-holdButton("down","down");
-holdButton("left","left");
-holdButton("right","right");
+bindMove("up","up");
+bindMove("down","down");
+bindMove("left","left");
+bindMove("right","right");
 
 
 document
-  .getElementById("sprint")
-  .addEventListener("pointerdown",()=>{
-    keys.sprint=true;
-  });
+ .getElementById("sprint")
+ .addEventListener(
+  "pointerdown",
+  ()=>input.sprint=true
+ );
 
 document
-  .getElementById("sprint")
-  .addEventListener("pointerup",()=>{
-    keys.sprint=false;
-  });
+ .getElementById("sprint")
+ .addEventListener(
+  "pointerup",
+  ()=>input.sprint=false
+ );
+
+
+addEventListener(
+ "keydown",
+ e=>{
+
+  if(e.key==="w"||e.key==="ArrowUp")
+   input.up=true;
+
+  if(e.key==="s"||e.key==="ArrowDown")
+   input.down=true;
+
+  if(e.key==="a"||e.key==="ArrowLeft")
+   input.left=true;
+
+  if(e.key==="d"||e.key==="ArrowRight")
+   input.right=true;
+
+  if(e.key==="Shift")
+   input.sprint=true;
+
+ }
+);
+
+
+addEventListener(
+ "keyup",
+ e=>{
+
+  if(e.key==="w"||e.key==="ArrowUp")
+   input.up=false;
+
+  if(e.key==="s"||e.key==="ArrowDown")
+   input.down=false;
+
+  if(e.key==="a"||e.key==="ArrowLeft")
+   input.left=false;
+
+  if(e.key==="d"||e.key==="ArrowRight")
+   input.right=false;
+
+  if(e.key==="Shift")
+   input.sprint=false;
+
+ }
+);
+
+
+/* =========================================================
+   WORLD
+========================================================= */
+
+const world={
+
+ roads:[],
+ buildings:[],
+ trees:[],
+ loot:[],
+ vehicles:[],
+ bots:[]
+
+};
+
+
+/* =========================================================
+   ROAD
+========================================================= */
+
+function nearRoad(x,y,pad=100){
+
+ for(const r of world.roads){
+
+  if(
+   x>r.x-r.w/2-pad &&
+   x<r.x+r.w/2+pad &&
+   y>r.y-r.h/2-pad &&
+   y<r.y+r.h/2+pad
+  )
+   return true;
+
+ }
+
+ return false;
+
+}
 
 
 /* =========================================================
@@ -812,648 +1149,907 @@ document
 
 function buildWorld(){
 
-  world.buildings.length=0;
-  world.trees.length=0;
-  world.loot.length=0;
-  world.vehicles.length=0;
-  world.bots.length=0;
-  world.roads.length=0;
-
-  /*
-     ROAD GRID
-  */
-
-  for(
-    let x=500;
-    x<CONFIG.MAP_W;
-    x+=1000
-  ){
-
-    world.roads.push({
-      x,
-      y:CONFIG.MAP_H/2,
-      w:CONFIG.ROAD_SIZE,
-      h:CONFIG.MAP_H
-    });
-
-  }
+ world.roads.length=0;
+ world.buildings.length=0;
+ world.trees.length=0;
+ world.loot.length=0;
+ world.vehicles.length=0;
+ world.bots.length=0;
 
 
-  for(
-    let y=500;
-    y<CONFIG.MAP_H;
-    y+=1000
-  ){
+ /* roads */
 
-    world.roads.push({
-      x:CONFIG.MAP_W/2,
-      y,
-      w:CONFIG.MAP_W,
-      h:CONFIG.ROAD_SIZE
-    });
+ for(
+  let x=500;
+  x<CFG.MAP_W;
+  x+=1000
+ ){
 
-  }
+  world.roads.push({
 
+   x,
 
-  /*
-     BUILDINGS
-  */
+   y:CFG.MAP_H/2,
 
-  for(
-    let i=0;
-    i<CONFIG.BUILDINGS;
-    i++
-  ){
+   w:CFG.ROAD,
 
-    let x,y;
+   h:CFG.MAP_H
 
-    let tries=0;
+  });
 
-    do{
-
-      x=rand(150,CONFIG.MAP_W-150);
-      y=rand(150,CONFIG.MAP_H-150);
-
-      tries++;
-
-    }while(
-      nearRoad(x,y,170) &&
-      tries<30
-    );
+ }
 
 
-    const large=Math.random()<.35;
+ for(
+  let y=500;
+  y<CFG.MAP_H;
+  y+=1000
+ ){
 
-    world.buildings.push({
+  world.roads.push({
 
-      x,
+   x:CFG.MAP_W/2,
 
-      y,
+   y,
 
-      w:large?rand(180,330):rand(80,170),
+   w:CFG.MAP_W,
 
-      h:large?rand(180,330):rand(80,170),
+   h:CFG.ROAD
 
-      type:large?"large":"house",
+  });
 
-      roof:Math.random()
+ }
 
-    });
+
+ /* buildings */
+
+ for(
+  let i=0;
+  i<CFG.BUILDINGS;
+  i++
+ ){
+
+  let x,y;
+
+  for(let t=0;t<30;t++){
+
+   x=rand(100,CFG.MAP_W-100);
+   y=rand(100,CFG.MAP_H-100);
+
+   if(!nearRoad(x,y,160))
+    break;
 
   }
 
+  const large=
+   Math.random()<.38;
 
-  /*
-     TREES
-  */
+  world.buildings.push({
 
-  for(
-    let i=0;
-    i<CONFIG.TREES;
-    i++
-  ){
+   x,
+   y,
 
-    const x=rand(30,CONFIG.MAP_W-30);
-    const y=rand(30,CONFIG.MAP_H-30);
+   w:
+    large?
+     rand(180,360):
+     rand(80,170),
 
-    if(!nearRoad(x,y,90)){
+   h:
+    large?
+     rand(180,330):
+     rand(80,170),
 
-      world.trees.push({
+   large
 
-        x,
+  });
 
-        y,
-
-        r:rand(10,24)
-
-      });
-
-    }
-
-  }
+ }
 
 
-  /*
-     VEHICLES
-  */
+ /* trees */
 
-  for(
-    let i=0;
-    i<CONFIG.VEHICLES;
-    i++
-  ){
+ for(
+  let i=0;
+  i<CFG.TREES;
+  i++
+ ){
 
-    const horizontal=Math.random()<.5;
+  const x=
+   rand(30,CFG.MAP_W-30);
 
-    let x,y;
+  const y=
+   rand(30,CFG.MAP_H-30);
 
-    if(horizontal){
+  if(!nearRoad(x,y,70)){
 
-      y=
-        Math.round(
-          (rand(500,CONFIG.MAP_H-500))/1000
-        )*1000;
+   world.trees.push({
 
-      x=rand(80,CONFIG.MAP_W-80);
+    x,
+    y,
+    r:rand(10,25)
 
-    }else{
-
-      x=
-        Math.round(
-          (rand(500,CONFIG.MAP_W-500))/1000
-        )*1000;
-
-      y=rand(80,CONFIG.MAP_H-80);
-
-    }
-
-    world.vehicles.push({
-
-      x,
-
-      y,
-
-      angle:horizontal?0:Math.PI/2,
-
-      occupied:false,
-
-      speed:0
-
-    });
+   });
 
   }
 
-
-  /*
-     LOOT
-  */
-
-  const lootTypes=[
-
-    {
-      name:"Helmet",
-      slot:"helmet"
-    },
-
-    {
-      name:"Vest",
-      slot:"vest"
-    },
-
-    {
-      name:"Shoes",
-      slot:"shoes"
-    },
-
-    {
-      name:"Backpack",
-      slot:"backpack"
-    },
-
-    {
-      name:"Food",
-      slot:"food"
-    },
-
-    {
-      name:"Medical",
-      slot:"medical"
-    }
-
-  ];
+ }
 
 
-  for(
-    let i=0;
-    i<CONFIG.LOOT;
-    i++
-  ){
+ /* vehicles */
 
-    world.loot.push({
+ for(
+  let i=0;
+  i<CFG.VEHICLES;
+  i++
+ ){
 
-      x:rand(50,CONFIG.MAP_W-50),
+  const horizontal=
+   Math.random()<.5;
 
-      y:rand(50,CONFIG.MAP_H-50),
+  let x,y;
 
-      type:
-        lootTypes[
-          Math.floor(
-            Math.random()*lootTypes.length
-          )
-        ],
+  if(horizontal){
 
-      taken:false
+   y=
+    Math.round(
+     rand(500,CFG.MAP_H-500)/1000
+    )*1000;
 
-    });
+   x=
+    rand(100,CFG.MAP_W-100);
+
+  }else{
+
+   x=
+    Math.round(
+     rand(500,CFG.MAP_W-500)/1000
+    )*1000;
+
+   y=
+    rand(100,CFG.MAP_H-100);
 
   }
 
+  world.vehicles.push({
 
-  /*
-     BOTS
-  */
+   x,
+   y,
 
-  for(
-    let i=0;
-    i<CONFIG.BOT_COUNT;
-    i++
-  ){
+   angle:
+    horizontal?
+     0:
+     Math.PI/2,
 
-    world.bots.push(createBot(i));
+   occupied:false
 
+  });
+
+ }
+
+
+ /* loot */
+
+ const types=[
+
+  {
+   name:"Helmet",
+   slot:"helmet",
+   value:15
+  },
+
+  {
+   name:"Vest",
+   slot:"vest",
+   value:20
+  },
+
+  {
+   name:"Shoes",
+   slot:"shoes",
+   value:10
+  },
+
+  {
+   name:"Backpack",
+   slot:"backpack",
+   value:30
+  },
+
+  {
+   name:"Food",
+   slot:"food",
+   value:20
+  },
+
+  {
+   name:"Medical",
+   slot:"medical",
+   value:30
   }
 
+ ];
 
-  /*
-     CHUNKS
-  */
 
-  buildChunks();
+ for(
+  let i=0;
+  i<CFG.LOOT;
+  i++
+ ){
+
+  world.loot.push({
+
+   x:rand(30,CFG.MAP_W-30),
+
+   y:rand(30,CFG.MAP_H-30),
+
+   type:
+    types[
+     Math.floor(
+      Math.random()*types.length
+     )
+    ],
+
+   taken:false
+
+  });
+
+ }
+
+
+ /* bots */
+
+ for(
+  let i=0;
+  i<CFG.BOT_COUNT;
+  i++
+ ){
+
+  world.bots.push(
+   createBot(i)
+  );
+
+ }
 
 }
 
 
 /* =========================================================
-   ROAD CHECK
-========================================================= */
-
-function nearRoad(x,y,padding){
-
-  for(const r of world.roads){
-
-    if(
-      x>r.x-r.w/2-padding &&
-      x<r.x+r.w/2+padding &&
-      y>r.y-r.h/2-padding &&
-      y<r.y+r.h/2+padding
-    ){
-
-      return true;
-
-    }
-
-  }
-
-  return false;
-
-}
-
-
-/* =========================================================
-   CHUNK SYSTEM
-========================================================= */
-
-function chunkKey(x,y){
-
-  const cx=Math.floor(x/CONFIG.CHUNK);
-  const cy=Math.floor(y/CONFIG.CHUNK);
-
-  return cx+","+cy;
-
-}
-
-
-function buildChunks(){
-
-  world.chunks.clear();
-
-  function add(type,obj){
-
-    const key=chunkKey(obj.x,obj.y);
-
-    if(!world.chunks.has(key)){
-
-      world.chunks.set(key,{
-
-        buildings:[],
-        trees:[],
-        loot:[],
-        vehicles:[],
-        bots:[]
-
-      });
-
-    }
-
-    world.chunks
-      .get(key)[type]
-      .push(obj);
-
-  }
-
-
-  world.buildings.forEach(x=>add("buildings",x));
-  world.trees.forEach(x=>add("trees",x));
-  world.loot.forEach(x=>add("loot",x));
-  world.vehicles.forEach(x=>add("vehicles",x));
-  world.bots.forEach(x=>add("bots",x));
-
-}
-
-
-/* =========================================================
-   BOT SYSTEM
+   BOT
 ========================================================= */
 
 function createBot(id){
 
-  const angle=rand(0,Math.PI*2);
+ const angle=
+  rand(0,Math.PI*2);
 
-  const radius=rand(
-    400,
-    CONFIG.MAP_W*.45
+ const radius=
+  rand(
+   500,
+   Math.min(
+    CFG.MAP_W,
+    CFG.MAP_H
+   )*.43
   );
 
-  const x=
-    CONFIG.MAP_W/2+
-    Math.cos(angle)*radius;
+ let x=
+  CFG.MAP_W/2+
+  Math.cos(angle)*radius;
 
-  const y=
-    CONFIG.MAP_H/2+
-    Math.sin(angle)*radius;
+ let y=
+  CFG.MAP_H/2+
+  Math.sin(angle)*radius;
 
 
-  return{
+ x=clamp(
+  x,
+  50,
+  CFG.MAP_W-50
+ );
 
-    id,
+ y=clamp(
+  y,
+  50,
+  CFG.MAP_H-50
+ );
 
-    x:clamp(x,30,CONFIG.MAP_W-30),
 
-    y:clamp(y,30,CONFIG.MAP_H-30),
+ return{
 
-    targetX:x,
+  id,
 
-    targetY:y,
+  x,
+  y,
 
-    hp:100,
+  hp:100,
 
-    speed:rand(1.8,2.8),
+  speed:rand(1.8,2.8),
 
-    think:rand(.2,1),
+  sprint:rand(3.2,4.7),
 
-    active:true,
+  target:null,
 
-    state:"wander",
+  targetX:x,
+  targetY:y,
 
-    radius:14,
+  state:"wander",
 
-    direction:rand(0,Math.PI*2)
+  think:rand(.1,1),
 
-  };
+  attackCooldown:0,
 
-}
+  alive:true,
 
+  radius:17,
 
-/*
-   BOT AI OPTIMIZATION
+  direction:rand(
+   0,
+   Math.PI*2
+  )
 
-   Bot hanya melakukan keputusan AI
-   setiap beberapa ratus ms.
-   Tidak setiap frame.
-*/
-
-function updateBots(dt){
-
-  for(const bot of world.bots){
-
-    if(!bot.active)
-      continue;
-
-
-    const dx=bot.x-player.x;
-    const dy=bot.y-player.y;
-
-    const d=Math.hypot(dx,dy);
-
-
-    /*
-       Bot jauh dari player:
-       AI dibuat jauh lebih jarang.
-    */
-
-    if(d>1800){
-
-      bot.think-=dt;
-
-      if(bot.think<=0){
-
-        bot.think=rand(1.5,3);
-
-        bot.direction+=rand(-1,1);
-
-      }
-
-      bot.x+=
-        Math.cos(bot.direction)*
-        bot.speed*
-        dt*60;
-
-      bot.y+=
-        Math.sin(bot.direction)*
-        bot.speed*
-        dt*60;
-
-      clampBot(bot);
-
-      continue;
-
-    }
-
-
-    /*
-       Bot dekat player:
-       update AI lebih sering.
-    */
-
-    bot.think-=dt;
-
-
-    if(bot.think<=0){
-
-      bot.think=rand(.3,.65);
-
-
-      if(d<450){
-
-        bot.state="follow";
-
-      }else{
-
-        bot.state="wander";
-
-      }
-
-
-      if(bot.state==="follow"){
-
-        bot.targetX=player.x;
-        bot.targetY=player.y;
-
-      }else{
-
-        bot.targetX=
-          bot.x+
-          rand(-350,350);
-
-        bot.targetY=
-          bot.y+
-          rand(-350,350);
-
-      }
-
-    }
-
-
-    const tx=bot.targetX-bot.x;
-    const ty=bot.targetY-bot.y;
-
-    const td=Math.hypot(tx,ty);
-
-
-    if(td>10){
-
-      bot.x+=
-        tx/td*
-        bot.speed*
-        dt*60;
-
-      bot.y+=
-        ty/td*
-        bot.speed*
-        dt*60;
-
-    }
-
-
-    clampBot(bot);
-
-  }
-
-}
-
-
-function clampBot(bot){
-
-  bot.x=
-    clamp(bot.x,20,CONFIG.MAP_W-20);
-
-  bot.y=
-    clamp(bot.y,20,CONFIG.MAP_H-20);
+ };
 
 }
 
 
 /* =========================================================
-   PLAYER
+   BOT TARGET SYSTEM
+========================================================= */
+
+function findBotTarget(bot){
+
+ let best=null;
+ let bestDistance=Infinity;
+
+
+ /*
+    Player bisa jadi target.
+ */
+
+ const playerDistance=
+  distance(bot,player);
+
+
+ if(
+  playerDistance<650 &&
+  playerDistance<bestDistance
+ ){
+
+  best=player;
+
+  bestDistance=playerDistance;
+
+ }
+
+
+ /*
+    Bot mencari bot lain.
+ */
+
+ for(const other of world.bots){
+
+  if(other===bot)
+   continue;
+
+  if(!other.alive)
+   continue;
+
+  const d=
+   distance(bot,other);
+
+  if(
+   d<700 &&
+   d<bestDistance
+  ){
+
+   best=other;
+
+   bestDistance=d;
+
+  }
+
+ }
+
+
+ return best;
+
+}
+
+
+/* =========================================================
+   BOT AI
+========================================================= */
+
+function updateBots(dt){
+
+ for(const bot of world.bots){
+
+  if(!bot.alive)
+   continue;
+
+
+  bot.think-=dt;
+
+  bot.attackCooldown=
+   Math.max(
+    0,
+    bot.attackCooldown-dt
+   );
+
+
+  /*
+     AI THINK TICK
+
+     Tidak setiap frame.
+  */
+
+  if(bot.think<=0){
+
+   bot.think=
+    rand(.25,.55);
+
+
+   const target=
+    findBotTarget(bot);
+
+
+   if(target){
+
+    bot.target=target;
+
+    bot.state="hunt";
+
+   }else{
+
+    bot.target=null;
+
+    bot.state="wander";
+
+    bot.direction+=
+     rand(-1,1);
+
+   }
+
+
+   if(
+    bot.state==="wander"
+   ){
+
+    bot.targetX=
+     bot.x+
+     Math.cos(bot.direction)*
+     rand(100,400);
+
+    bot.targetY=
+     bot.y+
+     Math.sin(bot.direction)*
+     rand(100,400);
+
+   }
+
+  }
+
+
+  let speed=bot.speed;
+
+
+  if(
+   bot.state==="hunt"
+  ){
+
+   speed=bot.sprint;
+
+   if(bot.target){
+
+    bot.targetX=
+     bot.target.x;
+
+    bot.targetY=
+     bot.target.y;
+
+   }
+
+  }
+
+
+  const dx=
+   bot.targetX-bot.x;
+
+  const dy=
+   bot.targetY-bot.y;
+
+  const d=
+   Math.hypot(dx,dy);
+
+
+  /*
+     Berhenti dekat target
+     lalu melakukan combat abstrak.
+  */
+
+  if(
+   bot.state==="hunt" &&
+   bot.target &&
+   d<55
+  ){
+
+   botAttack(
+    bot,
+    bot.target
+   );
+
+  }else if(d>8){
+
+   bot.x+=
+    dx/d*
+    speed*
+    dt*60;
+
+   bot.y+=
+    dy/d*
+    speed*
+    dt*60;
+
+  }
+
+
+  bot.x=
+   clamp(
+    bot.x,
+    25,
+    CFG.MAP_W-25
+   );
+
+  bot.y=
+   clamp(
+    bot.y,
+    25,
+    CFG.MAP_H-25
+   );
+
+ }
+
+}
+
+
+/* =========================================================
+   BOT COMBAT
+========================================================= */
+
+/*
+   Combat dibuat abstrak:
+   tidak ada darah/gore.
+   "AKSI" hanya mengurangi HP.
+*/
+
+function botAttack(attacker,target){
+
+ if(
+  attacker.attackCooldown>0
+ )
+  return;
+
+
+ attacker.attackCooldown=
+  .9;
+
+
+ const damage=
+  rand(5,10);
+
+
+ if(
+  target===player
+ ){
+
+  receivePlayerDamage(
+   damage
+  );
+
+ }else{
+
+  target.hp=
+   Math.max(
+    0,
+    target.hp-damage
+   );
+
+
+  if(target.hp<=0){
+
+   target.alive=false;
+
+  }
+
+ }
+
+}
+
+
+/* =========================================================
+   PLAYER COMBAT
+========================================================= */
+
+function playerAttack(){
+
+ if(
+  player.attackCooldown>0
+ )
+  return;
+
+
+ player.attackCooldown=
+  .65;
+
+
+ let target=null;
+ let best=70;
+
+
+ /*
+    Target bisa bot.
+ */
+
+ for(const bot of world.bots){
+
+  if(!bot.alive)
+   continue;
+
+  const d=
+   distance(
+    player,
+    bot
+   );
+
+  if(d<best){
+
+   best=d;
+   target=bot;
+
+  }
+
+ }
+
+
+ if(!target){
+
+  showMessage(
+   "Tidak ada lawan di dekatmu"
+  );
+
+  return;
+
+ }
+
+
+ target.hp=
+  Math.max(
+   0,
+   target.hp-rand(10,18)
+  );
+
+
+ if(target.hp<=0){
+
+  target.alive=false;
+
+  showMessage(
+   "Lawan tersingkir"
+  );
+
+ }else{
+
+  showMessage(
+   "Serangan mengenai lawan"
+  );
+
+ }
+
+}
+
+
+/* =========================================================
+   PLAYER DAMAGE
+========================================================= */
+
+function receivePlayerDamage(damage){
+
+ /*
+    Vest mengurangi damage.
+ */
+
+ let reduction=0;
+
+ if(player.vest)
+  reduction=.25;
+
+ if(player.helmet)
+  reduction+=.10;
+
+
+ damage*=
+  1-reduction;
+
+
+ player.hp=
+  Math.max(
+   0,
+   player.hp-damage
+  );
+
+}
+
+
+/* =========================================================
+   PLAYER MOVEMENT
 ========================================================= */
 
 function updatePlayer(dt){
 
-  let dx=0;
-  let dy=0;
-
-  if(keys.up)dy--;
-  if(keys.down)dy++;
-  if(keys.left)dx--;
-  if(keys.right)dx++;
+ let x=0;
+ let y=0;
 
 
-  if(dx!==0 || dy!==0){
-
-    const length=
-      Math.hypot(dx,dy);
-
-    dx/=length;
-    dy/=length;
+ if(input.up)y--;
+ if(input.down)y++;
+ if(input.left)x--;
+ if(input.right)x++;
 
 
-    let speed=player.speed;
+ if(x!==0||y!==0){
+
+  const len=
+   Math.hypot(x,y);
+
+  x/=len;
+  y/=len;
 
 
-    if(
-      keys.sprint &&
-      player.stamina>0
-    ){
+  /*
+     Movement relatif terhadap
+     arah kamera.
+  */
 
-      speed=player.sprintSpeed;
+  const cos=
+   Math.cos(camera.angle);
 
-      player.stamina=
-        Math.max(
-          0,
-          player.stamina-
-          25*dt
-        );
-
-    }else{
-
-      player.stamina=
-        Math.min(
-          player.maxStamina,
-          player.stamina+
-          14*dt
-        );
-
-    }
+  const sin=
+   Math.sin(camera.angle);
 
 
-    const multiplier=
-      player.shoes ? 1.08 : 1;
+  const worldX=
+   x*cos-
+   y*sin;
+
+  const worldY=
+   x*sin+
+   y*cos;
 
 
-    player.x+=
-      dx*speed*multiplier*dt*60;
+  let speed=
+   player.speed;
 
-    player.y+=
-      dy*speed*multiplier*dt*60;
+
+  if(
+   input.sprint &&
+   player.stamina>0
+  ){
+
+   speed=
+    player.sprint;
+
+   player.stamina=
+    Math.max(
+     0,
+     player.stamina-
+     25*dt
+    );
 
   }else{
 
-    player.stamina=
-      Math.min(
-        player.maxStamina,
-        player.stamina+
-        18*dt
-      );
+   player.stamina=
+    Math.min(
+     player.maxStamina,
+     player.stamina+
+     17*dt
+    );
 
   }
 
 
-  player.x=
-    clamp(
-      player.x,
-      20,
-      CONFIG.MAP_W-20
-    );
-
-  player.y=
-    clamp(
-      player.y,
-      20,
-      CONFIG.MAP_H-20
-    );
+  if(player.shoes)
+   speed*=1.08;
 
 
-  if(player.vehicle){
+  player.x+=
+   worldX*
+   speed*
+   dt*60;
 
-    player.vehicle.x=player.x;
-    player.vehicle.y=player.y;
+  player.y+=
+   worldY*
+   speed*
+   dt*60;
 
-  }
+
+  player.direction=
+   Math.atan2(
+    worldY,
+    worldX
+   );
+
+ }else{
+
+  player.stamina=
+   Math.min(
+    player.maxStamina,
+    player.stamina+
+    20*dt
+   );
+
+ }
+
+
+ player.x=
+  clamp(
+   player.x,
+   20,
+   CFG.MAP_W-20
+  );
+
+ player.y=
+  clamp(
+   player.y,
+   20,
+   CFG.MAP_H-20
+  );
+
+
+ if(player.vehicle){
+
+  player.vehicle.x=
+   player.x;
+
+  player.vehicle.y=
+   player.y;
+
+ }
 
 }
 
 
 /* =========================================================
-   CAMERA
+   CAMERA FOLLOW
 ========================================================= */
 
 function updateCamera(){
 
-  camera.x+=
-    (player.x-camera.x)*.12;
+ /*
+    Kamera berada sedikit di belakang
+    arah gerak karakter.
 
-  camera.y+=
-    (player.y-camera.y)*.12;
+    Player digambar di bawah-tengah.
+ */
+
+ const followDistance=
+  190;
+
+
+ const targetX=
+  player.x-
+  Math.cos(player.direction)*
+  followDistance;
+
+ const targetY=
+  player.y-
+  Math.sin(player.direction)*
+  followDistance;
+
+
+ camera.x+=
+  (targetX-camera.x)*.11;
+
+ camera.y+=
+  (targetY-camera.y)*.11;
 
 }
 
@@ -1462,119 +2058,161 @@ function updateCamera(){
    LOOT
 ========================================================= */
 
-function takeLoot(){
+function lootAction(){
 
-  let nearest=null;
-  let best=70;
-
-
-  for(const item of world.loot){
-
-    if(item.taken)
-      continue;
-
-    const d=dist(player,item);
-
-    if(d<best){
-
-      best=d;
-      nearest=item;
-
-    }
-
-  }
+ let nearest=null;
+ let best=85;
 
 
-  if(!nearest){
+ for(const item of world.loot){
 
-    showMessage("Tidak ada loot di dekatmu");
-
-    return;
-
-  }
+  if(item.taken)
+   continue;
 
 
-  nearest.taken=true;
-
-  const type=nearest.type;
+  const d=
+   distance(
+    player,
+    item
+   );
 
 
   if(
-    type.slot==="helmet" ||
-    type.slot==="vest" ||
-    type.slot==="shoes" ||
-    type.slot==="backpack"
+   d<best
   ){
 
-    player[type.slot]=type.name;
+   best=d;
+   nearest=item;
 
-    document.getElementById(type.slot)
-      .textContent=type.name;
+  }
+
+ }
+
+
+ if(!nearest){
+
+  showMessage(
+   "Tidak ada loot di dekatmu"
+  );
+
+  return;
+
+ }
+
+
+ const type=
+  nearest.type;
+
+
+ /*
+    EQUIPMENT LANGSUNG DIPAKAI
+ */
+
+ if(
+  type.slot==="helmet" ||
+  type.slot==="vest" ||
+  type.slot==="shoes" ||
+  type.slot==="backpack"
+ ){
+
+  /*
+     Kalau slot sudah penuh,
+     loot tidak diambil.
+  */
+
+  if(player[type.slot]){
+
+   showMessage(
+    type.name+
+    " sudah terpasang"
+   );
+
+   return;
 
   }
 
 
-  player.inventory.push(type.name);
+  player[type.slot]=type;
 
-  showMessage("Mengambil "+type.name);
+  nearest.taken=true;
+
+  showMessage(
+   type.name+
+   " langsung dipakai"
+  );
+
+  updateEquipment();
+
+  return;
+
+ }
+
+
+ /*
+    Consumable masuk inventory.
+ */
+
+ nearest.taken=true;
+
+ player.inventory.push(
+  type.name
+ );
+
+ showMessage(
+  type.name+
+  " masuk inventory"
+ );
 
 }
 
 
 /* =========================================================
-   VEHICLES
+   EQUIPMENT UI
 ========================================================= */
 
-function vehicleAction(){
+function updateEquipment(){
 
-  if(player.vehicle){
-
-    player.vehicle.occupied=false;
-
-    player.vehicle=null;
-
-    showMessage("Keluar kendaraan");
-
-    return;
-
-  }
+ const slots=[
+  "helmet",
+  "vest",
+  "shoes",
+  "backpack"
+ ];
 
 
-  let nearest=null;
-  let best=75;
+ for(const slot of slots){
+
+  const item=
+   player[slot];
 
 
-  for(const v of world.vehicles){
-
-    if(v.occupied)
-      continue;
-
-    const d=dist(player,v);
-
-    if(d<best){
-
-      best=d;
-      nearest=v;
-
-    }
-
-  }
+  document
+   .getElementById(
+    slot+"Text"
+   )
+   .textContent=
+    item?
+     item.name:
+     "—";
 
 
-  if(!nearest){
-
-    showMessage("Tidak ada kendaraan");
-
-    return;
-
-  }
+  const armor=
+   document
+    .getElementById(
+     slot+"Armor"
+    );
 
 
-  nearest.occupied=true;
+  if(item)
+   armor.classList.add(
+    "active"
+   );
+  else
+   armor.classList.remove(
+    "active"
+   );
 
-  player.vehicle=nearest;
-
-  showMessage("Masuk kendaraan");
+ }
 
 }
 
@@ -1585,46 +2223,143 @@ function vehicleAction(){
 
 function updateInventory(){
 
-  const box=
-    document.getElementById("inventoryItems");
+ const grid=
+  document.getElementById(
+   "inventoryGrid"
+  );
 
-  box.innerHTML="";
+ grid.innerHTML="";
 
 
-  if(player.inventory.length===0){
+ if(
+  player.inventory.length===0
+ ){
 
-    box.innerHTML=
-      '<div class="item">Inventory kosong</div>';
+  grid.innerHTML=
+   '<div class="invItem">'+
+   '<div class="invTitle">'+
+   'Kosong'+
+   '</div>'+
+   '</div>';
 
-    return;
+  return;
+
+ }
+
+
+ const count={};
+
+
+ for(
+  const item of player.inventory
+ ){
+
+  count[item]=
+   (count[item]||0)+1;
+
+ }
+
+
+ for(
+  const name in count
+ ){
+
+  const div=
+   document.createElement(
+    "div"
+   );
+
+  div.className="invItem";
+
+  div.innerHTML=
+   '<div class="invTitle">'+
+   name+
+   ' × '+
+   count[name]+
+   '</div>'+
+   '<div class="invSub">'+
+   'Consumable'+
+   '</div>';
+
+  grid.appendChild(div);
+
+ }
+
+}
+
+
+/* =========================================================
+   VEHICLE
+========================================================= */
+
+function vehicleAction(){
+
+ if(player.vehicle){
+
+  player.vehicle.occupied=
+   false;
+
+  player.vehicle=
+   null;
+
+  showMessage(
+   "Keluar kendaraan"
+  );
+
+  return;
+
+ }
+
+
+ let nearest=null;
+ let best=90;
+
+
+ for(
+  const vehicle
+  of world.vehicles
+ ){
+
+  if(vehicle.occupied)
+   continue;
+
+
+  const d=
+   distance(
+    player,
+    vehicle
+   );
+
+
+  if(d<best){
+
+   best=d;
+   nearest=vehicle;
 
   }
 
-
-  const counts={};
-
-
-  for(const item of player.inventory){
-
-    counts[item]=
-      (counts[item]||0)+1;
-
-  }
+ }
 
 
-  for(const name in counts){
+ if(!nearest){
 
-    const div=
-      document.createElement("div");
+  showMessage(
+   "Tidak ada kendaraan"
+  );
 
-    div.className="item";
+  return;
 
-    div.textContent=
-      name+" × "+counts[name];
+ }
 
-    box.appendChild(div);
 
-  }
+ nearest.occupied=true;
+
+ player.vehicle=
+  nearest;
+
+ showMessage(
+  "Masuk kendaraan"
+ );
 
 }
 
@@ -1635,61 +2370,102 @@ function updateInventory(){
 
 const zone={
 
-  x:CONFIG.MAP_W/2,
+ x:CFG.MAP_W/2,
 
-  y:CONFIG.MAP_H/2,
+ y:CFG.MAP_H/2,
 
-  radius:4700,
+ radius:4700,
 
-  targetRadius:4700,
+ target:4700,
 
-  timer:0
+ timer:0
 
 };
 
 
 function updateZone(dt){
 
-  zone.timer+=dt;
+ zone.timer+=dt;
 
 
-  /*
-     Zona mulai mengecil setelah
-     beberapa menit.
-  */
+ if(zone.timer>120){
 
-  if(zone.timer>120){
+  zone.target=
+   Math.max(
+    650,
+    4700-
+    (zone.timer-120)*2.2
+   );
 
-    zone.targetRadius=
-      Math.max(
-        650,
-        4700-
-        (zone.timer-120)*2.2
-      );
-
-  }
+ }
 
 
-  zone.radius+=
-    (zone.targetRadius-zone.radius)*
-    dt*.15;
+ zone.radius+=
+  (
+   zone.target-zone.radius
+  )*
+  dt*.15;
 
 
-  const dx=player.x-zone.x;
-  const dy=player.y-zone.y;
+ const d=
+  Math.hypot(
+   player.x-zone.x,
+   player.y-zone.y
+  );
 
-  const d=Math.hypot(dx,dy);
+
+ if(d>zone.radius){
+
+  receivePlayerDamage(
+   3*dt
+  );
+
+ }
+
+}
 
 
-  if(d>zone.radius){
+/* =========================================================
+   MESSAGE
+========================================================= */
 
-    player.hp=
-      Math.max(
-        0,
-        player.hp-5*dt
-      );
+let messageTimer=0;
 
-  }
+
+function showMessage(text){
+
+ const el=
+  document.getElementById(
+   "message"
+  );
+
+ el.textContent=text;
+
+ el.classList.add("show");
+
+ messageTimer=1.7;
+
+}
+
+
+function updateMessage(dt){
+
+ if(messageTimer<=0)
+  return;
+
+ messageTimer-=dt;
+
+ if(messageTimer<=0){
+
+  document
+   .getElementById(
+    "message"
+   )
+   .classList.remove(
+    "show"
+   );
+
+ }
 
 }
 
@@ -1700,407 +2476,649 @@ function updateZone(dt){
 
 function draw(){
 
-  const w=innerWidth;
-  const h=innerHeight;
+ const w=innerWidth;
+ const h=innerHeight;
 
 
-  ctx.clearRect(0,0,w,h);
+ ctx.clearRect(
+  0,
+  0,
+  w,
+  h
+ );
 
 
-  const zoom=
-    Math.min(
-      w/900,
-      h/650
-    );
+ /*
+    Ground
+ */
+
+ ctx.fillStyle="#53634f";
+
+ ctx.fillRect(
+  0,
+  0,
+  w,
+  h
+ );
 
 
-  const ox=
-    w/2-camera.x*zoom;
+ /*
+    Subtle terrain lines
+ */
 
-  const oy=
-    h/2-camera.y*zoom;
+ const grid=250;
+
+ ctx.strokeStyle=
+  "rgba(255,255,255,.025)";
+
+ for(
+  let x=
+   Math.floor(
+    camera.x/grid
+   )*grid;
+
+  x<camera.x+1800;
+
+  x+=grid
+ ){
+
+  const p=
+   worldToScreen(x,camera.y);
+
+  ctx.beginPath();
+
+  ctx.moveTo(p.x,0);
+  ctx.lineTo(p.x,h);
+
+  ctx.stroke();
+
+ }
 
 
-  /*
-     GROUND
-  */
+ /*
+    Roads
+ */
 
-  ctx.fillStyle="#52634f";
+ for(
+  const road of world.roads
+ ){
+
+  const p=
+   worldToScreen(
+    road.x-road.w/2,
+    road.y-road.h/2
+   );
+
+
+  ctx.fillStyle="#343b38";
 
   ctx.fillRect(
-    0,
-    0,
-    w,
-    h
+   p.x,
+   p.y,
+   road.w*camera.zoom,
+   road.h*camera.zoom
+  );
+
+ }
+
+
+ /*
+    Buildings
+ */
+
+ for(
+  const b of world.buildings
+ ){
+
+  if(
+   Math.abs(
+    b.x-camera.x
+   )>CFG.VIEW ||
+   Math.abs(
+    b.y-camera.y
+   )>CFG.VIEW
+  )
+   continue;
+
+
+  const p=
+   worldToScreen(
+    b.x-b.w/2,
+    b.y-b.h/2
+   );
+
+
+  const width=
+   b.w*camera.zoom;
+
+  const height=
+   b.h*camera.zoom;
+
+
+  ctx.fillStyle=
+   b.large?
+    "#696963":
+    "#817b6e";
+
+
+  ctx.fillRect(
+   p.x,
+   p.y,
+   width,
+   height
   );
 
 
   /*
-     GRID TERRAIN
+     building shadow
   */
 
-  const grid=200;
+  ctx.fillStyle=
+   "rgba(0,0,0,.18)";
 
+  ctx.fillRect(
+   p.x,
+   p.y+height,
+   width,
+   8
+  );
 
-  ctx.strokeStyle=
-    "rgba(255,255,255,.025)";
+ }
 
-  ctx.lineWidth=1;
 
+ /*
+    Trees
+ */
 
-  for(
-    let x=Math.floor(camera.x/grid)*grid;
-    x<camera.x+1000;
-    x+=grid
-  ){
+ for(
+  const tree of world.trees
+ ){
 
-    const sx=ox+x*zoom;
+  if(
+   Math.abs(
+    tree.x-camera.x
+   )>CFG.VIEW ||
+   Math.abs(
+    tree.y-camera.y
+   )>CFG.VIEW
+  )
+   continue;
 
-    ctx.beginPath();
 
-    ctx.moveTo(sx,0);
-    ctx.lineTo(sx,h);
+  const p=
+   worldToScreen(
+    tree.x,
+    tree.y
+   );
 
-    ctx.stroke();
 
-  }
-
-
-  for(
-    let y=Math.floor(camera.y/grid)*grid;
-    y<camera.y+1000;
-    y+=grid
-  ){
-
-    const sy=oy+y*zoom;
-
-    ctx.beginPath();
-
-    ctx.moveTo(0,sy);
-    ctx.lineTo(w,sy);
-
-    ctx.stroke();
-
-  }
-
-
-  /*
-     ROADS
-  */
-
-  for(const r of world.roads){
-
-    ctx.fillStyle="#333936";
-
-    ctx.fillRect(
-      ox+(r.x-r.w/2)*zoom,
-      oy+(r.y-r.h/2)*zoom,
-      r.w*zoom,
-      r.h*zoom
-    );
-
-  }
-
-
-  /*
-     BUILDINGS
-  */
-
-  for(const b of world.buildings){
-
-    if(
-      Math.abs(b.x-camera.x)>CONFIG.VIEW_DISTANCE ||
-      Math.abs(b.y-camera.y)>CONFIG.VIEW_DISTANCE
-    )
-      continue;
-
-
-    const x=
-      ox+(b.x-b.w/2)*zoom;
-
-    const y=
-      oy+(b.y-b.h/2)*zoom;
-
-    ctx.fillStyle=
-      b.type==="large"
-      ? "#77736a"
-      : "#8a8174";
-
-
-    ctx.fillRect(
-      x,
-      y,
-      b.w*zoom,
-      b.h*zoom
-    );
-
-
-    ctx.strokeStyle=
-      "rgba(20,20,20,.8)";
-
-    ctx.strokeRect(
-      x,
-      y,
-      b.w*zoom,
-      b.h*zoom
-    );
-
-
-    /*
-       roof/detail
-    */
-
-    ctx.fillStyle=
-      "rgba(40,40,40,.25)";
-
-    ctx.fillRect(
-      x+5,
-      y+5,
-      b.w*zoom-10,
-      8
-    );
-
-  }
-
-
-  /*
-     TREES
-  */
-
-  for(const t of world.trees){
-
-    if(
-      Math.abs(t.x-camera.x)>CONFIG.VIEW_DISTANCE ||
-      Math.abs(t.y-camera.y)>CONFIG.VIEW_DISTANCE
-    )
-      continue;
-
-
-    const x=ox+t.x*zoom;
-    const y=oy+t.y*zoom;
-
-    ctx.fillStyle="#263c27";
-
-    ctx.beginPath();
-
-    ctx.arc(
-      x,
-      y,
-      t.r*zoom,
-      0,
-      Math.PI*2
-    );
-
-    ctx.fill();
-
-  }
-
-
-  /*
-     VEHICLES
-  */
-
-  for(const v of world.vehicles){
-
-    if(
-      Math.abs(v.x-camera.x)>CONFIG.VIEW_DISTANCE ||
-      Math.abs(v.y-camera.y)>CONFIG.VIEW_DISTANCE
-    )
-      continue;
-
-
-    const x=ox+v.x*zoom;
-    const y=oy+v.y*zoom;
-
-    ctx.save();
-
-    ctx.translate(x,y);
-
-    ctx.rotate(v.angle);
-
-    ctx.fillStyle=
-      v.occupied
-      ? "#c4a75d"
-      : "#59666a";
-
-    ctx.fillRect(
-      -22*zoom,
-      -11*zoom,
-      44*zoom,
-      22*zoom
-    );
-
-    ctx.fillStyle="#20282a";
-
-    ctx.fillRect(
-      -8*zoom,
-      -8*zoom,
-      16*zoom,
-      16*zoom
-    );
-
-    ctx.restore();
-
-  }
-
-
-  /*
-     LOOT
-  */
-
-  for(const item of world.loot){
-
-    if(item.taken)
-      continue;
-
-    if(
-      Math.abs(item.x-camera.x)>900 ||
-      Math.abs(item.y-camera.y)>900
-    )
-      continue;
-
-
-    const x=ox+item.x*zoom;
-    const y=oy+item.y*zoom;
-
-    ctx.fillStyle="#d9bd64";
-
-    ctx.fillRect(
-      x-4,
-      y-4,
-      8,
-      8
-    );
-
-  }
-
-
-  /*
-     BOTS
-  */
-
-  for(const bot of world.bots){
-
-    if(!bot.active)
-      continue;
-
-    if(
-      Math.abs(bot.x-camera.x)>CONFIG.VIEW_DISTANCE ||
-      Math.abs(bot.y-camera.y)>CONFIG.VIEW_DISTANCE
-    )
-      continue;
-
-
-    const x=ox+bot.x*zoom;
-    const y=oy+bot.y*zoom;
-
-
-    ctx.fillStyle="#a6a6a6";
-
-    ctx.beginPath();
-
-    ctx.arc(
-      x,
-      y,
-      12*zoom,
-      0,
-      Math.PI*2
-    );
-
-    ctx.fill();
-
-
-    ctx.fillStyle="#333";
-
-    ctx.fillRect(
-      x-7*zoom,
-      y-16*zoom,
-      14*zoom,
-      7*zoom
-    );
-
-  }
-
-
-  /*
-     PLAYER
-  */
-
-  const px=w/2;
-  const py=h/2;
-
-
-  ctx.fillStyle="#e8e0c9";
+  ctx.fillStyle="#29422d";
 
   ctx.beginPath();
 
   ctx.arc(
-    px,
-    py,
-    15,
-    0,
-    Math.PI*2
+   p.x,
+   p.y,
+   tree.r*camera.zoom,
+   0,
+   Math.PI*2
+  );
+
+  ctx.fill();
+
+ }
+
+
+ /*
+    Vehicles
+ */
+
+ for(
+  const v of world.vehicles
+ ){
+
+  if(
+   Math.abs(v.x-camera.x)>CFG.VIEW ||
+   Math.abs(v.y-camera.y)>CFG.VIEW
+  )
+   continue;
+
+
+  const p=
+   worldToScreen(
+    v.x,
+    v.y
+   );
+
+
+  ctx.save();
+
+  ctx.translate(
+   p.x,
+   p.y
+  );
+
+  ctx.rotate(
+   v.angle-camera.angle
+  );
+
+
+  ctx.fillStyle=
+   v.occupied?
+    "#b59a55":
+    "#59676a";
+
+
+  ctx.fillRect(
+   -25*camera.zoom,
+   -12*camera.zoom,
+   50*camera.zoom,
+   24*camera.zoom
+  );
+
+
+  ctx.fillStyle="#222a2b";
+
+  ctx.fillRect(
+   -8*camera.zoom,
+   -8*camera.zoom,
+   16*camera.zoom,
+   16*camera.zoom
+  );
+
+
+  ctx.restore();
+
+ }
+
+
+ /*
+    Loot
+
+    Equipment yang slotnya sudah
+    penuh dibuat lebih redup.
+ */
+
+ for(
+  const item of world.loot
+ ){
+
+  if(item.taken)
+   continue;
+
+
+  if(
+   Math.abs(
+    item.x-camera.x
+   )>900 ||
+   Math.abs(
+    item.y-camera.y
+   )>900
+  )
+   continue;
+
+
+  const p=
+   worldToScreen(
+    item.x,
+    item.y
+   );
+
+
+  let available=true;
+
+
+  if(
+   item.type.slot &&
+   item.type.slot!=="food" &&
+   item.type.slot!=="medical"
+  ){
+
+   if(
+    player[item.type.slot]
+   )
+    available=false;
+
+  }
+
+
+  ctx.fillStyle=
+   available?
+    "#d8c25f":
+    "rgba(130,130,110,.35)";
+
+
+  ctx.fillRect(
+   p.x-5,
+   p.y-5,
+   10,
+   10
+  );
+
+ }
+
+
+ /*
+    BOTS
+
+    Player-like character.
+ */
+
+ for(
+  const bot of world.bots
+ ){
+
+  if(!bot.alive)
+   continue;
+
+
+  if(
+   Math.abs(
+    bot.x-camera.x
+   )>CFG.VIEW ||
+   Math.abs(
+    bot.y-camera.y
+   )>CFG.VIEW
+  )
+   continue;
+
+
+  const p=
+   worldToScreen(
+    bot.x,
+    bot.y
+   );
+
+
+  /*
+     body
+  */
+
+  ctx.fillStyle="#c0c5bd";
+
+  ctx.beginPath();
+
+  ctx.arc(
+   p.x,
+   p.y,
+   13*camera.zoom,
+   0,
+   Math.PI*2
   );
 
   ctx.fill();
 
 
-  ctx.fillStyle="#39453d";
+  /*
+     backpack silhouette
+  */
+
+  ctx.fillStyle="#4b554d";
 
   ctx.fillRect(
-    px-10,
-    py-18,
-    20,
-    7
+   p.x-
+   9*camera.zoom,
+   p.y+
+   7*camera.zoom,
+   18*camera.zoom,
+   9*camera.zoom
   );
 
 
   /*
-     SAFE ZONE
+     head
   */
 
-  ctx.save();
-
-  ctx.fillStyle=
-    "rgba(50,80,120,.10)";
+  ctx.fillStyle="#d5c9ad";
 
   ctx.beginPath();
 
-  ctx.rect(0,0,w,h);
-
   ctx.arc(
-    ox+zone.x*zoom,
-    oy+zone.y*zoom,
-    zone.radius*zoom,
-    0,
-    Math.PI*2,
-    true
+   p.x,
+   p.y-
+   13*camera.zoom,
+   6*camera.zoom,
+   0,
+   Math.PI*2
   );
 
-  ctx.fill("evenodd");
+  ctx.fill();
 
 
-  ctx.strokeStyle=
-    "rgba(120,180,255,.65)";
+  /*
+     target marker
+  */
 
-  ctx.lineWidth=3;
+  if(bot.target===player){
 
-  ctx.beginPath();
+   ctx.strokeStyle=
+    "rgba(220,90,80,.8)";
 
-  ctx.arc(
-    ox+zone.x*zoom,
-    oy+zone.y*zoom,
-    zone.radius*zoom,
+   ctx.lineWidth=2;
+
+   ctx.beginPath();
+
+   ctx.arc(
+    p.x,
+    p.y,
+    20*camera.zoom,
     0,
     Math.PI*2
+   );
+
+   ctx.stroke();
+
+  }
+
+ }
+
+
+ /*
+    SAFE ZONE
+
+    Digambar terakhir supaya terlihat.
+ */
+
+ const zonePoint=
+  worldToScreen(
+   zone.x,
+   zone.y
   );
 
-  ctx.stroke();
 
-  ctx.restore();
+ const zoneRadius=
+  zone.radius*
+  camera.zoom;
 
 
-  drawMinimap();
+ ctx.save();
+
+ ctx.fillStyle=
+  "rgba(70,120,180,.10)";
+
+ ctx.beginPath();
+
+ ctx.rect(
+  0,
+  0,
+  w,
+  h
+ );
+
+ ctx.arc(
+  zonePoint.x,
+  zonePoint.y,
+  zoneRadius,
+  0,
+  Math.PI*2,
+  true
+ );
+
+ ctx.fill("evenodd");
+
+
+ ctx.strokeStyle=
+  "rgba(130,185,240,.7)";
+
+ ctx.lineWidth=3;
+
+ ctx.beginPath();
+
+ ctx.arc(
+  zonePoint.x,
+  zonePoint.y,
+  zoneRadius,
+  0,
+  Math.PI*2
+ );
+
+ ctx.stroke();
+
+ ctx.restore();
+
+
+ /*
+    PLAYER
+
+    sengaja di bawah-tengah,
+    seperti third-person.
+ */
+
+ const px=
+  w/2;
+
+ const py=
+  h*.68;
+
+
+ /*
+    shadow
+ */
+
+ ctx.fillStyle=
+  "rgba(0,0,0,.3)";
+
+ ctx.beginPath();
+
+ ctx.ellipse(
+  px,
+  py+16,
+  18,
+  7,
+  0,
+  0,
+  Math.PI*2
+ );
+
+ ctx.fill();
+
+
+ /*
+    body
+ */
+
+ ctx.fillStyle="#4e5d54";
+
+ ctx.fillRect(
+  px-12,
+  py-12,
+  24,
+  27
+ );
+
+
+ /*
+    backpack
+ */
+
+ if(player.backpack){
+
+  ctx.fillStyle="#303b34";
+
+  ctx.fillRect(
+   px-18,
+   py-8,
+   8,
+   22
+  );
+
+ }
+
+
+ /*
+    head
+ */
+
+ ctx.fillStyle="#d6c6a8";
+
+ ctx.beginPath();
+
+ ctx.arc(
+  px,
+  py-21,
+  9,
+  0,
+  Math.PI*2
+ );
+
+ ctx.fill();
+
+
+ /*
+    helmet
+ */
+
+ if(player.helmet){
+
+  ctx.fillStyle="#56655b";
+
+  ctx.beginPath();
+
+  ctx.arc(
+   px,
+   py-23,
+   11,
+   Math.PI,
+   0
+  );
+
+  ctx.fill();
+
+ }
+
+
+ /*
+    direction indicator
+ */
+
+ ctx.strokeStyle=
+  "rgba(255,255,255,.7)";
+
+ ctx.lineWidth=2;
+
+ ctx.beginPath();
+
+ ctx.moveTo(
+  px,
+  py-7
+ );
+
+ ctx.lineTo(
+  px+
+   Math.cos(
+    player.direction-camera.angle
+   )*22,
+  py-
+   7+
+   Math.sin(
+    player.direction-camera.angle
+   )*22
+ );
+
+ ctx.stroke();
+
+
+ drawMini();
 
 }
 
@@ -2109,155 +3127,134 @@ function draw(){
    MINIMAP
 ========================================================= */
 
-function drawMinimap(){
+function drawMini(){
 
-  const s=230;
+ const size=230;
 
-  mapCtx.clearRect(0,0,s,s);
-
-  mapCtx.fillStyle="#334334";
-
-  mapCtx.fillRect(0,0,s,s);
-
-
-  const scale=
-    s/CONFIG.MAP_W;
+ mctx.clearRect(
+  0,
+  0,
+  size,
+  size
+ );
 
 
-  /*
-     roads
-  */
+ mctx.fillStyle="#354536";
 
-  mapCtx.fillStyle="#444b48";
-
-  for(const r of world.roads){
-
-    mapCtx.fillRect(
-      (r.x-r.w/2)*scale,
-      (r.y-r.h/2)*scale,
-      r.w*scale,
-      r.h*scale
-    );
-
-  }
+ mctx.fillRect(
+  0,
+  0,
+  size,
+  size
+ );
 
 
-  /*
-     buildings
-  */
-
-  mapCtx.fillStyle="#77746b";
-
-  for(const b of world.buildings){
-
-    mapCtx.fillRect(
-      (b.x-b.w/2)*scale,
-      (b.y-b.h/2)*scale,
-      b.w*scale,
-      b.h*scale
-    );
-
-  }
+ const scale=
+  size/CFG.MAP_W;
 
 
-  /*
-     zone
-  */
+ /*
+    roads
+ */
 
-  mapCtx.strokeStyle="#8fc4ff";
+ mctx.fillStyle="#4a504c";
 
-  mapCtx.lineWidth=2;
+ for(
+  const r of world.roads
+ ){
 
-  mapCtx.beginPath();
-
-  mapCtx.arc(
-    zone.x*scale,
-    zone.y*scale,
-    zone.radius*scale,
-    0,
-    Math.PI*2
+  mctx.fillRect(
+   (r.x-r.w/2)*scale,
+   (r.y-r.h/2)*scale,
+   r.w*scale,
+   r.h*scale
   );
 
-  mapCtx.stroke();
+ }
 
 
-  /*
-     bots
-  */
+ /*
+    buildings
+ */
 
-  mapCtx.fillStyle="#ddd";
+ mctx.fillStyle="#77746b";
 
-  for(const bot of world.bots){
+ for(
+  const b of world.buildings
+ ){
 
-    if(!bot.active)
-      continue;
-
-    mapCtx.fillRect(
-      bot.x*scale-1,
-      bot.y*scale-1,
-      2,
-      2
-    );
-
-  }
-
-
-  /*
-     player
-  */
-
-  mapCtx.fillStyle="#fff";
-
-  mapCtx.beginPath();
-
-  mapCtx.arc(
-    player.x*scale,
-    player.y*scale,
-    3,
-    0,
-    Math.PI*2
+  mctx.fillRect(
+   (b.x-b.w/2)*scale,
+   (b.y-b.h/2)*scale,
+   b.w*scale,
+   b.h*scale
   );
 
-  mapCtx.fill();
-
-}
+ }
 
 
-/* =========================================================
-   UI
-========================================================= */
+ /*
+    zone
+ */
 
-let messageTimer=0;
+ mctx.strokeStyle="#8dbcf0";
+
+ mctx.lineWidth=2;
+
+ mctx.beginPath();
+
+ mctx.arc(
+  zone.x*scale,
+  zone.y*scale,
+  zone.radius*scale,
+  0,
+  Math.PI*2
+ );
+
+ mctx.stroke();
 
 
-function showMessage(text){
+ /*
+    enemies
+ */
 
-  const el=
-    document.getElementById("message");
+ mctx.fillStyle="#d86b63";
 
-  el.textContent=text;
+ for(
+  const bot of world.bots
+ ){
 
-  el.classList.add("show");
-
-  messageTimer=2;
-
-}
+  if(!bot.alive)
+   continue;
 
 
-function updateMessage(dt){
+  mctx.fillRect(
+   bot.x*scale-1,
+   bot.y*scale-1,
+   2,
+   2
+  );
 
-  if(messageTimer<=0)
-    return;
+ }
 
-  messageTimer-=dt;
 
-  if(messageTimer<=0){
+ /*
+    player
+ */
 
-    document
-      .getElementById("message")
-      .classList.remove("show");
+ mctx.fillStyle="#fff";
 
-  }
+ mctx.beginPath();
+
+ mctx.arc(
+  player.x*scale,
+  player.y*scale,
+  4,
+  0,
+  Math.PI*2
+ );
+
+ mctx.fill();
 
 }
 
@@ -2268,36 +3265,38 @@ function updateMessage(dt){
 
 function updateHUD(){
 
-  document
-    .getElementById("hpFill")
-    .style.width=
-      player.hp+"%";
+ document
+  .getElementById("hpFill")
+  .style.width=
+   player.hp+"%";
 
 
-  document
-    .getElementById("staminaFill")
-    .style.width=
-      player.stamina+"%";
+ document
+  .getElementById("staminaFill")
+  .style.width=
+   player.stamina+"%";
 
 
-  const alive=
-    1+
-    world.bots.filter(
-      b=>b.active
-    ).length;
+ const alive=
+  1+
+  world.bots.filter(
+   b=>b.alive
+  ).length;
 
 
-  document
-    .getElementById("alive")
-    .textContent=
-      "PLAYERS "+alive;
+ document
+  .getElementById("alive")
+  .textContent=
+   alive+" ALIVE";
 
 
-  document
-    .getElementById("timer")
-    .textContent=
-      formatTime(gameTime);
+ document
+  .getElementById("timer")
+  .textContent=
+   timeText(gameTime);
 
+
+ updateEquipment();
 
 }
 
@@ -2308,61 +3307,81 @@ function updateHUD(){
 
 let running=false;
 
-let lastTime=0;
+let last=0;
 
-let gameTime=CONFIG.GAME_TIME;
-
-
-function loop(time){
-
-  if(!running)
-    return;
+let gameTime=
+ CFG.MATCH_TIME;
 
 
-  const dt=
-    Math.min(
-      .033,
-      (time-lastTime)/1000
-    );
+function loop(now){
 
-  lastTime=time;
+ if(!running)
+  return;
 
 
-  gameTime-=dt;
+ const dt=
+  Math.min(
+   .033,
+   (now-last)/1000
+  );
+
+ last=now;
 
 
-  updatePlayer(dt);
-
-  updateBots(dt);
-
-  updateCamera();
-
-  updateZone(dt);
-
-  updateMessage(dt);
-
-  updateHUD();
-
-  draw();
+ gameTime-=dt;
 
 
-  if(
-    player.hp<=0 ||
-    gameTime<=0
-  ){
-
-    running=false;
-
-    showMessage(
-      player.hp<=0
-      ? "Kamu tereliminasi"
-      : "Waktu pertandingan selesai"
-    );
-
-  }
+ player.attackCooldown=
+  Math.max(
+   0,
+   player.attackCooldown-dt
+  );
 
 
-  requestAnimationFrame(loop);
+ updatePlayer(dt);
+
+ updateBots(dt);
+
+ updateCamera();
+
+ updateZone(dt);
+
+ updateMessage(dt);
+
+ updateHUD();
+
+ draw();
+
+
+ if(
+  player.hp<=0
+ ){
+
+  running=false;
+
+  showMessage(
+   "Kamu tersingkir"
+  );
+
+  return;
+
+ }
+
+
+ if(gameTime<=0){
+
+  running=false;
+
+  showMessage(
+   "Waktu pertandingan selesai"
+  );
+
+  return;
+
+ }
+
+
+ requestAnimationFrame(loop);
 
 }
 
@@ -2372,49 +3391,67 @@ function loop(time){
 ========================================================= */
 
 document
-  .getElementById("loot")
-  .addEventListener(
-    "click",
-    takeLoot
-  );
+ .getElementById("attack")
+ .addEventListener(
+  "click",
+  playerAttack
+ );
 
 
 document
-  .getElementById("vehicle")
-  .addEventListener(
-    "click",
-    vehicleAction
-  );
+ .getElementById("loot")
+ .addEventListener(
+  "click",
+  lootAction
+ );
 
 
 document
-  .getElementById("bag")
-  .addEventListener(
-    "click",
-    ()=>{
-
-      updateInventory();
-
-      document
-        .getElementById("inventoryPanel")
-        .classList.add("show");
-
-    }
-  );
+ .getElementById("vehicle")
+ .addEventListener(
+  "click",
+  vehicleAction
+ );
 
 
 document
-  .getElementById("closeBag")
-  .addEventListener(
-    "click",
-    ()=>{
+ .getElementById("bag")
+ .addEventListener(
+  "click",
+  ()=>{
 
-      document
-        .getElementById("inventoryPanel")
-        .classList.remove("show");
+   updateInventory();
 
-    }
-  );
+   document
+    .getElementById(
+     "inventory"
+    )
+    .classList.add(
+     "show"
+    );
+
+  }
+ );
+
+
+document
+ .getElementById(
+  "closeInventory"
+ )
+ .addEventListener(
+  "click",
+  ()=>{
+
+   document
+    .getElementById(
+     "inventory"
+    )
+    .classList.remove(
+     "show"
+    );
+
+  }
+ );
 
 
 /* =========================================================
@@ -2422,65 +3459,93 @@ document
 ========================================================= */
 
 document
-  .getElementById("startBtn")
-  .addEventListener(
-    "click",
+ .getElementById(
+  "startButton"
+ )
+ .addEventListener(
+  "click",
+  ()=>{
+
+   document
+    .getElementById(
+     "start"
+    )
+    .style.display="none";
+
+
+   document
+    .getElementById(
+     "loading"
+    )
+    .classList.add(
+     "show"
+    );
+
+
+   setTimeout(
     ()=>{
 
-      document
-        .getElementById("start")
-        .style.display="none";
+     document
+      .getElementById(
+       "loadingText"
+      )
+      .textContent=
+       "Membangun kota...";
 
-      document
-        .getElementById("loading")
-        .classList.add("show");
-
-
-      setTimeout(()=>{
-
-        document
-          .getElementById("loadingText")
-          .textContent=
-            "Membangun kota...";
-
-      },100);
+    },
+    100
+   );
 
 
-      setTimeout(()=>{
+   setTimeout(
+    ()=>{
 
-        buildWorld();
+     buildWorld();
 
-      },200);
+     document
+      .getElementById(
+       "loadingText"
+      )
+      .textContent=
+       "Menyiapkan 70 survivor...";
+
+    },
+    300
+   );
 
 
-      setTimeout(()=>{
+   setTimeout(
+    ()=>{
 
-        document
-          .getElementById("loadingText")
-          .textContent=
-            "Menyiapkan 70 entitas...";
+     document
+      .getElementById(
+       "loading"
+      )
+      .classList.remove(
+       "show"
+      );
 
-      },400);
+
+     running=true;
+
+     last=
+      performance.now();
 
 
-      setTimeout(()=>{
+     requestAnimationFrame(
+      loop
+     );
 
-        document
-          .getElementById("loading")
-          .classList.remove("show");
+    },
+    650
+   );
 
-        running=true;
-
-        lastTime=performance.now();
-
-        requestAnimationFrame(loop);
-
-      },700);
-
-    }
-  );
+  }
+);
 
 </script>
+
+</div>
 
 </body>
 </html>
