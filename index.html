@@ -3,13 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+
 <title>Virelia: Afterfall</title>
 
 <script type="importmap">
 {
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"
+  "imports":{
+    "three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
+    "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"
   }
 }
 </script>
@@ -60,21 +61,20 @@ canvas{
   top:14px;
   left:14px;
   z-index:10;
-  color:white;
+  color:#fff;
   text-shadow:0 2px 5px #000;
   pointer-events:none;
 }
 
 #title{
-  font-size:16px;
   font-weight:bold;
   margin-bottom:6px;
 }
 
 .bar{
   width:190px;
-  height:12px;
-  background:#222;
+  height:11px;
+  background:#202020;
   border:1px solid #555;
   border-radius:8px;
   overflow:hidden;
@@ -82,15 +82,21 @@ canvas{
 }
 
 #hpbar{
-  width:100%;
   height:100%;
+  width:100%;
   background:#d94a4a;
 }
 
 #stambar{
-  width:100%;
   height:100%;
+  width:100%;
   background:#e0b84a;
+}
+
+#context{
+  margin-top:8px;
+  font-size:13px;
+  color:#fff;
 }
 
 #joystick{
@@ -118,23 +124,23 @@ canvas{
 
 #actions{
   position:fixed;
-  right:22px;
-  bottom:22px;
+  right:20px;
+  bottom:20px;
   z-index:20;
   display:grid;
-  grid-template-columns:repeat(2,78px);
-  gap:12px;
+  grid-template-columns:repeat(3,72px);
+  gap:10px;
 }
 
 .action{
-  width:78px;
-  height:78px;
+  width:72px;
+  height:72px;
   border-radius:50%;
   border:1px solid rgba(255,255,255,.3);
-  background:rgba(25,30,35,.65);
-  color:white;
+  background:rgba(25,30,35,.68);
+  color:#fff;
   font-weight:bold;
-  font-size:13px;
+  font-size:11px;
   touch-action:none;
 }
 
@@ -143,8 +149,8 @@ canvas{
   background:rgba(255,255,255,.25);
 }
 
-#action{
-  font-size:26px;
+#punch{
+  font-size:25px;
 }
 
 #fullscreen{
@@ -157,20 +163,12 @@ canvas{
   border:0;
   border-radius:50%;
   background:rgba(0,0,0,.45);
-  color:white;
+  color:#fff;
   font-size:20px;
 }
 
-@media (orientation:portrait){
-  #joystick{
-    left:16px;
-    bottom:18px;
-  }
-
-  #actions{
-    right:12px;
-    bottom:16px;
-  }
+.hidden{
+  display:none!important;
 }
 </style>
 </head>
@@ -191,6 +189,8 @@ canvas{
   <div class="bar">
     <div id="stambar"></div>
   </div>
+
+  <div id="context"></div>
 </div>
 
 <button id="fullscreen">⛶</button>
@@ -200,10 +200,31 @@ canvas{
 </div>
 
 <div id="actions">
-  <button class="action" id="jump">JUMP</button>
-  <button class="action" id="sprint">RUN</button>
-  <button class="action" id="crouch">CROUCH</button>
-  <button class="action" id="action">👊</button>
+
+  <button class="action" id="jump">
+    JUMP
+  </button>
+
+  <button class="action" id="sprint">
+    RUN
+  </button>
+
+  <button class="action" id="crouch">
+    CROUCH
+  </button>
+
+  <button class="action" id="punch">
+    👊
+  </button>
+
+  <button class="action hidden" id="enter">
+    MASUK
+  </button>
+
+  <button class="action hidden" id="exit">
+    KELUAR
+  </button>
+
 </div>
 
 <script type="module">
