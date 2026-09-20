@@ -3,7 +3,8 @@ export const input = {
   y: 0,
   run: false,
   crouch: false,
-  cameraYaw: 0
+  cameraYaw: 0,
+  cameraPitch: 0
 };
 
 export function setupInput() {
@@ -57,18 +58,23 @@ export function setupInput() {
   if (lookPad) {
     let lookActive = false;
     let lastX = 0;
+    let lastY = 0;
 
     lookPad.addEventListener("pointerdown", e => {
       lookActive = true;
       lastX = e.clientX;
+      lastY = e.clientY;
       lookPad.setPointerCapture(e.pointerId);
     });
 
     lookPad.addEventListener("pointermove", e => {
       if (!lookActive) return;
       const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
       lastX = e.clientX;
+      lastY = e.clientY;
       input.cameraYaw += dx * 0.009;
+      input.cameraPitch = Math.max(-0.65, Math.min(0.78, input.cameraPitch - dy * 0.007));
     });
 
     const stopLook = () => {
