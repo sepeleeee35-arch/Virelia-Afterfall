@@ -14,38 +14,35 @@ from "./world.js";
 
 export function startGame(){
 
-  const scene =
+  const scene=
     new THREE.Scene();
 
-  scene.background =
-    new THREE.Color(0x9bb3c2);
+  scene.background=
+    new THREE.Color(
+      0x9bb3c2
+    );
 
-  scene.fog =
+  scene.fog=
     new THREE.Fog(
       0x9bb3c2,
       55,
       260
     );
 
-  const camera =
+  const camera=
     new THREE.PerspectiveCamera(
       60,
-      window.innerWidth /
+      window.innerWidth/
       window.innerHeight,
       .05,
       500
     );
 
-  camera.position.set(
-    0,
-    2,
-    5
-  );
-
-  const renderer =
+  const renderer=
     new THREE.WebGLRenderer({
       antialias:true,
-      powerPreference:"high-performance"
+      powerPreference:
+        "high-performance"
     });
 
   renderer.setPixelRatio(
@@ -60,63 +57,59 @@ export function startGame(){
     window.innerHeight
   );
 
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type =
+  renderer.shadowMap.enabled=true;
+
+  renderer.shadowMap.type=
     THREE.PCFSoftShadowMap;
 
   document.body.appendChild(
     renderer.domElement
   );
 
-  const hemi =
+  const hemi=
     new THREE.HemisphereLight(
-      0xcfe4ff,
-      0x42503d,
-      2.0
+      0xd5e7ff,
+      0x45503e,
+      2
     );
 
   scene.add(hemi);
 
-  const sun =
+  const sun=
     new THREE.DirectionalLight(
       0xffffff,
-      3.0
+      3
     );
 
   sun.position.set(
     -50,
     80,
-    35
+    40
   );
 
-  sun.castShadow = true;
+  sun.castShadow=true;
 
   sun.shadow.mapSize.set(
     1024,
     1024
   );
 
-  sun.shadow.camera.left = -100;
-  sun.shadow.camera.right = 100;
-  sun.shadow.camera.top = 100;
-  sun.shadow.camera.bottom = -100;
-
   scene.add(sun);
 
-  const world =
+  const world=
     createWorld(scene);
 
-  const input =
+  const input=
     createInput(renderer);
 
-  const player =
+  const player=
     new Player(
       scene,
       input,
       world
     );
 
-  const cameraSystem =
+  const cameraSystem=
     new ThirdPersonCamera(
       camera,
       scene,
@@ -127,58 +120,141 @@ export function startGame(){
     cameraSystem
   );
 
-  document.getElementById(
-    "loading"
-  ).style.display = "none";
-
-  document.getElementById(
-    "fullscreen"
-  ).addEventListener(
-    "click",
-    async ()=>{
-      try{
-
-        if(!document.fullscreenElement){
-
-          await document.documentElement
-            .requestFullscreen();
-
-        }else{
-
-          await document.exitFullscreen();
-        }
-
-      }catch(error){}
-    }
-  );
-
-  const clock =
-    new THREE.Clock();
-
-  function updateHUD(){
-
+  const context=
     document.getElementById(
-      "hpbar"
-    ).style.width =
-      `${player.hp}%`;
-
-    document.getElementById(
-      "stambar"
-    ).style.width =
-      `${player.stamina}%`;
-  }
-
-  function animate(){
-
-    requestAnimationFrame(
-      animate
+      "context"
     );
 
-    const dt =
+  const enter=
+    document.getElementById(
+      "enter"
+    );
+
+  const exit=
+    document.getElementById(
+      "exit"
+    );
+
+  function updateContext(){
+
+    const state=
+      world.getContext(player);
+
+    enter.classList.add(
+      "hidden"
+    );
+
+    exit.classList.add(
+      "hidden"
+    );
+
+    context.textContent="";
+
+    if(state==="enterHouse"){
+
+      enter.classList.remove(
+        "hidden"
+      );
+
+      context.textContent=
+        "Pintu — MASUK";
+
+    }else if(
+      state==="enterCar"
+    ){
+
+      enter.classList.remove(
+        "hidden"
+      );
+
+      context.textContent=
+        "Mobil — MASUK";
+
+    }else if(
+      state==="exitHouse"
+    ){
+
+      exit.classList.remove(
+        "hidden"
+      );
+
+      context.textContent=
+        "Di dalam rumah — KELUAR";
+
+    }else if(
+      state==="driving"
+    ){
+
+      exit.classList.remove(
+        "hidden"
+      );
+
+      context.textContent=
+        "MENGEMUDI — KELUAR";
+    }
+  }
+
+  function updateInteraction(){
+
+    if(
+      input.consumeEnter()
+    ){
+
+      world.enterNearest(
+        player
+      );
+    }
+
+    if(
+      input.consumeExit()
+    ){
+
+      world.exitNearest(
+        player
+      );
+    }
+  }
+
+  document
+    .getElementById("fullscreen")
+    .addEventListener(
+      "click",
+      async()=>{
+
+        try{
+
+          if(
+            !document.fullscreenElement
+          ){
+
+            await document.documentElement
+              .requestFullscreen();
+
+          }else{
+
+            await document.exitFullscreen();
+          }
+
+        }catch(error){}
+      }
+    );
+
+  document.getElementById(
+    "loading"
+  ).style.display="none";
+
+  const clock=
+    new THREE.Clock();
+
+  function loop(){
+
+    const dt=
       Math.min(
         clock.getDelta(),
         .05
       );
+
+    updateInteraction();
 
     player.update(dt);
 
@@ -192,7 +268,17 @@ export function startGame(){
       input
     );
 
-    updateHUD();
+    document.getElementById(
+      "hpbar"
+    ).style.width=
+      `${player.hp}%`;
+
+    document.getElementById(
+      "stambar"
+    ).style.width=
+      `${player.stamina}%`;
+
+    updateContext();
 
     renderer.render(
       scene,
@@ -200,13 +286,16 @@ export function startGame(){
     );
   }
 
-  animate();
+  renderer.setAnimationLoop(
+    loop
+  );
 
   window.addEventListener(
     "resize",
     ()=>{
-      camera.aspect =
-        window.innerWidth /
+
+      camera.aspect=
+        window.innerWidth/
         window.innerHeight;
 
       camera.updateProjectionMatrix();
