@@ -2,15 +2,15 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 
-<title>Virelia: Afterfall</title>
+<title>Virelia Afterfall</title>
 
 <style>
 *{
   box-sizing:border-box;
   -webkit-tap-highlight-color:transparent;
+  user-select:none;
 }
 
 html,body{
@@ -18,105 +18,12 @@ html,body{
   width:100%;
   height:100%;
   overflow:hidden;
-  background:#101217;
-  color:white;
+  background:#111;
   font-family:Arial,sans-serif;
 }
 
-button{
-  border:0;
-  color:white;
-  background:#29313d;
-  border-radius:12px;
-  padding:13px 18px;
-  font-weight:bold;
-  font-size:15px;
-}
-
-button:active{
-  transform:scale(.96);
-}
-
-#lobby{
-  position:absolute;
-  inset:0;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  padding:20px;
-  background:
-    radial-gradient(circle at 50% 30%,#263548 0,#12161d 45%,#090b0f 100%);
-}
-
-.logo{
-  font-size:42px;
-  font-weight:900;
-  letter-spacing:3px;
-  text-align:center;
-}
-
-.subtitle{
-  color:#aab4c0;
-  margin-top:6px;
-  margin-bottom:35px;
-}
-
-.lobbyBox{
-  width:min(430px,94vw);
-  background:rgba(25,30,38,.94);
-  border:1px solid #394352;
-  border-radius:20px;
-  padding:20px;
-}
-
-.lobbyTitle{
-  font-size:22px;
-  font-weight:bold;
-  margin-bottom:16px;
-}
-
-.mode{
-  padding:16px;
-  border:1px solid #3d4755;
-  border-radius:14px;
-  margin-bottom:10px;
-  cursor:pointer;
-}
-
-.mode.selected{
-  border-color:#69a7ff;
-  background:#1d3048;
-}
-
-.mode b{
-  display:block;
-  margin-bottom:5px;
-}
-
-.mode span{
-  color:#9ba7b5;
-  font-size:13px;
-}
-
-.start{
-  width:100%;
-  margin-top:12px;
-  background:#3578d4;
-  font-size:17px;
-}
-
-.small{
-  text-align:center;
-  color:#7f8995;
-  font-size:11px;
-  margin-top:14px;
-}
-
-#game{
-  display:none;
-  position:absolute;
-  inset:0;
+body{
+  touch-action:none;
 }
 
 canvas{
@@ -127,67 +34,81 @@ canvas{
 }
 
 #hud{
-  position:absolute;
+  position:fixed;
   inset:0;
   pointer-events:none;
-}
-
-#top{
-  position:absolute;
-  left:12px;
-  right:12px;
-  top:10px;
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
+  color:#fff;
 }
 
 .panel{
-  background:rgba(8,11,15,.78);
+  background:rgba(10,14,18,.72);
   border:1px solid rgba(255,255,255,.12);
-  border-radius:12px;
-  padding:9px;
+  border-radius:10px;
+  backdrop-filter:blur(4px);
+}
+
+#topLeft{
+  position:absolute;
+  left:10px;
+  top:10px;
+  padding:8px;
+  min-width:190px;
+}
+
+.name{
+  font-weight:bold;
+  font-size:13px;
 }
 
 .bar{
-  width:145px;
+  width:175px;
   height:8px;
-  background:#343a42;
-  border-radius:8px;
+  margin-top:5px;
+  background:#333;
+  border-radius:10px;
   overflow:hidden;
-  margin-top:4px;
 }
 
-.hp{
+#hp{
   height:100%;
-  background:#55c878;
   width:100%;
+  background:#58c879;
 }
 
-.stamina{
+#stamina{
   height:100%;
-  background:#5da9ff;
   width:100%;
+  background:#5da6ed;
 }
 
-#status{
+#topRight{
+  position:absolute;
+  right:10px;
+  top:10px;
+  padding:9px 12px;
+  text-align:right;
   font-size:12px;
-  line-height:1.5;
+  line-height:1.6;
+}
+
+#zone{
+  color:#7fc3ff;
 }
 
 #equipment{
   position:absolute;
-  right:12px;
-  top:78px;
-  width:155px;
+  right:10px;
+  top:102px;
+  width:160px;
+  padding:9px;
+  font-size:12px;
 }
 
 .eq{
   display:flex;
   justify-content:space-between;
-  border-bottom:1px solid #303640;
   padding:5px 0;
-  font-size:12px;
+  border-bottom:1px solid rgba(255,255,255,.08);
 }
 
 .eq:last-child{
@@ -197,57 +118,92 @@ canvas{
 #message{
   position:absolute;
   left:50%;
-  top:18%;
+  top:14%;
   transform:translateX(-50%);
-  background:rgba(5,8,11,.82);
-  padding:10px 16px;
-  border-radius:12px;
+  padding:9px 15px;
+  background:rgba(5,8,11,.85);
+  border-radius:10px;
   opacity:0;
-  transition:.2s;
+  transition:opacity .15s;
+  font-size:13px;
 }
 
-#controls{
+#minimap{
   position:absolute;
-  left:15px;
-  bottom:15px;
+  right:10px;
+  bottom:145px;
+  width:135px;
+  height:135px;
+  border-radius:50%;
+  border:2px solid rgba(255,255,255,.45);
+  background:#1b281c;
+}
+
+#joy{
+  position:absolute;
+  left:18px;
+  bottom:20px;
   width:145px;
   height:145px;
   pointer-events:auto;
 }
 
-.pad{
+.jbtn{
   position:absolute;
-  width:48px;
-  height:48px;
+  width:52px;
+  height:52px;
   border-radius:50%;
-  background:rgba(255,255,255,.14);
+  background:rgba(255,255,255,.15);
   border:1px solid rgba(255,255,255,.15);
+  color:#fff;
   display:flex;
-  justify-content:center;
   align-items:center;
-  user-select:none;
+  justify-content:center;
+  font-size:20px;
 }
 
-#up{left:49px;top:0}
-#down{left:49px;bottom:0}
-#left{left:0;top:49px}
-#right{right:0;top:49px}
+#up{
+  left:46px;
+  top:0;
+}
+
+#down{
+  left:46px;
+  bottom:0;
+}
+
+#left{
+  left:0;
+  top:46px;
+}
+
+#right{
+  right:0;
+  top:46px;
+}
 
 #actions{
   position:absolute;
-  right:15px;
-  bottom:15px;
+  right:14px;
+  bottom:18px;
+  width:180px;
   display:grid;
-  grid-template-columns:repeat(2,72px);
-  gap:9px;
+  grid-template-columns:repeat(2,1fr);
+  gap:8px;
   pointer-events:auto;
 }
 
 .action{
-  width:72px;
-  height:52px;
-  padding:5px;
-  background:rgba(20,25,32,.82);
+  min-height:52px;
+  border:0;
+  border-radius:13px;
+  background:rgba(15,20,26,.82);
+  color:#fff;
+  font-weight:bold;
+}
+
+.action:active{
+  transform:scale(.95);
 }
 
 #inventory{
@@ -257,10 +213,12 @@ canvas{
   top:50%;
   transform:translate(-50%,-50%);
   width:min(430px,92vw);
-  background:#171c23;
-  border:1px solid #414b59;
-  border-radius:18px;
+  max-height:80vh;
+  overflow:auto;
   padding:18px;
+  background:#151a21;
+  border:1px solid #45505e;
+  border-radius:18px;
   pointer-events:auto;
 }
 
@@ -272,285 +230,284 @@ canvas{
 }
 
 .item{
-  background:#252d38;
-  padding:13px;
+  background:#252d37;
+  padding:12px;
   border-radius:10px;
 }
 
 .item small{
-  color:#929eac;
+  color:#a4adb8;
 }
 
-#mini{
+.close{
+  margin-top:12px;
+  padding:10px 16px;
+  border:0;
+  border-radius:9px;
+}
+
+#startOverlay{
+  position:fixed;
+  inset:0;
+  z-index:20;
+  background:#11161b;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:white;
+}
+
+.startBox{
+  text-align:center;
+}
+
+.startBox h1{
+  margin:0;
+  font-size:35px;
+  letter-spacing:3px;
+}
+
+.startBox p{
+  color:#9da8b3;
+}
+
+#start{
+  padding:14px 35px;
+  border:0;
+  border-radius:12px;
+  background:#397fd4;
+  color:white;
+  font-weight:bold;
+  font-size:17px;
+}
+
+#crosshair{
   position:absolute;
-  right:12px;
-  bottom:12px;
-  width:120px;
-  height:120px;
-  background:#182019;
-  border:2px solid rgba(255,255,255,.25);
-  border-radius:50%;
-  overflow:hidden;
+  left:50%;
+  top:50%;
+  width:20px;
+  height:20px;
+  transform:translate(-50%,-50%);
+}
+
+#crosshair:before,
+#crosshair:after{
+  content:"";
+  position:absolute;
+  background:rgba(255,255,255,.75);
+}
+
+#crosshair:before{
+  width:2px;
+  height:20px;
+  left:9px;
+  top:0;
+}
+
+#crosshair:after{
+  height:2px;
+  width:20px;
+  top:9px;
+  left:0;
+}
+
+@media(max-width:600px){
+  #equipment{
+    top:95px;
+    width:145px;
+  }
+
+  #minimap{
+    width:115px;
+    height:115px;
+    bottom:155px;
+  }
+
+  #topLeft{
+    min-width:160px;
+  }
+
+  .bar{
+    width:145px;
+  }
 }
 </style>
 </head>
 
 <body>
 
-<!-- ================= LOBBY ================= -->
+<div id="startOverlay">
+  <div class="startBox">
+    <h1>VIRELIA</h1>
+    <p>AFTERFALL • SURVIVAL MAP</p>
+    <button id="start">MASUK MAP</button>
+  </div>
+</div>
 
-<section id="lobby">
+<canvas id="game"></canvas>
 
-  <div class="logo">VIRELIA</div>
-  <div class="subtitle">AFTERFALL</div>
+<div id="hud">
 
-  <div class="lobbyBox">
+  <div id="topLeft" class="panel">
+    <div class="name">SURVIVOR</div>
 
-    <div class="lobbyTitle">
-      PILIH MODE
+    <div class="bar">
+      <div id="hp"></div>
     </div>
 
-    <div class="mode selected" data-mode="solo">
-      <b>SOLO SURVIVAL</b>
-      <span>Masuk ke map bersama bot.</span>
+    <div class="bar">
+      <div id="stamina"></div>
+    </div>
+  </div>
+
+  <div id="topRight" class="panel">
+    <div>ALIVE: <b id="alive">31</b></div>
+    <div>TIME: <b id="timer">20:00</b></div>
+    <div id="zone">ZONE: STABLE</div>
+  </div>
+
+  <div id="equipment" class="panel">
+    <b>EQUIPMENT</b>
+
+    <div class="eq">
+      <span>Helmet</span>
+      <b id="helmet">0</b>
     </div>
 
-    <div class="mode" data-mode="training">
-      <b>TRAINING</b>
-      <span>Latihan movement dan eksplorasi.</span>
+    <div class="eq">
+      <span>Vest</span>
+      <b id="vest">0</b>
     </div>
 
-    <button class="start" id="startBtn">
-      MULAI
-    </button>
+    <div class="eq">
+      <span>Shoes</span>
+      <b id="shoes">0</b>
+    </div>
 
-    <div class="small">
-      Virelia: Afterfall • Prototype
+    <div class="eq">
+      <span>Backpack</span>
+      <b id="backpack">0</b>
+    </div>
+  </div>
+
+  <div id="message">-</div>
+
+  <div id="crosshair"></div>
+
+  <canvas id="minimap"></canvas>
+
+  <div id="joy">
+    <div class="jbtn" id="up">▲</div>
+    <div class="jbtn" id="down">▼</div>
+    <div class="jbtn" id="left">◀</div>
+    <div class="jbtn" id="right">▶</div>
+  </div>
+
+  <div id="actions">
+    <button class="action" id="run">LARI</button>
+    <button class="action" id="pickup">LOOT</button>
+    <button class="action" id="bag">TAS</button>
+    <button class="action" id="vehicle">KENDARAAN</button>
+  </div>
+
+</div>
+
+
+<div id="inventory">
+
+  <h3>INVENTORY</h3>
+
+  <div class="inventoryGrid">
+
+    <div class="item">
+      <b>Helmet</b><br>
+      <small>Perlindungan</small>
+    </div>
+
+    <div class="item">
+      <b>Vest</b><br>
+      <small>Perlindungan</small>
+    </div>
+
+    <div class="item">
+      <b>Shoes</b><br>
+      <small>Kecepatan</small>
+    </div>
+
+    <div class="item">
+      <b>Backpack</b><br>
+      <small>Kapasitas</small>
     </div>
 
   </div>
-</section>
 
+  <button class="close" id="closeBag">
+    TUTUP
+  </button>
 
-<!-- ================= GAME ================= -->
-
-<section id="game">
-
-  <canvas id="canvas"></canvas>
-
-  <div id="hud">
-
-    <div id="top">
-
-      <div class="panel">
-        <div id="status">
-          VIRELIA<br>
-          Survivor
-        </div>
-
-        <div class="bar">
-          <div class="hp" id="hp"></div>
-        </div>
-
-        <div class="bar">
-          <div class="stamina" id="stamina"></div>
-        </div>
-      </div>
-
-      <div class="panel">
-        BOT: <b id="botCount">0</b><br>
-        LOOT: <b id="lootCount">0</b>
-      </div>
-
-    </div>
-
-
-    <div id="equipment" class="panel">
-
-      <b>EQUIPMENT</b>
-
-      <div class="eq">
-        <span>Helmet</span>
-        <span id="helmet">Lv.0</span>
-      </div>
-
-      <div class="eq">
-        <span>Vest</span>
-        <span id="vest">Lv.0</span>
-      </div>
-
-      <div class="eq">
-        <span>Shoes</span>
-        <span id="shoes">Lv.0</span>
-      </div>
-
-      <div class="eq">
-        <span>Backpack</span>
-        <span id="backpack">Lv.0</span>
-      </div>
-
-    </div>
-
-
-    <div id="message">
-      -
-    </div>
-
-
-    <div id="controls">
-
-      <div class="pad" id="up">▲</div>
-      <div class="pad" id="down">▼</div>
-      <div class="pad" id="left">◀</div>
-      <div class="pad" id="right">▶</div>
-
-    </div>
-
-
-    <div id="actions">
-
-      <button class="action" id="sprint">
-        LARI
-      </button>
-
-      <button class="action" id="interact">
-        AMBIL
-      </button>
-
-      <button class="action" id="inventoryBtn">
-        TAS
-      </button>
-
-      <button class="action" id="backLobby">
-        LOBBY
-      </button>
-
-    </div>
-
-
-    <canvas id="mini"></canvas>
-
-
-    <div id="inventory">
-
-      <b>INVENTORY</b>
-
-      <div class="inventoryGrid">
-
-        <div class="item">
-          Helmet
-          <br>
-          <small>Perlindungan +10</small>
-        </div>
-
-        <div class="item">
-          Vest
-          <br>
-          <small>Perlindungan +20</small>
-        </div>
-
-        <div class="item">
-          Shoes
-          <br>
-          <small>Movement +5%</small>
-        </div>
-
-        <div class="item">
-          Backpack
-          <br>
-          <small>Kapasitas +10</small>
-        </div>
-
-      </div>
-
-      <br>
-
-      <button id="closeInventory">
-        TUTUP
-      </button>
-
-    </div>
-
-  </div>
-</section>
+</div>
 
 
 <script>
 "use strict";
 
-/* =====================================================
-   VIRELIA 2D CORE
-   ===================================================== */
+/* =========================================================
+   CORE
+   ========================================================= */
 
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
 
-const mini = document.getElementById("mini");
-const mctx = mini.getContext("2d");
+const minimap=document.getElementById("minimap");
+const mctx=minimap.getContext("2d");
 
-let W = innerWidth;
-let H = innerHeight;
+let screenW=innerWidth;
+let screenH=innerHeight;
 
 function resize(){
-  W = innerWidth;
-  H = innerHeight;
 
-  canvas.width = W;
-  canvas.height = H;
+  screenW=innerWidth;
+  screenH=innerHeight;
 
-  mini.width = 120;
-  mini.height = 120;
+  canvas.width=screenW;
+  canvas.height=screenH;
+
+  minimap.width=135;
+  minimap.height=135;
 }
 
 addEventListener("resize",resize);
 resize();
 
 
-/* ================= LOBBY ================= */
+/* =========================================================
+   MAP
+   ========================================================= */
 
-const lobby = document.getElementById("lobby");
-const game = document.getElementById("game");
+const MAP_W=4200;
+const MAP_H=3600;
 
-let selectedMode = "solo";
-
-document.querySelectorAll(".mode").forEach(mode=>{
-  mode.addEventListener("click",()=>{
-    document.querySelectorAll(".mode")
-      .forEach(x=>x.classList.remove("selected"));
-
-    mode.classList.add("selected");
-    selectedMode = mode.dataset.mode;
-  });
-});
-
-document.getElementById("startBtn").onclick=()=>{
-  lobby.style.display="none";
-  game.style.display="block";
-  startGame();
-};
-
-
-/* ================= WORLD ================= */
-
-const WORLD_W = 2600;
-const WORLD_H = 2200;
-
-const world = {
+const map={
   buildings:[],
+  roads:[],
   trees:[],
   loot:[],
+  cars:[],
   bots:[],
-  cars:[]
+  zones:[]
 };
 
 
-/* ================= PLAYER ================= */
+/* =========================================================
+   PLAYER
+   ========================================================= */
 
-const player = {
-  x:1300,
-  y:1100,
+const player={
+  x:MAP_W/2,
+  y:MAP_H/2,
 
-  speed:190,
+  speed:210,
+  sprintSpeed:315,
 
   hp:100,
   stamina:100,
@@ -561,31 +518,36 @@ const player = {
   backpack:0,
 
   inventory:[],
+  vehicle:null,
 
-  moving:false
+  alive:true
 };
 
 
-/* ================= INPUT ================= */
+/* =========================================================
+   INPUT
+   ========================================================= */
 
-const keys = {
+const input={
   up:false,
   down:false,
   left:false,
   right:false,
-  sprint:false
+  run:false
 };
 
-function bindHold(id,key){
+function hold(id,key){
 
   const el=document.getElementById(id);
 
-  const on=()=>{
-    keys[key]=true;
+  const on=e=>{
+    e.preventDefault();
+    input[key]=true;
   };
 
-  const off=()=>{
-    keys[key]=false;
+  const off=e=>{
+    e.preventDefault();
+    input[key]=false;
   };
 
   el.addEventListener("pointerdown",on);
@@ -594,171 +556,458 @@ function bindHold(id,key){
   el.addEventListener("pointerleave",off);
 }
 
-bindHold("up","up");
-bindHold("down","down");
-bindHold("left","left");
-bindHold("right","right");
-
-document.getElementById("sprint")
-  .addEventListener("pointerdown",()=>{
-    keys.sprint=true;
-  });
-
-document.getElementById("sprint")
-  .addEventListener("pointerup",()=>{
-    keys.sprint=false;
-  });
+hold("up","up");
+hold("down","down");
+hold("left","left");
+hold("right","right");
+hold("run","run");
 
 
 addEventListener("keydown",e=>{
 
-  if(e.key==="w" || e.key==="ArrowUp")
-    keys.up=true;
-
-  if(e.key==="s" || e.key==="ArrowDown")
-    keys.down=true;
-
-  if(e.key==="a" || e.key==="ArrowLeft")
-    keys.left=true;
-
-  if(e.key==="d" || e.key==="ArrowRight")
-    keys.right=true;
-
-  if(e.key==="Shift")
-    keys.sprint=true;
+  if(e.key==="w"||e.key==="ArrowUp")input.up=true;
+  if(e.key==="s"||e.key==="ArrowDown")input.down=true;
+  if(e.key==="a"||e.key==="ArrowLeft")input.left=true;
+  if(e.key==="d"||e.key==="ArrowRight")input.right=true;
+  if(e.key==="Shift")input.run=true;
 
 });
+
 
 addEventListener("keyup",e=>{
 
-  if(e.key==="w" || e.key==="ArrowUp")
-    keys.up=false;
-
-  if(e.key==="s" || e.key==="ArrowDown")
-    keys.down=false;
-
-  if(e.key==="a" || e.key==="ArrowLeft")
-    keys.left=false;
-
-  if(e.key==="d" || e.key==="ArrowRight")
-    keys.right=false;
-
-  if(e.key==="Shift")
-    keys.sprint=false;
+  if(e.key==="w"||e.key==="ArrowUp")input.up=false;
+  if(e.key==="s"||e.key==="ArrowDown")input.down=false;
+  if(e.key==="a"||e.key==="ArrowLeft")input.left=false;
+  if(e.key==="d"||e.key==="ArrowRight")input.right=false;
+  if(e.key==="Shift")input.run=false;
 
 });
 
 
-/* ================= BUILD MAP ================= */
+/* =========================================================
+   RANDOM
+   ========================================================= */
 
-function buildMap(){
+function random(a,b){
+  return a+Math.random()*(b-a);
+}
 
-  world.buildings=[];
-  world.trees=[];
-  world.loot=[];
-  world.bots=[];
-  world.cars=[];
 
-  // Buildings
-  for(let i=0;i<32;i++){
+/* =========================================================
+   MAP GENERATION
+   ========================================================= */
 
-    const x =
-      250 +
-      (i%8)*300 +
-      Math.random()*70;
+function generateMap(){
 
-    const y =
-      250 +
-      Math.floor(i/8)*430 +
-      Math.random()*80;
+  map.buildings=[];
+  map.roads=[];
+  map.trees=[];
+  map.loot=[];
+  map.cars=[];
+  map.bots=[];
+  map.zones=[];
 
-    world.buildings.push({
+
+  /* -------------------------
+     ROADS
+     ------------------------- */
+
+  for(let x=300;x<MAP_W;x+=700){
+
+    map.roads.push({
+      x,
+      y:0,
+      w:100,
+      h:MAP_H
+    });
+
+  }
+
+  for(let y=300;y<MAP_H;y+=600){
+
+    map.roads.push({
+      x:0,
+      y,
+      w:MAP_W,
+      h:100
+    });
+
+  }
+
+
+  /* -------------------------
+     BUILDINGS
+     ------------------------- */
+
+  for(let i=0;i<95;i++){
+
+    let x;
+    let y;
+
+    let tries=0;
+
+    do{
+
+      x=random(120,MAP_W-300);
+      y=random(120,MAP_H-260);
+
+      tries++;
+
+    }while(
+      tooCloseToRoad(x,y,190)
+      && tries<30
+    );
+
+    const type=Math.random();
+
+    let w;
+    let h;
+
+    if(type<.25){
+
+      // gedung besar
+      w=random(230,360);
+      h=random(180,300);
+
+    }else{
+
+      w=random(90,180);
+      h=random(80,160);
+
+    }
+
+    map.buildings.push({
       x,
       y,
-      w:150+Math.random()*100,
-      h:120+Math.random()*100
-    });
-  }
-
-
-  // Trees
-  for(let i=0;i<120;i++){
-
-    world.trees.push({
-      x:Math.random()*WORLD_W,
-      y:Math.random()*WORLD_H,
-      r:8+Math.random()*9
+      w,
+      h,
+      type:type<.25?"large":"house",
+      entered:false
     });
 
   }
 
 
-  // Loot
-  for(let i=0;i<55;i++){
+  /* -------------------------
+     TREES
+     ------------------------- */
 
-    world.loot.push({
-      x:Math.random()*WORLD_W,
-      y:Math.random()*WORLD_H,
-      type:[
-        "Helmet",
-        "Vest",
-        "Shoes",
-        "Backpack",
-        "Food"
-      ][Math.floor(Math.random()*5)],
+  for(let i=0;i<260;i++){
+
+    const x=random(30,MAP_W-30);
+    const y=random(30,MAP_H-30);
+
+    if(!insideBuilding(x,y)){
+
+      map.trees.push({
+        x,
+        y,
+        r:random(8,16)
+      });
+
+    }
+
+  }
+
+
+  /* -------------------------
+     LOOT
+     ------------------------- */
+
+  const lootTypes=[
+    "Helmet",
+    "Vest",
+    "Shoes",
+    "Backpack",
+    "Food",
+    "Medical"
+  ];
+
+  for(let i=0;i<180;i++){
+
+    let x=random(50,MAP_W-50);
+    let y=random(50,MAP_H-50);
+
+    if(insideBuilding(x,y)){
+
+      const b=findBuilding(x,y);
+
+      x=random(
+        b.x+15,
+        b.x+b.w-15
+      );
+
+      y=random(
+        b.y+15,
+        b.y+b.h-15
+      );
+
+    }
+
+    map.loot.push({
+      x,
+      y,
+      type:lootTypes[
+        Math.floor(Math.random()*lootTypes.length)
+      ],
       taken:false
     });
 
   }
 
 
-  // Bots
-  for(let i=0;i<24;i++){
+  /* -------------------------
+     VEHICLES
+     ------------------------- */
 
-    let bot;
+  for(let i=0;i<35;i++){
 
-    do{
-      bot={
-        x:Math.random()*WORLD_W,
-        y:Math.random()*WORLD_H,
-        targetX:Math.random()*WORLD_W,
-        targetY:Math.random()*WORLD_H,
-        speed:100+Math.random()*45,
-        think:0,
-        hp:100
-      };
+    const horizontal=Math.random()<.5;
+
+    if(horizontal){
+
+      map.cars.push({
+        x:random(0,MAP_W),
+        y:300+Math.floor(
+          random(0,5)
+        )*600+random(15,85),
+        angle:0,
+        speed:0
+      });
+
+    }else{
+
+      map.cars.push({
+        x:300+Math.floor(
+          random(0,6)
+        )*700+random(15,85),
+        y:random(0,MAP_H),
+        angle:Math.PI/2,
+        speed:0
+      });
+
     }
-    while(
-      Math.hypot(
-        bot.x-player.x,
-        bot.y-player.y
-      )<250
-    );
 
-    world.bots.push(bot);
   }
 
 
-  // Cars
-  for(let i=0;i<15;i++){
+  /* -------------------------
+     BOTS
+     ------------------------- */
 
-    world.cars.push({
-      x:Math.random()*WORLD_W,
-      y:Math.random()*WORLD_H,
-      angle:Math.random()*Math.PI*2
-    });
+  for(let i=0;i<30;i++){
+
+    let x;
+    let y;
+
+    do{
+
+      x=random(100,MAP_W-100);
+      y=random(100,MAP_H-100);
+
+    }while(
+      Math.hypot(
+        x-player.x,
+        y-player.y
+      )<350
+    );
+
+    map.bots.push(createBot(x,y));
+
+  }
+
+
+  /* -------------------------
+     ZONE
+     ------------------------- */
+
+  map.zones.push({
+
+    x:MAP_W/2,
+    y:MAP_H/2,
+    radius:1450,
+    targetRadius:1450
+
+  });
+
+}
+
+
+/* =========================================================
+   MAP HELPERS
+   ========================================================= */
+
+function tooCloseToRoad(x,y,distance){
+
+  for(const r of map.roads){
+
+    if(
+      x<r.x+r.w+distance &&
+      x+r.w>r.x-distance &&
+      y<r.y+r.h+distance &&
+      y+r.h>r.y-distance
+    ){
+      return true;
+    }
+
+  }
+
+  return false;
+}
+
+
+function insideBuilding(x,y){
+
+  return !!findBuilding(x,y);
+}
+
+
+function findBuilding(x,y){
+
+  for(const b of map.buildings){
+
+    if(
+      x>b.x &&
+      x<b.x+b.w &&
+      y>b.y &&
+      y<b.y+b.h
+    ){
+      return b;
+    }
+
+  }
+
+  return null;
+}
+
+
+/* =========================================================
+   BOT
+   ========================================================= */
+
+function createBot(x,y){
+
+  return {
+    x,
+    y,
+
+    speed:random(120,175),
+
+    targetX:x,
+    targetY:y,
+
+    think:0,
+
+    hp:100,
+
+    state:"wander"
+  };
+
+}
+
+
+function updateBots(dt){
+
+  for(const bot of map.bots){
+
+    if(bot.hp<=0)continue;
+
+    bot.think-=dt;
+
+    if(bot.think<=0){
+
+      bot.think=random(.35,.75);
+
+      const d=Math.hypot(
+        player.x-bot.x,
+        player.y-bot.y
+      );
+
+      if(d<500){
+
+        bot.state="follow";
+
+        bot.targetX=player.x;
+        bot.targetY=player.y;
+
+      }else{
+
+        bot.state="wander";
+
+        bot.targetX+=random(-350,350);
+        bot.targetY+=random(-350,350);
+
+        bot.targetX=Math.max(
+          40,
+          Math.min(
+            MAP_W-40,
+            bot.targetX
+          )
+        );
+
+        bot.targetY=Math.max(
+          40,
+          Math.min(
+            MAP_H-40,
+            bot.targetY
+          )
+        );
+
+      }
+
+    }
+
+
+    const dx=bot.targetX-bot.x;
+    const dy=bot.targetY-bot.y;
+
+    const distance=Math.hypot(dx,dy);
+
+    if(distance>8){
+
+      const nx=
+        bot.x+
+        dx/distance*
+        bot.speed*
+        dt;
+
+      const ny=
+        bot.y+
+        dy/distance*
+        bot.speed*
+        dt;
+
+      if(!collision(nx,bot.y,14))
+        bot.x=nx;
+
+      if(!collision(bot.x,ny,14))
+        bot.y=ny;
+
+    }
+
   }
 
 }
 
 
-/* ================= COLLISION ================= */
+/* =========================================================
+   COLLISION
+   ========================================================= */
 
-function blocked(x,y){
+function collision(x,y,r){
 
-  const r=18;
+  if(
+    x<r ||
+    y<r ||
+    x>MAP_W-r ||
+    y>MAP_H-r
+  ){
+    return true;
+  }
 
-  for(const b of world.buildings){
+
+  for(const b of map.buildings){
 
     if(
       x+r>b.x &&
@@ -771,155 +1020,108 @@ function blocked(x,y){
 
   }
 
+
   return false;
 }
 
 
-/* ================= PLAYER ================= */
+/* =========================================================
+   PLAYER
+   ========================================================= */
 
 function updatePlayer(dt){
+
+  if(!player.alive)return;
 
   let dx=0;
   let dy=0;
 
-  if(keys.up)dy-=1;
-  if(keys.down)dy+=1;
-  if(keys.left)dx-=1;
-  if(keys.right)dx+=1;
+  if(input.up)dy--;
+  if(input.down)dy++;
+  if(input.left)dx--;
+  if(input.right)dx++;
 
-  const moving=dx!==0 || dy!==0;
+  if(dx===0&&dy===0){
 
-  player.moving=moving;
-
-  if(moving){
-
-    const length=Math.hypot(dx,dy);
-
-    dx/=length;
-    dy/=length;
-
-    let speed=player.speed;
-
-    if(keys.sprint && player.stamina>0){
-
-      speed*=1.45;
-      player.stamina-=30*dt;
-
-    }else{
-
-      player.stamina+=18*dt;
-
-    }
-
-    player.stamina=Math.max(
-      0,
-      Math.min(100,player.stamina)
-    );
-
-    const nx=player.x+dx*speed*dt;
-    const ny=player.y+dy*speed*dt;
-
-    if(!blocked(nx,player.y))
-      player.x=nx;
-
-    if(!blocked(player.x,ny))
-      player.y=ny;
-
-  }else{
-
-    player.stamina+=22*dt;
+    player.stamina+=
+      20*dt;
 
     player.stamina=Math.min(
       100,
       player.stamina
     );
 
+    return;
   }
 
-  player.x=Math.max(
-    20,
-    Math.min(WORLD_W-20,player.x)
-  );
 
-  player.y=Math.max(
-    20,
-    Math.min(WORLD_H-20,player.y)
-  );
-}
+  const len=Math.hypot(dx,dy);
+
+  dx/=len;
+  dy/=len;
 
 
-/* ================= BOTS ================= */
+  let speed=player.speed;
 
-function updateBots(dt){
+  if(
+    input.run &&
+    player.stamina>0
+  ){
 
-  for(const bot of world.bots){
+    speed=
+      player.sprintSpeed+
+      player.shoes*8;
 
-    bot.think-=dt;
+    player.stamina-=
+      30*dt;
 
-    if(bot.think<=0){
+  }else{
 
-      bot.think=.5+Math.random()*.8;
-
-      const distance=Math.hypot(
-        player.x-bot.x,
-        player.y-bot.y
-      );
-
-      if(distance<430){
-
-        bot.targetX=player.x;
-        bot.targetY=player.y;
-
-      }else{
-
-        bot.targetX+=
-          (Math.random()-.5)*400;
-
-        bot.targetY+=
-          (Math.random()-.5)*400;
-
-        bot.targetX=Math.max(
-          30,
-          Math.min(WORLD_W-30,bot.targetX)
-        );
-
-        bot.targetY=Math.max(
-          30,
-          Math.min(WORLD_H-30,bot.targetY)
-        );
-
-      }
-
-    }
-
-    const dx=bot.targetX-bot.x;
-    const dy=bot.targetY-bot.y;
-
-    const d=Math.hypot(dx,dy);
-
-    if(d>8){
-
-      const nx=bot.x+(dx/d)*bot.speed*dt;
-      const ny=bot.y+(dy/d)*bot.speed*dt;
-
-      if(!blocked(nx,bot.y))
-        bot.x=nx;
-
-      if(!blocked(bot.x,ny))
-        bot.y=ny;
-
-    }
+    player.stamina+=
+      17*dt;
 
   }
+
+  player.stamina=Math.max(
+    0,
+    Math.min(
+      100,
+      player.stamina
+    )
+  );
+
+
+  const nx=
+    player.x+
+    dx*
+    speed*
+    dt;
+
+  const ny=
+    player.y+
+    dy*
+    speed*
+    dt;
+
+
+  if(!collision(nx,player.y,18))
+    player.x=nx;
+
+  if(!collision(player.x,ny,18))
+    player.y=ny;
 
 }
 
 
-/* ================= LOOT ================= */
+/* =========================================================
+   LOOT
+   ========================================================= */
 
-function collectLoot(){
+function pickup(){
 
-  for(const item of world.loot){
+  let found=false;
+
+  for(const item of map.loot){
 
     if(item.taken)continue;
 
@@ -928,157 +1130,486 @@ function collectLoot(){
       item.y-player.y
     );
 
-    if(d<38){
+    if(d<55){
 
       item.taken=true;
 
-      player.inventory.push(item.type);
+      player.inventory.push(
+        item.type
+      );
 
       if(item.type==="Helmet")
-        player.helmet=Math.min(3,player.helmet+1);
+        player.helmet=
+          Math.min(3,player.helmet+1);
 
       if(item.type==="Vest")
-        player.vest=Math.min(3,player.vest+1);
+        player.vest=
+          Math.min(3,player.vest+1);
 
       if(item.type==="Shoes")
-        player.shoes=Math.min(3,player.shoes+1);
+        player.shoes=
+          Math.min(3,player.shoes+1);
 
       if(item.type==="Backpack")
-        player.backpack=Math.min(3,player.backpack+1);
+        player.backpack=
+          Math.min(3,player.backpack+1);
 
       showMessage(
-        "Mendapatkan: "+item.type
+        "LOOT: "+item.type
+      );
+
+      found=true;
+
+      break;
+
+    }
+
+  }
+
+  if(!found)
+    showMessage("Tidak ada loot dekat kamu.");
+
+}
+
+
+/* =========================================================
+   VEHICLE
+   ========================================================= */
+
+function vehicleAction(){
+
+  if(player.vehicle){
+
+    player.x=
+      player.vehicle.x+40;
+
+    player.y=
+      player.vehicle.y;
+
+    player.vehicle=null;
+
+    showMessage(
+      "Keluar kendaraan"
+    );
+
+    return;
+  }
+
+
+  let nearest=null;
+  let distance=65;
+
+  for(const car of map.cars){
+
+    const d=Math.hypot(
+      car.x-player.x,
+      car.y-player.y
+    );
+
+    if(d<distance){
+
+      distance=d;
+      nearest=car;
+
+    }
+
+  }
+
+
+  if(nearest){
+
+    player.vehicle=nearest;
+
+    showMessage(
+      "Masuk kendaraan"
+    );
+
+  }else{
+
+    showMessage(
+      "Tidak ada kendaraan dekat kamu."
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   VEHICLE UPDATE
+   ========================================================= */
+
+function updateVehicle(dt){
+
+  if(!player.vehicle)
+    return;
+
+  const car=player.vehicle;
+
+  let moving=false;
+
+  if(input.up){
+
+    car.speed+=
+      240*dt;
+
+    moving=true;
+
+  }
+
+  if(input.down){
+
+    car.speed-=
+      160*dt;
+
+    moving=true;
+
+  }
+
+
+  car.speed*=
+    Math.pow(.08,dt);
+
+  car.speed=Math.max(
+    -100,
+    Math.min(
+      300,
+      car.speed
+    )
+  );
+
+
+  if(input.left)
+    car.angle-=
+      1.8*dt;
+
+  if(input.right)
+    car.angle+=
+      1.8*dt;
+
+
+  const nx=
+    car.x+
+    Math.sin(car.angle)*
+    car.speed*
+    dt;
+
+  const ny=
+    car.y-
+    Math.cos(car.angle)*
+    car.speed*
+    dt;
+
+
+  if(
+    !collision(nx,ny,25)
+  ){
+
+    car.x=nx;
+    car.y=ny;
+
+  }
+
+
+  player.x=car.x;
+  player.y=car.y;
+
+}
+
+
+/* =========================================================
+   SAFE ZONE
+   ========================================================= */
+
+function updateZone(dt){
+
+  const zone=map.zones[0];
+
+  const elapsed=
+    gameTime;
+
+  if(elapsed>45){
+
+    zone.targetRadius=
+      Math.max(
+        300,
+        1450-
+        ((elapsed-45)/60)*180
+      );
+
+  }
+
+
+  zone.radius+=
+    (
+      zone.targetRadius-
+      zone.radius
+    )*
+    dt*
+    .12;
+
+
+  const d=Math.hypot(
+    player.x-zone.x,
+    player.y-zone.y
+  );
+
+
+  if(d>zone.radius){
+
+    player.hp-=
+      5*dt;
+
+    document.getElementById("zone")
+      .textContent=
+      "ZONE: KELUAR!";
+
+  }else{
+
+    document.getElementById("zone")
+      .textContent=
+      "ZONE: AMAN";
+
+  }
+
+
+  if(player.hp<=0){
+
+    player.hp=0;
+    player.alive=false;
+
+    showMessage(
+      "KAMU TERELIMINASI"
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   CAMERA
+   ========================================================= */
+
+function camera(){
+
+  let x=
+    player.x-
+    screenW/2;
+
+  let y=
+    player.y-
+    screenH/2;
+
+
+  x=Math.max(
+    0,
+    Math.min(
+      MAP_W-screenW,
+      x
+    )
+  );
+
+  y=Math.max(
+    0,
+    Math.min(
+      MAP_H-screenH,
+      y
+    )
+  );
+
+
+  return {x,y};
+
+}
+
+
+/* =========================================================
+   DRAW WORLD
+   ========================================================= */
+
+function draw(){
+
+  const cam=camera();
+
+  ctx.clearRect(
+    0,
+    0,
+    screenW,
+    screenH
+  );
+
+
+  // ground
+  ctx.fillStyle="#526b45";
+
+  ctx.fillRect(
+    0,
+    0,
+    screenW,
+    screenH
+  );
+
+
+  // roads
+  ctx.fillStyle="#35383d";
+
+  for(const road of map.roads){
+
+    ctx.fillRect(
+      road.x-cam.x,
+      road.y-cam.y,
+      road.w,
+      road.h
+    );
+
+  }
+
+
+  // road lines
+  ctx.strokeStyle="rgba(230,220,150,.45)";
+  ctx.lineWidth=3;
+  ctx.setLineDash([22,22]);
+
+  for(const road of map.roads){
+
+    if(road.w<road.h){
+
+      const x=
+        road.x+
+        road.w/2-
+        cam.x;
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        x,
+        0
+      );
+
+      ctx.lineTo(
+        x,
+        screenH
+      );
+
+      ctx.stroke();
+
+    }else{
+
+      const y=
+        road.y+
+        road.h/2-
+        cam.y;
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        0,
+        y
+      );
+
+      ctx.lineTo(
+        screenW,
+        y
+      );
+
+      ctx.stroke();
+
+    }
+
+  }
+
+  ctx.setLineDash([]);
+
+
+  // buildings
+  for(const b of map.buildings){
+
+    const x=b.x-cam.x;
+    const y=b.y-cam.y;
+
+    if(
+      x+b.w<0||
+      y+b.h<0||
+      x>screenW||
+      y>screenH
+    )continue;
+
+
+    ctx.fillStyle=
+      b.type==="large"
+      ?"#66696d"
+      :"#80776d";
+
+    ctx.fillRect(
+      x,
+      y,
+      b.w,
+      b.h
+    );
+
+
+    ctx.fillStyle=
+      b.type==="large"
+      ?"#7f858b"
+      :"#9b9185";
+
+    ctx.fillRect(
+      x+7,
+      y+7,
+      b.w-14,
+      17
+    );
+
+
+    // windows
+    ctx.fillStyle="#2d4a5d";
+
+    const columns=
+      Math.max(
+        1,
+        Math.floor(b.w/45)
+      );
+
+    for(let c=0;c<columns;c++){
+
+      ctx.fillRect(
+        x+15+c*42,
+        y+35,
+        24,
+        18
       );
 
     }
 
   }
 
-}
-
-
-/* ================= MESSAGE ================= */
-
-let messageTimer=0;
-
-function showMessage(text){
-
-  const el=document.getElementById("message");
-
-  el.textContent=text;
-  el.style.opacity=1;
-
-  messageTimer=2;
-}
-
-
-/* ================= CAMERA ================= */
-
-function camera(){
-
-  let x=player.x-W/2;
-  let y=player.y-H/2;
-
-  x=Math.max(0,
-    Math.min(WORLD_W-W,x)
-  );
-
-  y=Math.max(0,
-    Math.min(WORLD_H-H,y)
-  );
-
-  return {x,y};
-}
-
-
-/* ================= DRAW ================= */
-
-function draw(){
-
-  const cam=camera();
-
-  ctx.clearRect(0,0,W,H);
-
-  // ground
-  ctx.fillStyle="#536a43";
-  ctx.fillRect(0,0,W,H);
-
-
-  // road grid
-  ctx.fillStyle="#303338";
-
-  for(let x=0;x<WORLD_W;x+=420){
-
-    const sx=x-cam.x;
-
-    ctx.fillRect(
-      sx,
-      0,
-      85,
-      H
-    );
-  }
-
-  for(let y=0;y<WORLD_H;y+=420){
-
-    const sy=y-cam.y;
-
-    ctx.fillRect(
-      0,
-      sy,
-      W,
-      75
-    );
-  }
-
-
-  // buildings
-  for(const b of world.buildings){
-
-    ctx.fillStyle="#776f67";
-
-    ctx.fillRect(
-      b.x-cam.x,
-      b.y-cam.y,
-      b.w,
-      b.h
-    );
-
-    ctx.fillStyle="#9b9287";
-
-    ctx.fillRect(
-      b.x-cam.x+8,
-      b.y-cam.y+8,
-      b.w-16,
-      18
-    );
-
-  }
-
 
   // trees
-  for(const t of world.trees){
+  for(const t of map.trees){
 
     const x=t.x-cam.x;
     const y=t.y-cam.y;
 
     if(
-      x<-30 ||
-      y<-30 ||
-      x>W+30 ||
-      y>H+30
+      x<-30||
+      y<-30||
+      x>screenW+30||
+      y>screenH+30
     )continue;
 
-    ctx.fillStyle="#5a3e2a";
+
+    ctx.fillStyle="#5a402d";
 
     ctx.fillRect(
       x-3,
       y,
       6,
-      15
+      14
     );
 
-    ctx.fillStyle="#27552d";
+
+    ctx.fillStyle="#2c5d31";
 
     ctx.beginPath();
 
@@ -1096,147 +1627,230 @@ function draw(){
 
 
   // cars
-  for(const car of world.cars){
+  for(const car of map.cars){
+
+    const x=car.x-cam.x;
+    const y=car.y-cam.y;
 
     ctx.save();
 
-    ctx.translate(
-      car.x-cam.x,
-      car.y-cam.y
-    );
+    ctx.translate(x,y);
 
     ctx.rotate(car.angle);
 
-    ctx.fillStyle="#566675";
+    ctx.fillStyle="#536271";
 
     ctx.fillRect(
-      -20,
-      -11,
-      40,
-      22
+      -25,
+      -13,
+      50,
+      26
     );
 
-    ctx.fillStyle="#202832";
+    ctx.fillStyle="#202a32";
 
     ctx.fillRect(
-      -10,
-      -8,
-      20,
-      16
+      -14,
+      -9,
+      28,
+      18
     );
 
     ctx.restore();
+
   }
 
 
   // loot
-  for(const item of world.loot){
+  for(const item of map.loot){
 
     if(item.taken)continue;
 
     const x=item.x-cam.x;
     const y=item.y-cam.y;
 
-    if(
-      x<-20 ||
-      y<-20 ||
-      x>W+20 ||
-      y>H+20
-    )continue;
-
-    ctx.fillStyle="#e6c34f";
+    ctx.fillStyle="#e4bd45";
 
     ctx.fillRect(
-      x-7,
-      y-7,
-      14,
-      14
+      x-6,
+      y-6,
+      12,
+      12
     );
 
   }
 
 
   // bots
-  for(const bot of world.bots){
+  for(const bot of map.bots){
+
+    if(bot.hp<=0)continue;
 
     const x=bot.x-cam.x;
     const y=bot.y-cam.y;
 
-    ctx.fillStyle="#d16b65";
+    ctx.fillStyle="#cf6863";
 
     ctx.beginPath();
 
     ctx.arc(
       x,
       y,
-      15,
+      16,
       0,
       Math.PI*2
     );
 
     ctx.fill();
 
-    ctx.fillStyle="#222";
+    ctx.fillStyle="#262626";
 
     ctx.fillRect(
       x-8,
       y-3,
       16,
-      4
+      5
     );
 
   }
 
 
   // player
-  ctx.fillStyle="#4c9cff";
+  const px=
+    player.x-cam.x;
 
-  ctx.beginPath();
-
-  ctx.arc(
-    W/2,
-    H/2,
-    18,
-    0,
-    Math.PI*2
-  );
-
-  ctx.fill();
-
-  ctx.fillStyle="#d9e8ff";
-
-  ctx.beginPath();
-
-  ctx.arc(
-    W/2,
-    H/2-5,
-    7,
-    0,
-    Math.PI*2
-  );
-
-  ctx.fill();
+  const py=
+    player.y-cam.y;
 
 
-  drawMiniMap(cam);
+  if(!player.vehicle){
+
+    ctx.fillStyle="#4d9bff";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      px,
+      py,
+      19,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    ctx.fillStyle="#e0ecff";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      px,
+      py-5,
+      7,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+  }
+
+
+  // zone overlay
+  drawZone(cam);
+
 }
 
 
-/* ================= MINIMAP ================= */
+/* =========================================================
+   ZONE DRAW
+   ========================================================= */
 
-function drawMiniMap(cam){
+function drawZone(cam){
 
-  mctx.clearRect(0,0,120,120);
+  const zone=map.zones[0];
 
-  mctx.fillStyle="#283526";
-  mctx.fillRect(0,0,120,120);
+  ctx.save();
 
-  const sx=120/WORLD_W;
-  const sy=120/WORLD_H;
+  ctx.fillStyle="rgba(55,110,200,.16)";
 
-  for(const b of world.buildings){
+  ctx.fillRect(
+    0,
+    0,
+    screenW,
+    screenH
+  );
 
-    mctx.fillStyle="#707070";
+
+  ctx.globalCompositeOperation=
+    "destination-out";
+
+  ctx.beginPath();
+
+  ctx.arc(
+    zone.x-cam.x,
+    zone.y-cam.y,
+    zone.radius,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+  ctx.restore();
+
+
+  ctx.strokeStyle="rgba(80,170,255,.85)";
+  ctx.lineWidth=4;
+
+  ctx.beginPath();
+
+  ctx.arc(
+    zone.x-cam.x,
+    zone.y-cam.y,
+    zone.radius,
+    0,
+    Math.PI*2
+  );
+
+  ctx.stroke();
+
+}
+
+
+/* =========================================================
+   MINIMAP
+   ========================================================= */
+
+function drawMinimap(){
+
+  mctx.clearRect(
+    0,
+    0,
+    135,
+    135
+  );
+
+
+  mctx.fillStyle="#243322";
+
+  mctx.fillRect(
+    0,
+    0,
+    135,
+    135
+  );
+
+
+  const sx=135/MAP_W;
+  const sy=135/MAP_H;
+
+
+  // buildings
+  mctx.fillStyle="#777";
+
+  for(const b of map.buildings){
 
     mctx.fillRect(
       b.x*sx,
@@ -1247,9 +1861,13 @@ function drawMiniMap(cam){
 
   }
 
-  for(const bot of world.bots){
 
-    mctx.fillStyle="#e56a63";
+  // bots
+  mctx.fillStyle="#e56a62";
+
+  for(const bot of map.bots){
+
+    if(bot.hp<=0)continue;
 
     mctx.fillRect(
       bot.x*sx-2,
@@ -1260,7 +1878,28 @@ function drawMiniMap(cam){
 
   }
 
-  mctx.fillStyle="#65a9ff";
+
+  // zone
+  const zone=map.zones[0];
+
+  mctx.strokeStyle="#69b5ff";
+  mctx.lineWidth=1.5;
+
+  mctx.beginPath();
+
+  mctx.arc(
+    zone.x*sx,
+    zone.y*sy,
+    zone.radius*sx,
+    0,
+    Math.PI*2
+  );
+
+  mctx.stroke();
+
+
+  // player
+  mctx.fillStyle="#65aaff";
 
   mctx.beginPath();
 
@@ -1277,51 +1916,122 @@ function drawMiniMap(cam){
 }
 
 
-/* ================= HUD ================= */
+/* =========================================================
+   HUD
+   ========================================================= */
 
 function updateHUD(){
 
   document.getElementById("hp")
-    .style.width=player.hp+"%";
+    .style.width=
+    Math.max(0,player.hp)+"%";
+
 
   document.getElementById("stamina")
-    .style.width=player.stamina+"%";
+    .style.width=
+    player.stamina+"%";
+
 
   document.getElementById("helmet")
-    .textContent="Lv."+player.helmet;
+    .textContent=
+    player.helmet;
+
 
   document.getElementById("vest")
-    .textContent="Lv."+player.vest;
+    .textContent=
+    player.vest;
+
 
   document.getElementById("shoes")
-    .textContent="Lv."+player.shoes;
+    .textContent=
+    player.shoes;
+
 
   document.getElementById("backpack")
-    .textContent="Lv."+player.backpack;
-
-  document.getElementById("botCount")
-    .textContent=world.bots.length;
-
-  document.getElementById("lootCount")
     .textContent=
-      world.loot.filter(x=>!x.taken).length;
+    player.backpack;
+
+
+  const alive=
+    map.bots.filter(
+      b=>b.hp>0
+    ).length+1;
+
+
+  document.getElementById("alive")
+    .textContent=alive;
 
 }
 
 
-/* ================= LOOP ================= */
+/* =========================================================
+   MESSAGE
+   ========================================================= */
 
-let running=false;
+let messageTimer=0;
+
+function showMessage(text){
+
+  const el=
+    document.getElementById("message");
+
+  el.textContent=text;
+
+  el.style.opacity="1";
+
+  messageTimer=2;
+
+}
+
+
+/* =========================================================
+   TIMER
+   ========================================================= */
+
+let gameTime=0;
+
+function updateTimer(dt){
+
+  gameTime+=dt;
+
+  const remaining=
+    Math.max(
+      0,
+      1200-gameTime
+    );
+
+  const minutes=
+    Math.floor(
+      remaining/60
+    );
+
+  const seconds=
+    Math.floor(
+      remaining%60
+    );
+
+  document.getElementById("timer")
+    .textContent=
+    String(minutes).padStart(2,"0")+
+    ":"+
+    String(seconds).padStart(2,"0");
+
+}
+
+
+/* =========================================================
+   LOOP
+   ========================================================= */
+
+let playing=false;
 let last=0;
 
 function startGame(){
 
-  if(running)return;
+  generateMap();
 
-  running=true;
-
-  player.x=WORLD_W/2;
-  player.y=WORLD_H/2;
+  player.x=MAP_W/2;
+  player.y=MAP_H/2;
 
   player.hp=100;
   player.stamina=100;
@@ -1333,76 +2043,101 @@ function startGame(){
   player.shoes=0;
   player.backpack=0;
 
-  buildMap();
+  player.vehicle=null;
+
+  gameTime=0;
+  playing=true;
 
   last=performance.now();
 
   requestAnimationFrame(loop);
+
+  showMessage(
+    "MASUK MAP — CARI EQUIPMENT"
+  );
+
 }
 
 
-function loop(time){
+function loop(now){
 
-  if(!running)return;
+  if(!playing)return;
 
-  const dt=Math.min(
-    0.033,
-    (time-last)/1000
-  );
+  const dt=
+    Math.min(
+      .033,
+      (now-last)/1000
+    );
 
-  last=time;
+  last=now;
+
 
   updatePlayer(dt);
+  updateVehicle(dt);
   updateBots(dt);
-  collectLoot();
+  updateZone(dt);
+  updateTimer(dt);
+
+  draw();
+  drawMinimap();
+  updateHUD();
+
 
   if(messageTimer>0){
 
     messageTimer-=dt;
 
     if(messageTimer<=0){
+
       document.getElementById("message")
-        .style.opacity=0;
+        .style.opacity="0";
+
     }
 
   }
 
-  draw();
-  updateHUD();
 
   requestAnimationFrame(loop);
+
 }
 
 
-/* ================= BUTTONS ================= */
+/* =========================================================
+   BUTTONS
+   ========================================================= */
 
-document.getElementById("interact")
-  .onclick=collectLoot;
+document.getElementById("start").onclick=()=>{
 
+  document.getElementById("startOverlay")
+    .style.display="none";
 
-document.getElementById("inventoryBtn")
-  .onclick=()=>{
-    document.getElementById("inventory")
-      .style.display="block";
-  };
+  startGame();
 
-
-document.getElementById("closeInventory")
-  .onclick=()=>{
-    document.getElementById("inventory")
-      .style.display="none";
-  };
+};
 
 
-document.getElementById("backLobby")
-  .onclick=()=>{
+document.getElementById("pickup").onclick=
+  pickup;
 
-    running=false;
 
-    game.style.display="none";
-    lobby.style.display="flex";
+document.getElementById("vehicle").onclick=
+  vehicleAction;
 
-  };
+
+document.getElementById("bag").onclick=()=>{
+
+  document.getElementById("inventory")
+    .style.display="block";
+
+};
+
+
+document.getElementById("closeBag").onclick=()=>{
+
+  document.getElementById("inventory")
+    .style.display="none";
+
+};
 </script>
 
 </body>
