@@ -5,52 +5,39 @@ import { Player } from "./player.js";
 import { World } from "./world.js";
 
 export function startGame() {
-  const loading =
-    document.getElementById("loading");
-
-  const loadingStatus =
-    document.getElementById("loadingStatus");
-
   try {
-    const scene =
-      new THREE.Scene();
+    const loading = document.getElementById("loading");
+    const loadingStatus = document.getElementById("loadingStatus");
 
-    scene.background =
-      new THREE.Color(0x91a0ad);
+    if (loadingStatus) {
+      loadingStatus.textContent = "Membuat dunia...";
+    }
 
-    scene.fog =
-      new THREE.Fog(
-        0x91a0ad,
-        45,
-        180
-      );
+    const scene = new THREE.Scene();
 
-    const camera =
-      new THREE.PerspectiveCamera(
-        60,
-        innerWidth / innerHeight,
-        0.05,
-        300
-      );
-
-    camera.position.set(
-      0,
-      3,
-      6
+    scene.background = new THREE.Color(0x91a0ad);
+    scene.fog = new THREE.Fog(
+      0x91a0ad,
+      45,
+      180
     );
 
-    const renderer =
-      new THREE.WebGLRenderer({
-        antialias:true,
-        powerPreference:
-          "high-performance"
-      });
+    const camera = new THREE.PerspectiveCamera(
+      60,
+      innerWidth / innerHeight,
+      0.05,
+      300
+    );
+
+    camera.position.set(0, 3, 6);
+
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      powerPreference: "high-performance"
+    });
 
     renderer.setPixelRatio(
-      Math.min(
-        devicePixelRatio,
-        1.5
-      )
+      Math.min(devicePixelRatio, 1.5)
     );
 
     renderer.setSize(
@@ -58,9 +45,7 @@ export function startGame() {
       innerHeight
     );
 
-    renderer.shadowMap.enabled =
-      true;
-
+    renderer.shadowMap.enabled = true;
     renderer.shadowMap.type =
       THREE.PCFSoftShadowMap;
 
@@ -92,49 +77,43 @@ export function startGame() {
       25
     );
 
-    sun.castShadow =
-      true;
+    sun.castShadow = true;
 
     sun.shadow.mapSize.set(
       1024,
       1024
     );
 
-    sun.shadow.camera.left =
-      -80;
-
-    sun.shadow.camera.right =
-      80;
-
-    sun.shadow.camera.top =
-      80;
-
-    sun.shadow.camera.bottom =
-      -80;
+    sun.shadow.camera.left = -80;
+    sun.shadow.camera.right = 80;
+    sun.shadow.camera.top = 80;
+    sun.shadow.camera.bottom = -80;
 
     scene.add(sun);
 
     if (loadingStatus) {
-      loadingStatus.textContent =
-        "Membangun kota...";
+      loadingStatus.textContent = "Memuat kontrol...";
     }
 
-    const input =
-      new Input();
-
-    const world =
-      new World(scene);
+    const input = new Input();
 
     if (loadingStatus) {
-      loadingStatus.textContent =
-        "Memuat karakter...";
+      loadingStatus.textContent = "Membangun kota...";
     }
 
-    const player =
-      new Player(scene);
+    const world = new World(scene);
 
-    world.player =
-      player;
+    if (loadingStatus) {
+      loadingStatus.textContent = "Memuat karakter...";
+    }
+
+    const player = new Player(scene);
+
+    world.player = player;
+
+    if (loadingStatus) {
+      loadingStatus.textContent = "Menyiapkan kamera...";
+    }
 
     const cameraController =
       new CameraController(
@@ -144,212 +123,293 @@ export function startGame() {
         world
       );
 
-    const clock =
-      new THREE.Clock();
+    const hpbar =
+      document.getElementById("hpbar");
+
+    const stambar =
+      document.getElementById("stambar");
+
+    const context =
+      document.getElementById("context");
+
+    const enter =
+      document.getElementById("enter");
+
+    const exit =
+      document.getElementById("exit");
+
+    const jump =
+      document.getElementById("jump");
+
+    const sprint =
+      document.getElementById("sprint");
+
+    const crouch =
+      document.getElementById("crouch");
+
+    const punch =
+      document.getElementById("punch");
+
+    const fullscreen =
+      document.getElementById("fullscreen");
 
     function updateHUD() {
-      const hpbar =
-        document.getElementById(
-          "hpbar"
-        );
-
-      const stambar =
-        document.getElementById(
-          "stambar"
-        );
-
       if (hpbar) {
         hpbar.style.width =
-          THREE.MathUtils.clamp(
-            player.hp,
+          `${THREE.MathUtils.clamp(
+            player.hp / 100,
             0,
-            100
-          ) + "%";
+            1
+          ) * 100}%`;
       }
 
       if (stambar) {
         stambar.style.width =
-          THREE.MathUtils.clamp(
-            player.stamina,
+          `${THREE.MathUtils.clamp(
+            player.stamina / 100,
             0,
-            100
-          ) + "%";
+            1
+          ) * 100}%`;
       }
-
-      const crouch =
-        document.getElementById(
-          "crouch"
-        );
 
       if (crouch) {
         crouch.style.opacity =
           player.crouching
             ? "0.55"
             : "1";
-
-        crouch.style.transform =
-          player.crouching
-            ? "scale(.94)"
-            : "scale(1)";
       }
     }
 
     function updateContext() {
-      const enter =
-        document.getElementById(
-          "enter"
-        );
-
-      const exit =
-        document.getElementById(
-          "exit"
-        );
-
-      const context =
-        document.getElementById(
-          "context"
-        );
-
-      if (
-        !enter ||
-        !exit
-      ) return;
+      if (!context) return;
 
       if (player.driving) {
-        enter.classList.add(
-          "hidden"
-        );
-
-        exit.classList.remove(
-          "hidden"
-        );
-
-        if (context) {
-          context.textContent =
-            "KENDARAAN";
-        }
-
+        context.textContent =
+          "🚗 Sedang mengemudi";
         return;
       }
-
-      exit.classList.add(
-        "hidden"
-      );
 
       if (world.insideHouse) {
-        enter.classList.remove(
-          "hidden"
-        );
-
-        enter.textContent =
-          "KELUAR";
-
-        if (context) {
-          context.textContent =
-            "DI DALAM RUMAH";
-        }
-
+        context.textContent =
+          "🏠 Di dalam rumah";
         return;
       }
-
-      enter.textContent =
-        "MASUK";
-
-      const car =
-        world.findNearbyCar?.();
 
       const door =
         world.findNearbyDoor?.();
 
-      if (car) {
-        enter.classList.remove(
-          "hidden"
-        );
-
-        if (context) {
-          context.textContent =
-            "🚗 MASUK KENDARAAN";
-        }
-
-        return;
-      }
+      const car =
+        world.findNearbyCar?.();
 
       if (door) {
-        enter.classList.remove(
-          "hidden"
-        );
-
-        if (context) {
-          context.textContent =
-            "🚪 MASUK RUMAH";
-        }
-
-        return;
-      }
-
-      enter.classList.add(
-        "hidden"
-      );
-
-      if (context) {
         context.textContent =
-          "";
+          "🚪 Tekan MASUK untuk masuk rumah";
+      } else if (car) {
+        context.textContent =
+          "🚗 Tekan MASUK untuk masuk mobil";
+      } else {
+        context.textContent = "";
       }
     }
 
+    function updateButtons() {
+      if (!enter || !exit) return;
+
+      if (player.driving) {
+        enter.classList.add("hidden");
+        exit.classList.remove("hidden");
+        return;
+      }
+
+      if (world.insideHouse) {
+        enter.classList.add("hidden");
+        exit.classList.remove("hidden");
+        return;
+      }
+
+      exit.classList.add("hidden");
+
+      const door =
+        world.findNearbyDoor?.();
+
+      const car =
+        world.findNearbyCar?.();
+
+      if (door || car) {
+        enter.classList.remove("hidden");
+      } else {
+        enter.classList.add("hidden");
+      }
+    }
+
+    function enterWorld() {
+      if (player.driving) {
+        world.exitCar?.();
+        return;
+      }
+
+      if (world.insideHouse) {
+        world.exitHouse?.();
+        return;
+      }
+
+      world.tryEnterNearby?.();
+    }
+
+    function exitWorld() {
+      if (player.driving) {
+        world.exitCar?.();
+        return;
+      }
+
+      if (world.insideHouse) {
+        world.exitHouse?.();
+      }
+    }
+
+    if (enter) {
+      enter.addEventListener(
+        "pointerdown",
+        event => {
+          event.preventDefault();
+          enterWorld();
+        }
+      );
+    }
+
+    if (exit) {
+      exit.addEventListener(
+        "pointerdown",
+        event => {
+          event.preventDefault();
+          exitWorld();
+        }
+      );
+    }
+
+    if (punch) {
+      punch.addEventListener(
+        "pointerdown",
+        event => {
+          event.preventDefault();
+
+          if (!player.driving) {
+            world.playerAction?.();
+          }
+        }
+      );
+    }
+
+    if (jump) {
+      jump.addEventListener(
+        "pointerdown",
+        event => {
+          event.preventDefault();
+          input.jumpPressed = true;
+        }
+      );
+    }
+
+    if (sprint) {
+      sprint.addEventListener(
+        "pointerdown",
+        event => {
+          event.preventDefault();
+          input.sprint = true;
+        }
+      );
+
+      sprint.addEventListener(
+        "pointerup",
+        () => {
+          input.sprint = false;
+        }
+      );
+
+      sprint.addEventListener(
+        "pointercancel",
+        () => {
+          input.sprint = false;
+        }
+      );
+    }
+
+    if (crouch) {
+      crouch.addEventListener(
+        "pointerdown",
+        event => {
+          event.preventDefault();
+          input.crouch = true;
+        }
+      );
+
+      crouch.addEventListener(
+        "pointerup",
+        () => {
+          input.crouch = false;
+        }
+      );
+
+      crouch.addEventListener(
+        "pointercancel",
+        () => {
+          input.crouch = false;
+        }
+      );
+    }
+
+    if (fullscreen) {
+      fullscreen.addEventListener(
+        "click",
+        async () => {
+          try {
+            if (!document.fullscreenElement) {
+              await document.documentElement.requestFullscreen();
+            } else {
+              await document.exitFullscreen();
+            }
+          } catch {}
+        }
+      );
+    }
+
+    addEventListener(
+      "keydown",
+      event => {
+        if (event.key.toLowerCase() === "e") {
+          enterWorld();
+        }
+
+        if (event.key.toLowerCase() === "q") {
+          exitWorld();
+        }
+
+        if (
+          event.code === "Space"
+        ) {
+          input.jumpPressed = true;
+        }
+      }
+    );
+
+    const clock =
+      new THREE.Clock();
+
     function update(dt) {
-      const enterPressed =
-        input.consumeEnter
-          ? input.consumeEnter()
-          : false;
-
-      const exitPressed =
-        input.consumeExit
-          ? input.consumeExit()
-          : false;
-
-      if (enterPressed) {
-
-        if (player.driving) {
-          world.exitCar();
-        }
-
-        else if (
-          world.insideHouse
-        ) {
-          world.exitHouse();
-        }
-
-        else {
-          world.tryEnterNearby();
-        }
+      if (input.consumeEnter?.()) {
+        enterWorld();
       }
 
-      if (exitPressed) {
-
-        if (player.driving) {
-          world.exitCar();
-        }
-
-        else if (
-          world.insideHouse
-        ) {
-          world.exitHouse();
-        }
+      if (input.consumeExit?.()) {
+        exitWorld();
       }
 
-      if (
-        input.actionPressed
-      ) {
+      if (input.actionPressed) {
         world.playerAction?.();
-
-        input.actionPressed =
-          false;
+        input.actionPressed = false;
       }
 
-      if (
-        !player.driving
-      ) {
+      if (!player.driving) {
         player.update(
           dt,
           input,
@@ -370,9 +430,9 @@ export function startGame() {
 
       updateHUD();
       updateContext();
+      updateButtons();
 
-      input.jumpPressed =
-        false;
+      input.jumpPressed = false;
     }
 
     function animate() {
@@ -410,34 +470,36 @@ export function startGame() {
       }
     );
 
-    if (loadingStatus) {
-      loadingStatus.textContent =
-        "Dunia siap!";
+    if (loading) {
+      loading.remove();
     }
 
-    setTimeout(() => {
-      loading?.remove();
-    }, 500);
-
   } catch (error) {
-
     console.error(
       "VIRELIA ERROR:",
       error
     );
 
+    const loading =
+      document.getElementById(
+        "loading"
+      );
+
+    const status =
+      document.getElementById(
+        "loadingStatus"
+      );
+
     if (loading) {
       loading.classList.add(
         "error"
       );
+    }
 
-      loading.innerHTML =
-        `
-        <div>VIRELIA GAGAL DIMUAT</div>
-        <small>
-        ${String(error.message || error)}
-        </small>
-        `;
+    if (status) {
+      status.textContent =
+        error?.message ||
+        String(error);
     }
   }
 }
