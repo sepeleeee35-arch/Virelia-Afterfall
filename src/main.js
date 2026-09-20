@@ -1,309 +1,246 @@
 import * as THREE from "three";
+import { Input } from "./input.js";
+import { CameraController } from "./camera.js";
+import { Player } from "./player.js";
+import { World } from "./world.js";
 
-import {createInput}
-from "./input.js";
+const scene = new THREE.Scene();
 
-import {ThirdPersonCamera}
-from "./camera.js";
+scene.background = new THREE.Color(0x91a0ad);
 
-import {Player}
-from "./player.js";
+scene.fog = new THREE.Fog(
+  0x91a0ad,
+  45,
+  180
+);
 
-import {createWorld}
-from "./world.js";
+const camera = new THREE.PerspectiveCamera(
+  60,
+  innerWidth / innerHeight,
+  0.05,
+  300
+);
 
-export function startGame(){
+camera.position.set(
+  0,
+  3,
+  6
+);
 
-  const scene=
-    new THREE.Scene();
+const renderer = new THREE.WebGLRenderer({
+  antialias: true,
+  powerPreference: "high-performance"
+});
 
-  scene.background=
-    new THREE.Color(
-      0x9bb3c2
-    );
+renderer.setPixelRatio(
+  Math.min(devicePixelRatio, 1.7)
+);
 
-  scene.fog=
-    new THREE.Fog(
-      0x9bb3c2,
-      55,
-      260
-    );
+renderer.setSize(
+  innerWidth,
+  innerHeight
+);
 
-  const camera=
-    new THREE.PerspectiveCamera(
-      60,
-      window.innerWidth/
-      window.innerHeight,
-      .05,
-      500
-    );
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type =
+  THREE.PCFSoftShadowMap;
 
-  const renderer=
-    new THREE.WebGLRenderer({
-      antialias:true,
-      powerPreference:
-        "high-performance"
-    });
+document.body.appendChild(
+  renderer.domElement
+);
 
-  renderer.setPixelRatio(
-    Math.min(
-      window.devicePixelRatio,
-      1.5
-    )
+const hemi = new THREE.HemisphereLight(
+  0xddeaff,
+  0x4b463f,
+  2.2
+);
+
+scene.add(hemi);
+
+const sun = new THREE.DirectionalLight(
+  0xffffff,
+  3.2
+);
+
+sun.position.set(
+  35,
+  55,
+  25
+);
+
+sun.castShadow = true;
+
+sun.shadow.mapSize.set(
+  2048,
+  2048
+);
+
+sun.shadow.camera.left = -80;
+sun.shadow.camera.right = 80;
+sun.shadow.camera.top = 80;
+sun.shadow.camera.bottom = -80;
+
+scene.add(sun);
+
+const input = new Input();
+const world = new World(scene);
+const player = new Player(scene);
+
+const cameraController =
+  new CameraController(
+    camera,
+    renderer.domElement,
+    player,
+    world
   );
 
-  renderer.setSize(
-    window.innerWidth,
-    window.innerHeight
-  );
+world.player = player;
 
-  renderer.shadowMap.enabled=true;
+const clock = new THREE.Clock();
 
-  renderer.shadowMap.type=
-    THREE.PCFSoftShadowMap;
+function updateHUD() {
+  const hp = document.getElementById("hp");
+  const stamina =
+    document.getElementById("stamina");
 
-  document.body.appendChild(
-    renderer.domElement
-  );
+  if (hp) {
+    hp.textContent =
+      `HP ${Math.round(player.hp)}`;
+  }
 
-  const hemi=
-    new THREE.HemisphereLight(
-      0xd5e7ff,
-      0x45503e,
-      2
-    );
+  if (stamina) {
+    stamina.textContent =
+      `STAMINA ${Math.round(player.stamina)}`;
+  }
 
-  scene.add(hemi);
+  const crouchButton =
+    document.getElementById("crouch");
 
-  const sun=
-    new THREE.DirectionalLight(
-      0xffffff,
-      3
-    );
+  if (crouchButton) {
+    crouchButton.style.opacity =
+      player.crouching ? "0.55" : "1";
 
-  sun.position.set(
-    -50,
-    80,
-    40
-  );
+    crouchButton.style.transform =
+      player.crouching
+        ? "scale(0.94)"
+        : "scale(1)";
+  }
+}
 
-  sun.castShadow=true;
+function updateContextButtons() {
+  const enter =
+    document.getElementById("enterBtn");
 
-  sun.shadow.mapSize.set(
-    1024,
-    1024
-  );
+  const exit =
+    document.getElementById("exitBtn");
 
-  scene.add(sun);
+  if (!enter || !exit) return;
 
-  const world=
-    createWorld(scene);
+  if (player.driving) {
+    enter.style.display = "none";
+    exit.style.display = "flex";
+    return;
+  }
 
-  const input=
-    createInput(renderer);
+  exit.style.display = "none";
 
-  const player=
-    new Player(
-      scene,
+  const door =
+    world.findNearbyDoor?.();
+
+  const car =
+    world.findNearbyCar?.();
+
+  if (door || car) {
+    enter.style.display = "flex";
+  } else {
+    enter.style.display = "none";
+  }
+}
+
+function update(dt) {
+  const enterPressed =
+    input.consumeEnter?.();
+
+  const exitPressed =
+    input.consumeExit?.();
+
+  if (enterPressed) {
+    if (player.driving) {
+      world.exitCar();
+    } else if (world.insideHouse) {
+      world.exitHouse();
+    } else {
+      world.tryEnterNearby();
+    }
+  }
+
+  if (exitPressed) {
+    if (player.driving) {
+      world.exitCar();
+    } else if (world.insideHouse) {
+      world.exitHouse();
+    }
+  }
+
+  if (input.actionPressed) {
+    world.playerAction?.();
+    input.actionPressed = false;
+  }
+
+  if (!player.driving) {
+    player.update(
+      dt,
       input,
-      world
-    );
-
-  const cameraSystem=
-    new ThirdPersonCamera(
-      camera,
-      scene,
-      player
-    );
-
-  player.setCamera(
-    cameraSystem
-  );
-
-  const context=
-    document.getElementById(
-      "context"
-    );
-
-  const enter=
-    document.getElementById(
-      "enter"
-    );
-
-  const exit=
-    document.getElementById(
-      "exit"
-    );
-
-  function updateContext(){
-
-    const state=
-      world.getContext(player);
-
-    enter.classList.add(
-      "hidden"
-    );
-
-    exit.classList.add(
-      "hidden"
-    );
-
-    context.textContent="";
-
-    if(state==="enterHouse"){
-
-      enter.classList.remove(
-        "hidden"
-      );
-
-      context.textContent=
-        "Pintu — MASUK";
-
-    }else if(
-      state==="enterCar"
-    ){
-
-      enter.classList.remove(
-        "hidden"
-      );
-
-      context.textContent=
-        "Mobil — MASUK";
-
-    }else if(
-      state==="exitHouse"
-    ){
-
-      exit.classList.remove(
-        "hidden"
-      );
-
-      context.textContent=
-        "Di dalam rumah — KELUAR";
-
-    }else if(
-      state==="driving"
-    ){
-
-      exit.classList.remove(
-        "hidden"
-      );
-
-      context.textContent=
-        "MENGEMUDI — KELUAR";
-    }
-  }
-
-  function updateInteraction(){
-
-    if(
-      input.consumeEnter()
-    ){
-
-      world.enterNearest(
-        player
-      );
-    }
-
-    if(
-      input.consumeExit()
-    ){
-
-      world.exitNearest(
-        player
-      );
-    }
-  }
-
-  document
-    .getElementById("fullscreen")
-    .addEventListener(
-      "click",
-      async()=>{
-
-        try{
-
-          if(
-            !document.fullscreenElement
-          ){
-
-            await document.documentElement
-              .requestFullscreen();
-
-          }else{
-
-            await document.exitFullscreen();
-          }
-
-        }catch(error){}
-      }
-    );
-
-  document.getElementById(
-    "loading"
-  ).style.display="none";
-
-  const clock=
-    new THREE.Clock();
-
-  function loop(){
-
-    const dt=
-      Math.min(
-        clock.getDelta(),
-        .05
-      );
-
-    updateInteraction();
-
-    player.update(dt);
-
-    world.update(
-      dt,
-      player
-    );
-
-    cameraSystem.update(
-      dt,
-      input
-    );
-
-    document.getElementById(
-      "hpbar"
-    ).style.width=
-      `${player.hp}%`;
-
-    document.getElementById(
-      "stambar"
-    ).style.width=
-      `${player.stamina}%`;
-
-    updateContext();
-
-    renderer.render(
-      scene,
       camera
     );
   }
 
-  renderer.setAnimationLoop(
-    loop
+  world.update(
+    dt,
+    input,
+    player
   );
 
-  window.addEventListener(
-    "resize",
-    ()=>{
+  cameraController.update(
+    dt,
+    input
+  );
 
-      camera.aspect=
-        window.innerWidth/
-        window.innerHeight;
+  updateHUD();
+  updateContextButtons();
 
-      camera.updateProjectionMatrix();
+  input.jumpPressed = false;
+}
 
-      renderer.setSize(
-        window.innerWidth,
-        window.innerHeight
-      );
-    }
+function animate() {
+  const dt = Math.min(
+    clock.getDelta(),
+    0.033
+  );
+
+  update(dt);
+
+  renderer.render(
+    scene,
+    camera
   );
 }
+
+renderer.setAnimationLoop(
+  animate
+);
+
+addEventListener(
+  "resize",
+  () => {
+    camera.aspect =
+      innerWidth / innerHeight;
+
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(
+      innerWidth,
+      innerHeight
+    );
+  }
+);
