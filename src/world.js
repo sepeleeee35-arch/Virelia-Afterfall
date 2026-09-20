@@ -1,227 +1,198 @@
-import * as THREE from "three";
+export const world = {
 
-export class World {
-  constructor(scene) {
-    this.scene = scene;
+  width: 12000,
+  height: 9000,
 
-    this.colliders = [];
-    this.cameraMeshes = [];
-    this.houses = [];
-    this.cars = [];
-    this.bots = [];
+  buildings: [],
+  roads: [],
+  trees: [],
+  vehicles: []
+};
 
-    this.insideHouse = false;
-    this.currentHouse = null;
-    this.activeCar = null;
+export function createWorld(){
 
-    this.buildWorld();
-  }
+  /* ROADS */
 
-  buildWorld() {
-    // GROUND
-    const ground = new THREE.Mesh(
-      new THREE.BoxGeometry(220, 0.4, 220),
-      new THREE.MeshStandardMaterial({
-        color: 0x526b45
-      })
-    );
-
-    ground.position.y = -0.2;
-    this.scene.add(ground);
-
-    // ROAD
-    const roadMaterial =
-      new THREE.MeshStandardMaterial({
-        color: 0x303236
-      });
-
-    const road1 = new THREE.Mesh(
-      new THREE.BoxGeometry(220, 0.1, 16),
-      roadMaterial
-    );
-
-    road1.position.y = 0.02;
-    this.scene.add(road1);
-
-    const road2 = new THREE.Mesh(
-      new THREE.BoxGeometry(16, 0.1, 220),
-      roadMaterial
-    );
-
-    road2.position.y = 0.025;
-    this.scene.add(road2);
-
-    // HOUSES
-    const positions = [
-      [-35, -35],
-      [35, -35],
-      [-35, 35],
-      [35, 35]
-    ];
-
-    for (const [x, z] of positions) {
-      this.createHouse(x, z);
+  world.roads.push(
+    {
+      x:0,
+      y:4300,
+      w:12000,
+      h:150
     }
+  );
 
-    // CARS
-    this.createCar(-18, 8);
-    this.createCar(18, -8);
+  world.roads.push(
+    {
+      x:5600,
+      y:0,
+      w:150,
+      h:9000
+    }
+  );
 
-    console.log("WORLD OK");
+  world.roads.push(
+    {
+      x:1500,
+      y:1800,
+      w:8500,
+      h:100
+    }
+  );
+
+  /* CITY BUILDINGS */
+
+  for(
+    let y=3000;
+    y<5600;
+    y+=480
+  ){
+
+    for(
+      let x=3800;
+      x<7800;
+      x+=480
+    ){
+
+      world.buildings.push({
+
+        x,
+        y,
+
+        w:300,
+        h:270
+      });
+    }
   }
 
-  createHouse(x, z) {
-    const material =
-      new THREE.MeshStandardMaterial({
-        color: 0x81766b
-      });
+  /* NORTH HOUSES */
 
-    const house = new THREE.Mesh(
-      new THREE.BoxGeometry(18, 6, 14),
-      material
-    );
+  for(
+    let i=0;
+    i<25;
+    i++
+  ){
 
-    house.position.set(x, 3, z);
+    world.buildings.push({
 
-    this.scene.add(house);
+      x:
+        700 +
+        Math.random()*3000,
 
-    this.houses.push({
-      group: house,
-      x,
-      z
-    });
+      y:
+        800 +
+        Math.random()*1800,
 
-    this.cameraMeshes.push(house);
-
-    this.colliders.push({
-      minX: x - 9,
-      maxX: x + 9,
-      minZ: z - 7,
-      maxZ: z + 7
+      w:220,
+      h:190
     });
   }
 
-  createCar(x, z) {
-    const material =
-      new THREE.MeshStandardMaterial({
-        color: 0x4d5965
-      });
+  /* SOUTH COMPOUNDS */
 
-    const car = new THREE.Mesh(
-      new THREE.BoxGeometry(4, 1.2, 7),
-      material
-    );
+  for(
+    let i=0;
+    i<18;
+    i++
+  ){
 
-    car.position.set(x, 0.7, z);
+    world.buildings.push({
 
-    this.scene.add(car);
+      x:
+        800 +
+        Math.random()*3500,
 
-    this.cars.push({
-      group: car,
-      occupied: false
+      y:
+        6000 +
+        Math.random()*2000,
+
+      w:300,
+      h:230
     });
   }
 
-  isBlocked(x, z, radius = 0.6) {
-    for (const c of this.colliders) {
-      if (
-        x > c.minX - radius &&
-        x < c.maxX + radius &&
-        z > c.minZ - radius &&
-        z < c.maxZ + radius
-      ) {
-        return true;
-      }
-    }
+  /* TREES */
 
-    return false;
+  for(
+    let i=0;
+    i<400;
+    i++
+  ){
+
+    world.trees.push({
+
+      x:
+        Math.random() *
+        world.width,
+
+      y:
+        Math.random() *
+        world.height,
+
+      r:
+        14 +
+        Math.random()*18
+    });
   }
 
-  findNearbyDoor(player) {
-    return null;
+  /* VEHICLES */
+
+  for(
+    let i=0;
+    i<30;
+    i++
+  ){
+
+    world.vehicles.push({
+
+      x:
+        Math.random() *
+        world.width,
+
+      y:
+        Math.random() *
+        world.height,
+
+      angle:
+        Math.random() *
+        Math.PI*2
+    });
   }
+}
 
-  tryEnterNearby(player) {
-    return false;
-  }
+export function isBlocked(
+  x,
+  y,
+  radius
+){
 
-  exitHouse(player) {
-    return false;
-  }
-
-  findNearbyCar(player) {
-    if (!player?.group) return null;
-
-    let nearest = null;
-    let nearestDistance = 4;
-
-    for (const car of this.cars) {
-      if (car.occupied) continue;
-
-      const dx =
-        player.group.position.x -
-        car.group.position.x;
-
-      const dz =
-        player.group.position.z -
-        car.group.position.z;
-
-      const distance = Math.hypot(dx, dz);
-
-      if (distance < nearestDistance) {
-        nearestDistance = distance;
-        nearest = car;
-      }
-    }
-
-    return nearest;
-  }
-
-  enterCar(player) {
-    const car = this.findNearbyCar(player);
-
-    if (!car) return false;
-
-    this.activeCar = car;
-    car.occupied = true;
-
-    player.driving = true;
-    player.group.visible = false;
-
+  if(
+    x < radius ||
+    y < radius ||
+    x > world.width-radius ||
+    y > world.height-radius
+  ){
     return true;
   }
 
-  exitCar(player) {
-    if (!this.activeCar) return false;
+  for(
+    const b of world.buildings
+  ){
 
-    const car = this.activeCar;
+    if(
+      x >
+        b.x-radius &&
+      x <
+        b.x+b.w+radius &&
+      y >
+        b.y-radius &&
+      y <
+        b.y+b.h+radius
+    ){
 
-    player.group.visible = true;
-    player.driving = false;
-
-    player.group.position.set(
-      car.group.position.x + 4,
-      0,
-      car.group.position.z
-    );
-
-    car.occupied = false;
-    this.activeCar = null;
-
-    return true;
-  }
-
-  playerAction() {}
-
-  update(dt, input, player) {
-    if (this.activeCar && player?.driving) {
-      player.group.position.copy(
-        this.activeCar.group.position
-      );
+      return true;
     }
   }
 
-  get cameraColliders() {
-    return this.cameraMeshes;
-  }
+  return false;
 }
