@@ -46,9 +46,7 @@ canvas{
   touch-action:none;
 }
 
-/* =========================================
-   PORTRAIT SCREEN
-========================================= */
+/* PORTRAIT */
 
 #portrait{
   position:fixed;
@@ -74,22 +72,6 @@ canvas{
 .rotateIcon{
   font-size:60px;
   margin-bottom:20px;
-  animation:rotatePhone 1.5s infinite ease-in-out;
-}
-
-@keyframes rotatePhone{
-
-  0%{
-    transform:rotate(0deg);
-  }
-
-  50%{
-    transform:rotate(90deg);
-  }
-
-  100%{
-    transform:rotate(0deg);
-  }
 }
 
 .portraitTitle{
@@ -104,9 +86,7 @@ canvas{
   line-height:1.5;
 }
 
-/* =========================================
-   HUD
-========================================= */
+/* HUD */
 
 #hud{
   position:fixed;
@@ -118,17 +98,11 @@ canvas{
   color:white;
 }
 
-/* PLAYER */
-
 #playerCard{
-
   position:absolute;
 
-  top:
-    max(12px,env(safe-area-inset-top));
-
-  left:
-    max(12px,env(safe-area-inset-left));
+  top:max(12px,env(safe-area-inset-top));
+  left:max(12px,env(safe-area-inset-left));
 
   width:190px;
 
@@ -144,14 +118,17 @@ canvas{
   font-weight:bold;
 }
 
+.version{
+  margin-top:3px;
+  color:#8f9b97;
+  font-size:9px;
+}
+
 .bar{
-
   height:7px;
-
   margin-top:6px;
 
   border-radius:8px;
-
   overflow:hidden;
 
   background:#303837;
@@ -169,15 +146,10 @@ canvas{
   background:#ded65c;
 }
 
-/* ZONE */
-
 #zone{
-
   position:absolute;
 
-  top:
-    max(12px,env(safe-area-inset-top));
-
+  top:max(12px,env(safe-area-inset-top));
   left:50%;
 
   transform:translateX(-50%);
@@ -193,15 +165,10 @@ canvas{
   font-size:11px;
 }
 
-/* ALIVE */
-
 #aliveBox{
-
   position:absolute;
 
-  top:
-    max(12px,env(safe-area-inset-top));
-
+  top:max(12px,env(safe-area-inset-top));
   right:145px;
 
   padding:9px 13px;
@@ -213,26 +180,18 @@ canvas{
   font-size:11px;
 }
 
-/* MINIMAP */
-
 #miniWrap{
-
   position:absolute;
 
-  top:
-    max(12px,env(safe-area-inset-top));
-
-  right:
-    max(12px,env(safe-area-inset-right));
+  top:max(12px,env(safe-area-inset-top));
+  right:max(12px,env(safe-area-inset-right));
 
   width:118px;
   height:118px;
 
   overflow:hidden;
 
-  border:
-    2px solid
-    rgba(255,255,255,.35);
+  border:2px solid rgba(255,255,255,.35);
 
   border-radius:13px;
 
@@ -240,15 +199,11 @@ canvas{
 }
 
 #mini{
-
   width:100%;
   height:100%;
 }
 
-/* CROSSHAIR */
-
 #crosshair{
-
   position:absolute;
 
   left:50%;
@@ -257,23 +212,19 @@ canvas{
   width:20px;
   height:20px;
 
-  transform:
-    translate(-50%,-50%);
+  transform:translate(-50%,-50%);
 }
 
 #crosshair::before,
 #crosshair::after{
-
   content:"";
 
   position:absolute;
 
-  background:
-    rgba(255,255,255,.9);
+  background:rgba(255,255,255,.9);
 }
 
 #crosshair::before{
-
   left:9px;
   top:0;
 
@@ -282,7 +233,6 @@ canvas{
 }
 
 #crosshair::after{
-
   left:0;
   top:9px;
 
@@ -290,24 +240,19 @@ canvas{
   height:2px;
 }
 
-/* MESSAGE */
-
 #message{
-
   position:absolute;
 
   left:50%;
   bottom:210px;
 
-  transform:
-    translateX(-50%);
+  transform:translateX(-50%);
 
   padding:9px 14px;
 
   border-radius:10px;
 
-  background:
-    rgba(0,0,0,.72);
+  background:rgba(0,0,0,.72);
 
   font-size:12px;
 
@@ -316,12 +261,9 @@ canvas{
   transition:.2s;
 }
 
-/* =========================================
-   INVENTORY
-========================================= */
+/* INVENTORY */
 
 #inventory{
-
   position:absolute;
 
   right:20px;
@@ -333,8 +275,7 @@ canvas{
 
   border-radius:14px;
 
-  background:
-    rgba(8,13,13,.94);
+  background:rgba(8,13,13,.94);
 
   display:none;
 
@@ -349,49 +290,35 @@ canvas{
 }
 
 .invRow{
-
   display:flex;
-
   justify-content:space-between;
 
   padding:7px 0;
 
-  border-bottom:
-    1px solid
-    rgba(255,255,255,.08);
+  border-bottom:1px solid rgba(255,255,255,.08);
 }
 
-/* =========================================
-   JOYSTICK
-========================================= */
+/* JOYSTICK */
 
 #joystick{
-
   position:absolute;
 
-  left:
-    max(22px,env(safe-area-inset-left));
-
-  bottom:
-    max(22px,env(safe-area-inset-bottom));
+  left:max(22px,env(safe-area-inset-left));
+  bottom:max(22px,env(safe-area-inset-bottom));
 
   width:145px;
   height:145px;
 
-  border:
-    2px solid
-    rgba(255,255,255,.14);
+  border:2px solid rgba(255,255,255,.14);
 
   border-radius:50%;
 
-  background:
-    rgba(255,255,255,.07);
+  background:rgba(255,255,255,.07);
 
   pointer-events:auto;
 }
 
 #stick{
-
   position:absolute;
 
   left:40px;
@@ -400,29 +327,20 @@ canvas{
   width:65px;
   height:65px;
 
-  border:
-    2px solid
-    rgba(255,255,255,.25);
+  border:2px solid rgba(255,255,255,.25);
 
   border-radius:50%;
 
-  background:
-    rgba(255,255,255,.18);
+  background:rgba(255,255,255,.18);
 }
 
-/* =========================================
-   BUTTONS
-========================================= */
+/* BUTTONS */
 
 #buttons{
-
   position:absolute;
 
-  right:
-    max(16px,env(safe-area-inset-right));
-
-  bottom:
-    max(18px,env(safe-area-inset-bottom));
+  right:max(16px,env(safe-area-inset-right));
+  bottom:max(18px,env(safe-area-inset-bottom));
 
   width:205px;
   height:190px;
@@ -431,22 +349,18 @@ canvas{
 }
 
 .btn{
-
   position:absolute;
 
   width:62px;
   height:62px;
 
-  border:
-    1px solid
-    rgba(255,255,255,.15);
+  border:1px solid rgba(255,255,255,.15);
 
   border-radius:50%;
 
   color:white;
 
-  background:
-    rgba(8,14,14,.84);
+  background:rgba(8,14,14,.84);
 
   font-size:10px;
   font-weight:bold;
@@ -459,7 +373,6 @@ canvas{
 }
 
 #actionBtn{
-
   right:0;
   top:43px;
 
@@ -468,19 +381,16 @@ canvas{
 }
 
 #runBtn{
-
   right:80px;
   bottom:3px;
 }
 
 #crouchBtn{
-
   right:0;
   bottom:0;
 }
 
 #bagBtn{
-
   right:150px;
   bottom:138px;
 
@@ -488,14 +398,10 @@ canvas{
   height:47px;
 }
 
-/* =========================================
-   START
-========================================= */
+/* START */
 
 #start{
-
   position:fixed;
-
   inset:0;
 
   z-index:500;
@@ -511,7 +417,6 @@ canvas{
 }
 
 .startBox{
-
   width:min(90%,400px);
 
   padding:28px;
@@ -524,7 +429,6 @@ canvas{
 }
 
 .title{
-
   font-size:28px;
 
   font-weight:900;
@@ -533,7 +437,6 @@ canvas{
 }
 
 .sub{
-
   margin-top:10px;
 
   color:#9da9a5;
@@ -543,8 +446,16 @@ canvas{
   line-height:1.5;
 }
 
-#startBtn{
+.versionStart{
+  margin-top:14px;
 
+  color:#d5dfdb;
+
+  font-size:11px;
+  font-weight:bold;
+}
+
+#startBtn{
   width:100%;
 
   margin-top:22px;
@@ -562,11 +473,13 @@ canvas{
   font-weight:bold;
 
   font-size:14px;
+
+  touch-action:manipulation;
 }
 
-/* =========================================
-   PORTRAIT DETECTION
-========================================= */
+#startBtn:active{
+  transform:scale(.98);
+}
 
 @media (orientation:portrait){
 
@@ -620,6 +533,10 @@ canvas{
 
     <div class="name">
       SURVIVOR • 01
+    </div>
+
+    <div class="version">
+      VIRELIA v0.5.0
     </div>
 
     <div class="bar">
@@ -708,27 +625,19 @@ canvas{
 
   <div id="buttons">
 
-    <button
-      class="btn"
-      id="bagBtn">
+    <button class="btn" id="bagBtn">
       BAG
     </button>
 
-    <button
-      class="btn"
-      id="actionBtn">
+    <button class="btn" id="actionBtn">
       ACTION
     </button>
 
-    <button
-      class="btn"
-      id="runBtn">
+    <button class="btn" id="runBtn">
       RUN
     </button>
 
-    <button
-      class="btn"
-      id="crouchBtn">
+    <button class="btn" id="crouchBtn">
       CROUCH
     </button>
 
@@ -754,6 +663,10 @@ canvas{
       LANDSCAPE MOBILE
     </div>
 
+    <div class="versionStart">
+      VERSION 0.5.0
+    </div>
+
     <button id="startBtn">
       MASUK MAP
     </button>
@@ -768,70 +681,51 @@ import {
   startGame
 } from "./src/main.js";
 
-document
-  .getElementById("startBtn")
-  .addEventListener(
-    "click",
-    async () => {
+const startScreen =
+  document.getElementById("start");
 
-      /*
-        Coba fullscreen terlebih dahulu.
-        Screen Orientation API pada Android
-        biasanya baru bisa lock setelah fullscreen.
-      */
+const startButton =
+  document.getElementById("startBtn");
 
-      try{
+startButton.addEventListener(
+  "click",
+  () => {
 
-        if(
-          !document.fullscreenElement &&
-          document.documentElement.requestFullscreen
-        ){
+    startScreen.style.display =
+      "none";
 
-          await document
-            .documentElement
-            .requestFullscreen();
-        }
-
-      }catch(e){
-
-        console.log(
-          "Fullscreen tidak tersedia:",
-          e
-        );
-
-      }
-
-      try{
-
-        if(
-          screen.orientation &&
-          screen.orientation.lock
-        ){
-
-          await screen
-            .orientation
-            .lock("landscape");
-
-        }
-
-      }catch(e){
-
-        /*
-          Browser tertentu tidak mengizinkan
-          orientation lock.
-          CSS portrait overlay tetap bekerja.
-        */
-
-        console.log(
-          "Orientation lock tidak tersedia:",
-          e
-        );
-      }
+    try{
 
       startGame();
 
+    }catch(error){
+
+      console.error(
+        "Virelia gagal dimulai:",
+        error
+      );
+
+      startScreen.style.display =
+        "flex";
+
+      const message =
+        document.getElementById(
+          "message"
+        );
+
+      if(message){
+
+        message.textContent =
+          "GAME GAGAL DIMULAI";
+
+        message.style.opacity =
+          "1";
+      }
+
     }
-  );
+
+  }
+);
 
 </script>
 
