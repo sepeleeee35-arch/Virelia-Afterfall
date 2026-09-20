@@ -2,37 +2,66 @@ import * as THREE from "three";
 
 export function createWorld(scene){
 
-  const colliders = [];
-  const zombies = [];
-  const cars = [];
+  const colliders=[];
+  const houses=[];
+  const cars=[];
+  const zombies=[];
 
-  const world = {
+  let insideHouse=null;
+  let activeCar=null;
+
+  const world={
 
     isBlocked(x,z,radius){
 
+      if(insideHouse){
+
+        const h=insideHouse;
+
+        const left=h.x-3.55;
+        const right=h.x+3.55;
+        const top=h.z-2.55;
+        const bottom=h.z+2.55;
+
+        if(
+          x<left+radius ||
+          x>right-radius ||
+          z<top+radius ||
+          z>bottom-radius
+        ){
+          return true;
+        }
+
+        return false;
+      }
+
       for(const box of colliders){
 
-        const closestX =
+        if(box.car===activeCar){
+          continue;
+        }
+
+        const cx=
           THREE.MathUtils.clamp(
             x,
             box.minX,
             box.maxX
           );
 
-        const closestZ =
+        const cz=
           THREE.MathUtils.clamp(
             z,
             box.minZ,
             box.maxZ
           );
 
-        const dx = x - closestX;
-        const dz = z - closestZ;
+        const dx=x-cx;
+        const dz=z-cz;
 
         if(
-          dx * dx +
-          dz * dz <
-          radius * radius
+          dx*dx+
+          dz*dz<
+          radius*radius
         ){
           return true;
         }
@@ -41,587 +70,960 @@ export function createWorld(scene){
       return false;
     },
 
+    getContext(player){
+
+      if(player.driving){
+        return "driving";
+      }
+
+      if(insideHouse){
+        return "exitHouse";
+      }
+
+      const door=
+        findNearbyDoor(player);
+
+      if(door){
+        return "enterHouse";
+      }
+
+      const car=
+        findNearbyCar(player);
+
+      if(car){
+        return "enterCar";
+      }
+
+      return "none";
+    },
+
+    enterNearest(player){
+
+      if(player.driving){
+        return;
+      }
+
+      if(insideHouse){
+        exitHouse(player);
+        return;
+      }
+
+      const door=
+        findNearbyDoor(player);
+
+      if(door){
+
+        enterHouse(
+          player,
+          door
+        );
+
+        return;
+      }
+
+      const car=
+        findNearbyCar(player);
+
+      if(car){
+
+        enterCar(
+          player,
+          car
+        );
+      }
+    },
+
+    exitNearest(player){
+
+      if(player.driving){
+
+        exitCar(player);
+        return;
+      }
+
+      if(insideHouse){
+
+        exitHouse(player);
+      }
+    },
+
     update(dt,player){
 
-      for(const zombie of zombies){
+      if(activeCar){
 
-        zombie.attackTimer -= dt;
-
-        const dx =
-          player.group.position.x -
-          zombie.group.position.x;
-
-        const dz =
-          player.group.position.z -
-          zombie.group.position.z;
-
-        const distance =
-          Math.hypot(dx,dz);
-
-        if(
-          distance < 30 &&
-          distance > 1.55
-        ){
-
-          const nx = dx / distance;
-          const nz = dz / distance;
-
-          const speed = .9;
-
-          const nextX =
-            zombie.group.position.x +
-            nx * speed * dt;
-
-          const nextZ =
-            zombie.group.position.z +
-            nz * speed * dt;
-
-          if(
-            !world.isBlocked(
-              nextX,
-              zombie.group.position.z,
-              .32
-            )
-          ){
-
-            zombie.group.position.x =
-              nextX;
-          }
-
-          if(
-            !world.isBlocked(
-              zombie.group.position.x,
-              nextZ,
-              .32
-            )
-          ){
-
-            zombie.group.position.z =
-              nextZ;
-          }
-
-          zombie.group.rotation.y =
-            Math.atan2(nx,nz);
-
-        }else if(distance <= 1.55){
-
-          zombie.group.rotation.y =
-            Math.atan2(dx,dz);
-
-          if(zombie.attackTimer <= 0){
-
-            player.damage(5);
-
-            zombie.attackTimer = 1.2;
-          }
-        }
+        updateCar(
+          dt,
+          player
+        );
       }
+
+      updateZombies(
+        dt,
+        player
+      );
     },
 
     playerAction(player){
 
-      let closest = null;
-      let closestDistance = Infinity;
+      if(player.driving){
+        return;
+      }
 
-      const playerPosition =
-        player.group.position;
-
-      const forward =
-        new THREE.Vector3(
-          Math.sin(player.group.rotation.y),
-          0,
-          Math.cos(player.group.rotation.y)
-        );
+      let best=null;
+      let bestDistance=Infinity;
 
       for(const zombie of zombies){
 
-        const direction =
-          zombie.group.position
-            .clone()
-            .sub(playerPosition);
+        const dx=
+          zombie.group.position.x-
+          player.group.position.x;
 
-        direction.y = 0;
+        const dz=
+          zombie.group.position.z-
+          player.group.position.z;
 
-        const distance =
-          direction.length();
+        const distance=
+          Math.hypot(dx,dz);
 
-        if(
-          distance > 2.3 ||
-          distance < .1
-        ){
-          continue;
-        }
+        if(distance<2.2){
 
-        direction.normalize();
+          if(distance<bestDistance){
 
-        const facing =
-          forward.dot(direction);
-
-        if(
-          facing < .15
-        ){
-          continue;
-        }
-
-        if(
-          distance < closestDistance
-        ){
-
-          closest = zombie;
-          closestDistance = distance;
+            best=zombie;
+            bestDistance=distance;
+          }
         }
       }
 
-      if(closest){
+      if(best){
 
-        const knock =
-          new THREE.Vector3(
-            Math.sin(player.group.rotation.y),
-            0,
-            Math.cos(player.group.rotation.y)
-          );
+        const dx=
+          best.group.position.x-
+          player.group.position.x;
 
-        closest.group.position.addScaledVector(
-          knock,
-          .9
-        );
+        const dz=
+          best.group.position.z-
+          player.group.position.z;
+
+        const len=
+          Math.hypot(dx,dz)||1;
+
+        best.group.position.x+=
+          dx/len*1.1;
+
+        best.group.position.z+=
+          dz/len*1.1;
       }
     }
   };
 
-  createGround();
-  createRoads();
-  createHouses();
-  createTrees();
-  createRocks();
-  createCars();
-  createZombies();
+  buildGround();
+  buildRoads();
+  buildHouses();
+  buildTrees();
+  buildCars();
+  buildRocks();
+  buildZombies();
 
   return world;
 
-  function createGround(){
+  function buildGround(){
 
-    const ground =
+    const ground=
       new THREE.Mesh(
         new THREE.PlaneGeometry(
-          280,
-          280
+          300,
+          300
         ),
         new THREE.MeshStandardMaterial({
-          color:0x536c4b,
+          color:0x536d4e,
           roughness:1
         })
       );
 
-    ground.rotation.x =
-      -Math.PI / 2;
+    ground.rotation.x=
+      -Math.PI/2;
 
-    ground.receiveShadow = true;
+    ground.receiveShadow=true;
 
     scene.add(ground);
   }
 
-  function createRoads(){
+  function buildRoads(){
 
-    const roadMaterial =
+    const material=
       new THREE.MeshStandardMaterial({
-        color:0x363a3d,
-        roughness:.9
+        color:0x35393c,
+        roughness:.95
       });
 
-    const roadA =
+    const road1=
       new THREE.Mesh(
         new THREE.BoxGeometry(
-          280,
-          .06,
-          11
+          300,.06,12
         ),
-        roadMaterial
+        material
       );
 
-    roadA.position.y = .03;
+    road1.position.y=.03;
 
-    scene.add(roadA);
+    scene.add(road1);
 
-    const roadB =
+    const road2=
       new THREE.Mesh(
         new THREE.BoxGeometry(
-          11,
-          .06,
-          280
+          12,.06,300
         ),
-        roadMaterial
+        material
       );
 
-    roadB.position.y = .035;
+    road2.position.y=.035;
 
-    scene.add(roadB);
+    scene.add(road2);
 
-    const lineMaterial =
+    const lineMaterial=
       new THREE.MeshBasicMaterial({
-        color:0xd4c47a
+        color:0xd7c477
       });
 
     for(
-      let i = -130;
-      i <= 130;
-      i += 16
+      let i=-140;
+      i<=140;
+      i+=18
     ){
 
-      const line =
+      const a=
         new THREE.Mesh(
           new THREE.BoxGeometry(
-            7,
-            .065,
-            .12
+            8,.07,.12
           ),
           lineMaterial
         );
 
-      line.position.set(
-        i,
-        .065,
-        0
+      a.position.set(
+        i,.07,0
       );
 
-      scene.add(line);
+      scene.add(a);
 
-      const line2 =
+      const b=
         new THREE.Mesh(
           new THREE.BoxGeometry(
-            .12,
-            .065,
-            7
+            .12,.07,8
           ),
           lineMaterial
         );
 
-      line2.position.set(
-        0,
-        .065,
-        i
+      b.position.set(
+        0,.07,i
       );
 
-      scene.add(line2);
+      scene.add(b);
     }
   }
 
-  function createHouse(x,z,rotation=0){
+  function buildHouses(){
 
-    const group =
+    const positions=[
+      [-25,-25],
+      [25,-25],
+      [-25,25],
+      [25,25],
+      [-72,-25],
+      [72,-25],
+      [-72,35],
+      [72,35],
+      [-25,72],
+      [25,72]
+    ];
+
+    for(const p of positions){
+      createHouse(
+        p[0],
+        p[1]
+      );
+    }
+  }
+
+  function createHouse(x,z){
+
+    const group=
       new THREE.Group();
 
     group.position.set(
-      x,
-      0,
-      z
+      x,0,z
     );
 
-    group.rotation.y =
-      rotation;
+    group.userData.cameraBlocker=true;
 
-    group.userData.cameraBlocker = true;
-
-    const wallMaterial =
+    const wall=
       new THREE.MeshStandardMaterial({
-        color:0xb5aaa0,
-        roughness:.85
+        color:0xb8ada2,
+        roughness:.9
       });
 
-    const roofMaterial =
+    const darkWall=
       new THREE.MeshStandardMaterial({
-        color:0x45484a,
+        color:0x77716b,
+        roughness:.95
+      });
+
+    const roofMat=
+      new THREE.MeshStandardMaterial({
+        color:0x45494b,
         roughness:.8
       });
 
-    const windowMaterial =
-      new THREE.MeshStandardMaterial({
-        color:0x7695a2,
-        roughness:.25,
-        metalness:.1
-      });
-
-    const base =
+    const floor=
       new THREE.Mesh(
         new THREE.BoxGeometry(
-          8,
-          .35,
-          6
+          7.8,.12,5.8
         ),
-        wallMaterial
+        darkWall
       );
 
-    base.position.y = .18;
+    floor.position.y=.06;
 
-    const body =
+    group.add(floor);
+
+    const back=
       new THREE.Mesh(
         new THREE.BoxGeometry(
-          7.6,
-          3.2,
-          5.6
+          7.8,3.2,.18
         ),
-        wallMaterial
+        wall
       );
 
-    body.position.y = 1.75;
-
-    const roof =
-      new THREE.Mesh(
-        new THREE.ConeGeometry(
-          5.4,
-          2.1,
-          4
-        ),
-        roofMaterial
-      );
-
-    roof.rotation.y =
-      Math.PI / 4;
-
-    roof.position.y = 4.4;
-
-    group.add(
-      base,
-      body,
-      roof
+    back.position.set(
+      0,1.65,2.8
     );
 
-    const door =
+    group.add(back);
+
+    const left=
       new THREE.Mesh(
         new THREE.BoxGeometry(
-          1.15,
-          2.0,
-          .12
+          .18,3.2,5.6
+        ),
+        wall
+      );
+
+    left.position.set(
+      -3.8,1.65,0
+    );
+
+    group.add(left);
+
+    const right=
+      left.clone();
+
+    right.position.x=3.8;
+
+    group.add(right);
+
+    const frontLeft=
+      new THREE.Mesh(
+        new THREE.BoxGeometry(
+          2.8,3.2,.18
+        ),
+        wall
+      );
+
+    frontLeft.position.set(
+      -2.5,1.65,-2.8
+    );
+
+    group.add(frontLeft);
+
+    const frontRight=
+      frontLeft.clone();
+
+    frontRight.position.x=2.5;
+
+    group.add(frontRight);
+
+    const roof=
+      new THREE.Mesh(
+        new THREE.ConeGeometry(
+          5.1,1.8,4
+        ),
+        roofMat
+      );
+
+    roof.rotation.y=
+      Math.PI/4;
+
+    roof.position.y=4.1;
+
+    group.add(roof);
+
+    const door=
+      new THREE.Mesh(
+        new THREE.BoxGeometry(
+          1.25,2.1,.12
         ),
         new THREE.MeshStandardMaterial({
-          color:0x46372d,
+          color:0x4b392e,
           roughness:.9
         })
       );
 
     door.position.set(
-      0,
-      1.05,
-      -2.86
+      0,1.05,-2.88
     );
 
     group.add(door);
 
-    const windows = [
-      [-2.1,1.8,-2.87],
-      [2.1,1.8,-2.87],
-      [-3.87,1.8,0],
-      [3.87,1.8,0]
-    ];
+    const windowMat=
+      new THREE.MeshStandardMaterial({
+        color:0x73929f,
+        metalness:.15,
+        roughness:.3
+      });
 
-    for(const p of windows){
+    for(
+      const xPos of [-2.1,2.1]
+    ){
 
-      const windowMesh =
+      const win=
         new THREE.Mesh(
           new THREE.BoxGeometry(
-            .95,
-            .8,
-            .08
+            .9,.75,.08
           ),
-          windowMaterial
+          windowMat
         );
 
-      windowMesh.position.set(
-        p[0],
-        p[1],
-        p[2]
+      win.position.set(
+        xPos,
+        1.8,
+        -2.9
       );
 
-      if(Math.abs(p[0]) > 3){
-
-        windowMesh.rotation.y =
-          Math.PI / 2;
-      }
-
-      group.add(windowMesh);
+      group.add(win);
     }
 
-    group.traverse(object=>{
+    const table=
+      new THREE.Mesh(
+        new THREE.BoxGeometry(
+          1.5,.12,.8
+        ),
+        darkWall
+      );
 
-      if(object.isMesh){
+    table.position.set(
+      1.7,.9,.8
+    );
 
-        object.castShadow = true;
-        object.receiveShadow = true;
+    group.add(table);
+
+    const sofa=
+      new THREE.Mesh(
+        new THREE.BoxGeometry(
+          1.7,.6,.7
+        ),
+        new THREE.MeshStandardMaterial({
+          color:0x4d5960,
+          roughness:1
+        })
+      );
+
+    sofa.position.set(
+      -1.7,.35,.9
+    );
+
+    group.add(sofa);
+
+    group.traverse(o=>{
+
+      if(o.isMesh){
+
+        o.castShadow=true;
+        o.receiveShadow=true;
       }
     });
 
     scene.add(group);
 
-    addBoxCollider(
+    const house={
       x,
       z,
-      4.1,
-      3.1
-    );
-  }
+      group
+    };
 
-  function createHouses(){
-
-    createHouse(-25,-25);
-    createHouse(25,-25);
-    createHouse(-25,25);
-    createHouse(25,25);
-
-    createHouse(-72,-25);
-    createHouse(72,-25);
-
-    createHouse(-72,30);
-    createHouse(72,30);
-
-    createHouse(-25,72);
-    createHouse(25,72);
-
-    createHouse(-25,-72);
-    createHouse(25,-72);
-  }
-
-  function createTree(x,z,scale=1){
-
-    const group =
-      new THREE.Group();
-
-    group.position.set(
-      x,
-      0,
-      z
-    );
-
-    group.scale.setScalar(scale);
-
-    group.userData.cameraBlocker = true;
-
-    const trunk =
-      new THREE.Mesh(
-        new THREE.CylinderGeometry(
-          .22,
-          .3,
-          2.1,
-          8
-        ),
-        new THREE.MeshStandardMaterial({
-          color:0x5a3d27,
-          roughness:1
-        })
-      );
-
-    trunk.position.y = 1.05;
-
-    const crown =
-      new THREE.Mesh(
-        new THREE.SphereGeometry(
-          1.25,
-          10,
-          8
-        ),
-        new THREE.MeshStandardMaterial({
-          color:0x355a36,
-          roughness:1
-        })
-      );
-
-    crown.position.y = 2.45;
-
-    group.add(
-      trunk,
-      crown
-    );
-
-    group.traverse(object=>{
-
-      if(object.isMesh){
-
-        object.castShadow = true;
-        object.receiveShadow = true;
-      }
-    });
-
-    scene.add(group);
+    houses.push(house);
 
     colliders.push({
-      minX:x-.65*scale,
-      maxX:x+.65*scale,
-      minZ:z-.65*scale,
-      maxZ:z+.65*scale
+      minX:x-3.95,
+      maxX:x+3.95,
+      minZ:z-2.95,
+      maxZ:z+2.95,
+      house
     });
   }
 
-  function createTrees(){
+  function findNearbyDoor(player){
 
-    const positions = [
-      [-12,-18,1],
-      [12,-18,.9],
-      [-12,18,1],
-      [12,18,1],
-      [-55,-12,1.2],
-      [55,-12,1],
-      [-55,15,1],
-      [55,15,1.1],
-      [-88,-65,1.3],
-      [88,-65,1.2],
-      [-88,65,1.1],
-      [88,65,1.3],
-      [-15,-95,1],
-      [15,-95,1],
-      [-15,95,1],
-      [15,95,1]
+    let result=null;
+    let best=2.2;
+
+    for(const house of houses){
+
+      const dx=
+        player.group.position.x-
+        house.x;
+
+      const dz=
+        player.group.position.z-
+        (house.z-3.25);
+
+      const distance=
+        Math.hypot(dx,dz);
+
+      if(distance<best){
+
+        best=distance;
+        result=house;
+      }
+    }
+
+    return result;
+  }
+
+  function enterHouse(player,house){
+
+    insideHouse=house;
+
+    player.group.position.set(
+      house.x,
+      0,
+      house.z-1.4
+    );
+  }
+
+  function exitHouse(player){
+
+    const house=insideHouse;
+
+    if(!house){
+      return;
+    }
+
+    player.group.position.set(
+      house.x,
+      0,
+      house.z-4.2
+    );
+
+    insideHouse=null;
+  }
+
+  function buildCars(){
+
+    const positions=[
+      [-8,-6,0],
+      [8,6,Math.PI],
+      [-6,8,Math.PI/2],
+      [6,-8,-Math.PI/2],
+      [-48,0,0],
+      [48,0,Math.PI]
     ];
 
     for(const p of positions){
 
-      createTree(
+      const car=
+        createCar(
+          p[0],
+          p[1],
+          p[2]
+        );
+
+      cars.push(car);
+
+      colliders.push({
+        minX:p[0]-1.4,
+        maxX:p[0]+1.4,
+        minZ:p[1]-2.2,
+        maxZ:p[1]+2.2,
+        car
+      });
+    }
+  }
+
+  function createCar(x,z,rotation){
+
+    const group=
+      new THREE.Group();
+
+    group.position.set(
+      x,0,z
+    );
+
+    group.rotation.y=
+      rotation;
+
+    group.userData.cameraBlocker=true;
+
+    const body=
+      new THREE.Mesh(
+        new THREE.BoxGeometry(
+          2.25,.55,4
+        ),
+        new THREE.MeshStandardMaterial({
+          color:0x52606a,
+          metalness:.55,
+          roughness:.45
+        })
+      );
+
+    body.position.y=.55;
+
+    const cabin=
+      new THREE.Mesh(
+        new THREE.BoxGeometry(
+          1.7,.65,1.8
+        ),
+        new THREE.MeshStandardMaterial({
+          color:0x20282d,
+          metalness:.2,
+          roughness:.3
+        })
+      );
+
+    cabin.position.set(
+      0,1.02,.15
+    );
+
+    group.add(
+      body,
+      cabin
+    );
+
+    const wheelMat=
+      new THREE.MeshStandardMaterial({
+        color:0x151515,
+        roughness:1
+      });
+
+    for(
+      const p of [
+        [-1.15,.37,-1.35],
+        [1.15,.37,-1.35],
+        [-1.15,.37,1.35],
+        [1.15,.37,1.35]
+      ]
+    ){
+
+      const wheel=
+        new THREE.Mesh(
+          new THREE.CylinderGeometry(
+            .37,.37,.24,12
+          ),
+          wheelMat
+        );
+
+      wheel.rotation.z=
+        Math.PI/2;
+
+      wheel.position.set(
         p[0],
         p[1],
         p[2]
       );
+
+      group.add(wheel);
     }
+
+    group.traverse(o=>{
+
+      if(o.isMesh){
+        o.castShadow=true;
+        o.receiveShadow=true;
+      }
+    });
+
+    scene.add(group);
+
+    group.userData.speed=0;
+
+    return group;
   }
 
-  function createRocks(){
+  function findNearbyCar(player){
 
-    const rockMaterial =
-      new THREE.MeshStandardMaterial({
-        color:0x777875,
-        roughness:1
-      });
+    let result=null;
+    let best=2.8;
 
-    const positions = [
-      [-42,-38],
-      [42,-38],
-      [-42,38],
-      [42,38],
-      [-95,-10],
-      [95,10],
-      [-95,50],
-      [95,-50]
+    for(const car of cars){
+
+      const dx=
+        player.group.position.x-
+        car.position.x;
+
+      const dz=
+        player.group.position.z-
+        car.position.z;
+
+      const distance=
+        Math.hypot(dx,dz);
+
+      if(distance<best){
+
+        best=distance;
+        result=car;
+      }
+    }
+
+    return result;
+  }
+
+  function enterCar(player,car){
+
+    activeCar=car;
+
+    player.driving=true;
+
+    player.group.visible=false;
+
+    player.group.position.copy(
+      car.position
+    );
+
+    player.group.position.y=1;
+
+    car.userData.speed=0;
+  }
+
+  function exitCar(player){
+
+    if(!activeCar){
+      return;
+    }
+
+    const car=activeCar;
+
+    const forward=
+      new THREE.Vector3(
+        -Math.sin(car.rotation.y),
+        0,
+        -Math.cos(car.rotation.y)
+      );
+
+    player.group.position.copy(
+      car.position
+    );
+
+    player.group.position.addScaledVector(
+      forward,
+      -2.8
+    );
+
+    player.group.position.y=0;
+
+    player.group.visible=true;
+
+    player.driving=false;
+
+    car.userData.speed=0;
+
+    activeCar=null;
+  }
+
+  function updateCar(dt,player){
+
+    if(!activeCar){
+      return;
+    }
+
+    const input=
+      player.input.state;
+
+    const car=activeCar;
+
+    const forwardInput=
+      -input.moveY;
+
+    if(
+      Math.abs(forwardInput)>.05
+    ){
+
+      car.userData.speed+=
+        forwardInput*
+        13*
+        dt;
+
+    }else{
+
+      car.userData.speed*=
+        Math.pow(.25,dt);
+    }
+
+    car.userData.speed=
+      THREE.MathUtils.clamp(
+        car.userData.speed,
+        -5,
+        11
+      );
+
+    const steer=
+      input.moveX;
+
+    const steeringStrength=
+      1.8*
+      Math.min(
+        1,
+        Math.abs(
+          car.userData.speed
+        )/3
+      );
+
+    car.rotation.y-=
+      steer*
+      steeringStrength*
+      dt*
+      Math.sign(
+        car.userData.speed||1
+      );
+
+    const forward=
+      new THREE.Vector3(
+        -Math.sin(car.rotation.y),
+        0,
+        -Math.cos(car.rotation.y)
+      );
+
+    const nextX=
+      car.position.x+
+      forward.x*
+      car.userData.speed*
+      dt;
+
+    const nextZ=
+      car.position.z+
+      forward.z*
+      car.userData.speed*
+      dt;
+
+    if(
+      !world.isBlocked(
+        nextX,
+        nextZ,
+        1.2
+      )
+    ){
+
+      car.position.x=nextX;
+      car.position.z=nextZ;
+
+    }else{
+
+      car.userData.speed*=.15;
+    }
+
+    player.group.position.copy(
+      car.position
+    );
+
+    player.group.position.y=1;
+  }
+
+  function buildTrees(){
+
+    const positions=[
+      [-12,-18],
+      [12,-18],
+      [-12,18],
+      [12,18],
+      [-55,-12],
+      [55,-12],
+      [-55,16],
+      [55,16],
+      [-90,-60],
+      [90,-60],
+      [-90,60],
+      [90,60]
     ];
 
     for(const [x,z] of positions){
 
-      const rock =
+      const tree=
+        new THREE.Group();
+
+      tree.position.set(
+        x,0,z
+      );
+
+      tree.userData.cameraBlocker=true;
+
+      const trunk=
+        new THREE.Mesh(
+          new THREE.CylinderGeometry(
+            .22,.3,2.1,8
+          ),
+          new THREE.MeshStandardMaterial({
+            color:0x5a3d27
+          })
+        );
+
+      trunk.position.y=1.05;
+
+      const crown=
+        new THREE.Mesh(
+          new THREE.SphereGeometry(
+            1.25,10,8
+          ),
+          new THREE.MeshStandardMaterial({
+            color:0x355b38
+          })
+        );
+
+      crown.position.y=2.4;
+
+      tree.add(
+        trunk,
+        crown
+      );
+
+      scene.add(tree);
+
+      colliders.push({
+        minX:x-.7,
+        maxX:x+.7,
+        minZ:z-.7,
+        maxZ:z+.7
+      });
+    }
+  }
+
+  function buildRocks(){
+
+    for(
+      const [x,z] of [
+        [-42,-38],
+        [42,-38],
+        [-42,38],
+        [42,38],
+        [-92,0],
+        [92,0]
+      ]
+    ){
+
+      const rock=
         new THREE.Mesh(
           new THREE.DodecahedronGeometry(
-            .8,
-            0
+            .8,0
           ),
-          rockMaterial
+          new THREE.MeshStandardMaterial({
+            color:0x777875
+          })
         );
 
       rock.position.set(
-        x,
-        .55,
-        z
+        x,.5,z
       );
 
-      rock.scale.y = .65;
+      rock.scale.y=.65;
 
-      rock.castShadow = true;
-
-      rock.userData.cameraBlocker = true;
+      rock.userData.cameraBlocker=true;
 
       scene.add(rock);
 
@@ -634,322 +1036,160 @@ export function createWorld(scene){
     }
   }
 
-  function createCars(){
+  function buildZombies(){
 
-    const carPositions = [
-      [-8,-5,0],
-      [8,5,Math.PI],
-      [-5,8,Math.PI/2],
-      [5,-8,-Math.PI/2],
-      [-48,0,0],
-      [48,0,Math.PI]
-    ];
+    for(
+      const [x,z] of [
+        [-18,-48],
+        [18,-48],
+        [-48,18],
+        [48,18],
+        [-78,-45],
+        [78,-45],
+        [-78,55],
+        [78,55]
+      ]
+    ){
 
-    for(const p of carPositions){
-
-      const car =
-        createCar(
-          p[0],
-          p[1],
-          p[2]
-        );
-
-      cars.push(car);
-
-      colliders.push({
-        minX:p[0]-1.35,
-        maxX:p[0]+1.35,
-        minZ:p[1]-2.2,
-        maxZ:p[1]+2.2
-      });
-    }
-  }
-
-  function createCar(x,z,rotation){
-
-    const group =
-      new THREE.Group();
-
-    group.position.set(
-      x,
-      0,
-      z
-    );
-
-    group.rotation.y =
-      rotation;
-
-    group.userData.cameraBlocker = true;
-
-    const body =
-      new THREE.Mesh(
-        new THREE.BoxGeometry(
-          2.3,
-          .55,
-          4
-        ),
-        new THREE.MeshStandardMaterial({
-          color:0x4d5960,
-          metalness:.55,
-          roughness:.45
-        })
-      );
-
-    body.position.y = .55;
-
-    const cabin =
-      new THREE.Mesh(
-        new THREE.BoxGeometry(
-          1.75,
-          .65,
-          1.8
-        ),
-        new THREE.MeshStandardMaterial({
-          color:0x252c31,
-          metalness:.2,
-          roughness:.35
-        })
-      );
-
-    cabin.position.set(
-      0,
-      1.05,
-      .1
-    );
-
-    group.add(
-      body,
-      cabin
-    );
-
-    const wheelMaterial =
-      new THREE.MeshStandardMaterial({
-        color:0x151515,
-        roughness:1
-      });
-
-    const wheelPositions = [
-      [-1.15,.38,-1.35],
-      [1.15,.38,-1.35],
-      [-1.15,.38,1.35],
-      [1.15,.38,1.35]
-    ];
-
-    for(const p of wheelPositions){
-
-      const wheel =
-        new THREE.Mesh(
-          new THREE.CylinderGeometry(
-            .38,
-            .38,
-            .25,
-            12
-          ),
-          wheelMaterial
-        );
-
-      wheel.rotation.z =
-        Math.PI / 2;
-
-      wheel.position.set(
-        p[0],
-        p[1],
-        p[2]
-      );
-
-      group.add(wheel);
-    }
-
-    group.traverse(object=>{
-
-      if(object.isMesh){
-
-        object.castShadow = true;
-        object.receiveShadow = true;
-      }
-    });
-
-    scene.add(group);
-
-    return group;
-  }
-
-  function createZombies(){
-
-    const positions = [
-      [-18,-48],
-      [18,-48],
-      [-48,18],
-      [48,18],
-      [-78,-45],
-      [78,-45],
-      [-78,55],
-      [78,55]
-    ];
-
-    for(const [x,z] of positions){
-
-      zombies.push(
-        createZombie(x,z)
-      );
+      createZombie(x,z);
     }
   }
 
   function createZombie(x,z){
 
-    const group =
+    const group=
       new THREE.Group();
 
     group.position.set(
-      x,
-      0,
-      z
+      x,0,z
     );
 
-    group.userData.cameraBlocker = false;
-
-    const bodyMaterial =
+    const bodyMat=
       new THREE.MeshStandardMaterial({
-        color:0x59665b,
-        roughness:1
+        color:0x59665b
       });
 
-    const skinMaterial =
+    const skinMat=
       new THREE.MeshStandardMaterial({
-        color:0x879082,
-        roughness:1
+        color:0x879082
       });
 
-    const body =
+    const body=
       new THREE.Mesh(
         new THREE.BoxGeometry(
-          .48,
-          .65,
-          .3
+          .48,.65,.3
         ),
-        bodyMaterial
+        bodyMat
       );
 
-    body.position.y = .76;
+    body.position.y=.76;
 
-    const head =
+    const head=
       new THREE.Mesh(
         new THREE.SphereGeometry(
-          .22,
-          12,
-          10
+          .22,12,10
         ),
-        skinMaterial
+        skinMat
       );
 
-    head.position.y = 1.32;
-
-    const leftArm =
-      new THREE.Mesh(
-        new THREE.BoxGeometry(
-          .14,
-          .62,
-          .14
-        ),
-        bodyMaterial
-      );
-
-    leftArm.position.set(
-      -.36,
-      .76,
-      0
-    );
-
-    leftArm.rotation.z = -.08;
-
-    const rightArm =
-      new THREE.Mesh(
-        new THREE.BoxGeometry(
-          .14,
-          .62,
-          .14
-        ),
-        bodyMaterial
-      );
-
-    rightArm.position.set(
-      .36,
-      .76,
-      0
-    );
-
-    rightArm.rotation.z = .08;
-
-    const leftLeg =
-      new THREE.Mesh(
-        new THREE.BoxGeometry(
-          .16,
-          .48,
-          .18
-        ),
-        bodyMaterial
-      );
-
-    leftLeg.position.set(
-      -.14,
-      .28,
-      0
-    );
-
-    const rightLeg =
-      new THREE.Mesh(
-        new THREE.BoxGeometry(
-          .16,
-          .48,
-          .18
-        ),
-        bodyMaterial
-      );
-
-    rightLeg.position.set(
-      .14,
-      .28,
-      0
-    );
+    head.position.y=1.32;
 
     group.add(
       body,
-      head,
-      leftArm,
-      rightArm,
-      leftLeg,
-      rightLeg
+      head
     );
 
-    group.traverse(object=>{
+    group.traverse(o=>{
 
-      if(object.isMesh){
-
-        object.castShadow = true;
-        object.receiveShadow = true;
+      if(o.isMesh){
+        o.castShadow=true;
       }
     });
 
     scene.add(group);
 
-    return {
+    zombies.push({
       group,
       attackTimer:0
-    };
+    });
   }
 
-  function addBoxCollider(
-    x,
-    z,
-    halfX,
-    halfZ
-  ){
+  function updateZombies(dt,player){
 
-    colliders.push({
-      minX:x-halfX,
-      maxX:x+halfX,
-      minZ:z-halfZ,
-      maxZ:z+halfZ
-    });
+    if(
+      player.driving ||
+      insideHouse
+    ){
+      return;
+    }
+
+    for(const zombie of zombies){
+
+      zombie.attackTimer-=dt;
+
+      const dx=
+        player.group.position.x-
+        zombie.group.position.x;
+
+      const dz=
+        player.group.position.z-
+        zombie.group.position.z;
+
+      const distance=
+        Math.hypot(dx,dz);
+
+      if(
+        distance<28 &&
+        distance>1.5
+      ){
+
+        const nx=dx/distance;
+        const nz=dz/distance;
+
+        const speed=.75;
+
+        const nextX=
+          zombie.group.position.x+
+          nx*speed*dt;
+
+        const nextZ=
+          zombie.group.position.z+
+          nz*speed*dt;
+
+        if(
+          !world.isBlocked(
+            nextX,
+            zombie.group.position.z,
+            .3
+          )
+        ){
+          zombie.group.position.x=
+            nextX;
+        }
+
+        if(
+          !world.isBlocked(
+            zombie.group.position.x,
+            nextZ,
+            .3
+          )
+        ){
+          zombie.group.position.z=
+            nextZ;
+        }
+
+        zombie.group.rotation.y=
+          Math.atan2(nx,nz);
+
+      }else if(
+        distance<=1.5 &&
+        zombie.attackTimer<=0
+      ){
+
+        player.damage(4);
+
+        zombie.attackTimer=1.3;
+      }
+    }
   }
 }
