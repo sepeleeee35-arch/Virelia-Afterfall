@@ -4,7 +4,7 @@ import { player } from "./player.js";
 import { world, createWorld, getZoneState, getNearbyInteraction } from "./world.js";
 import { bots, createBots, updateBots } from "./bots.js";
 
-const VERSION="1.2.0";
+const VERSION="1.3.0";
 
 const canvas=document.getElementById("game");
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:"high-performance"});
@@ -49,8 +49,8 @@ function updatePlayer3D(dt){
   const len=Math.hypot(x,y);
   if(len>1){x/=len;y/=len;}
 
-  const forward=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw));
-  const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
+  const forward=new THREE.Vector3(Math.sin(yaw),0,-Math.cos(yaw));
+  const right=new THREE.Vector3(Math.cos(yaw),0,Math.sin(yaw));
   const move=new THREE.Vector3();
   move.addScaledVector(right,x);
   move.addScaledVector(forward,-y);
@@ -154,6 +154,7 @@ function updateHud(dt){
 
 function update(dt){
   yaw=input.cameraYaw;
+  pitch=input.cameraPitch;
   updatePlayer3D(dt);
   updateBots(dt);
   playerGroup.position.set(player.x,0,player.y);
@@ -193,6 +194,8 @@ function loop(t){
 
 export function startGame(){
   if(running)return;
+  input.cameraYaw=0.35;
+  input.cameraPitch=0.18;
   running=true;
   resize();
   createWorld(scene);
