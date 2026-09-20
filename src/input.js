@@ -4,7 +4,9 @@ export const input = {
   run: false,
   crouch: false,
   cameraYaw: 0.35,
-  cameraPitch: 0.14
+  cameraPitch: 0.14,
+  fire: false,
+  aim: false
 };
 
 export function setupInput() {
