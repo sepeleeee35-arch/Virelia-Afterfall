@@ -14,7 +14,7 @@ import {
   drawBots
 } from "./bots.js";
 
-const VERSION = "0.8.0";
+const VERSION = "0.9.0";
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
@@ -94,14 +94,28 @@ function updateHud(dt){
       feedTimer = 2;
     }
   }
+
+  const compass = document.getElementById("compass");
+  if(compass){
+    const deg = ((input.cameraYaw * 180 / Math.PI) % 360 + 360) % 360;
+    const names = ["E","SE","S","SW","W","NW","N","NE"];
+    const index = Math.round(deg / 45) % 8;
+    compass.textContent = `CAM ${names[index]}  •  SWIPE RIGHT TO LOOK`;
+  }
 }
 
 function update(dt){
   updatePlayer(dt);
   updateBots(dt);
 
-  camera.x += (player.x-camera.x)*0.16;
-  camera.y += (player.y-camera.y)*0.16;
+  const forwardX = Math.cos(input.cameraYaw);
+  const forwardY = Math.sin(input.cameraYaw);
+
+  const targetX = player.x + forwardX * 250;
+  const targetY = player.y + forwardY * 250;
+
+  camera.x += (targetX-camera.x)*0.13;
+  camera.y += (targetY-camera.y)*0.13;
 
   camera.x = Math.max(width/2,Math.min(world.width-width/2,camera.x));
   camera.y = Math.max(height/2,Math.min(world.height-height/2,camera.y));
@@ -162,61 +176,96 @@ function drawMinimap(){
   miniCtx.beginPath();
   miniCtx.arc(player.x*sx,player.y*sy,3,0,Math.PI*2);
   miniCtx.fill();
+
+  const dirX = Math.cos(input.cameraYaw);
+  const dirY = Math.sin(input.cameraYaw);
+  miniCtx.strokeStyle="#fff";
+  miniCtx.lineWidth=2;
+  miniCtx.beginPath();
+  miniCtx.moveTo(player.x*sx,player.y*sy);
+  miniCtx.lineTo((player.x+dirX*180)*sx,(player.y+dirY*180)*sy);
+  miniCtx.stroke();
 }
 
 function render(){
   ctx.clearRect(0,0,width,height);
 
-  ctx.fillStyle="#6f875e";
-  ctx.fillRect(0,0,width,height);
+  ctx.fillStyle="#86a7b0";
+  ctx.fillRect(0,0,width,height*0.34);
 
   ctx.save();
-  ctx.translate(width/2-camera.x,height/2-camera.y);
+
+  const zoom = player.crouch ? 1.18 : input.run ? 1.10 : 1.24;
+
+  ctx.translate(width/2,height*0.64);
+  ctx.rotate(-input.cameraYaw - Math.PI/2);
+  ctx.scale(zoom,zoom*0.62);
+  ctx.translate(-camera.x,-camera.y);
 
   drawWorld(ctx);
   drawBots(ctx);
-  drawPlayer(ctx);
 
   ctx.restore();
 
+  drawThirdPersonPlayer();
   drawMinimap();
 }
 
-function drawPlayer(ctx){
-  const x=player.x,y=player.y;
+function drawThirdPersonPlayer(){
+  const x=width/2;
+  const y=height*0.73;
+  const scale=player.crouch ? 0.82 : 1;
 
-  ctx.fillStyle="rgba(0,0,0,.28)";
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.scale(scale,scale);
+
+  ctx.fillStyle="rgba(0,0,0,.34)";
   ctx.beginPath();
-  ctx.ellipse(x,y+25,22,8,0,0,Math.PI*2);
+  ctx.ellipse(0,31,30,9,0,0,Math.PI*2);
   ctx.fill();
 
-  ctx.fillStyle="#293b43";
-  ctx.fillRect(x-14,y-39,28,42);
+  ctx.fillStyle="#172329";
+  ctx.fillRect(-15,-4,30,37);
 
-  ctx.fillStyle="#50656b";
-  ctx.fillRect(x-19,y-31,38,10);
+  ctx.fillStyle="#405963";
+  ctx.fillRect(-22,0,44,12);
 
-  ctx.fillStyle="#c18d72";
+  ctx.fillStyle="#c58f73";
   ctx.beginPath();
-  ctx.arc(x,y-52,11,0,Math.PI*2);
+  ctx.arc(0,-21,13,0,Math.PI*2);
   ctx.fill();
 
-  ctx.fillStyle="#242729";
+  ctx.fillStyle="#20272a";
   ctx.beginPath();
-  ctx.arc(x,y-57,12,Math.PI,Math.PI*2);
+  ctx.arc(0,-26,14,Math.PI,Math.PI*2);
   ctx.fill();
 
-  ctx.strokeStyle="#20282c";
-  ctx.lineWidth=8;
+  ctx.fillStyle="#26363c";
+  ctx.fillRect(-24,5,8,28);
+  ctx.fillRect(16,5,8,28);
+
+  ctx.fillStyle="#101719";
+  ctx.fillRect(-13,31,10,10);
+  ctx.fillRect(3,31,10,10);
+
+  ctx.fillStyle="#6f858b";
+  ctx.fillRect(-26,8,8,20);
+  ctx.fillRect(18,8,8,20);
+
+  ctx.fillStyle="#e2d56b";
+  ctx.fillRect(-5,4,10,5);
+
+  ctx.strokeStyle="rgba(255,255,255,.75)";
+  ctx.lineWidth=2;
   ctx.beginPath();
-  ctx.moveTo(x-7,y+3);
-  ctx.lineTo(x-10,y+27);
-  ctx.moveTo(x+7,y+3);
-  ctx.lineTo(x+10,y+27);
+  ctx.moveTo(-7,-4);
+  ctx.lineTo(-11,5);
+  ctx.moveTo(7,-4);
+  ctx.lineTo(11,5);
   ctx.stroke();
 
-  ctx.fillStyle="#e8d76a";
-  ctx.fillRect(x-4,y-2,8,5);
+  ctx.restore();
 }
 
 function setupUi(){
@@ -279,8 +328,8 @@ export function startGame(){
   setupInput();
   setupUi();
 
-  camera.x=player.x;
-  camera.y=player.y;
+  camera.x=player.x + Math.cos(input.cameraYaw)*250;
+  camera.y=player.y + Math.sin(input.cameraYaw)*250;
   lastTime=performance.now();
 
   requestAnimationFrame(loop);
