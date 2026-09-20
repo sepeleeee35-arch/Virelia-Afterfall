@@ -187,15 +187,6 @@ export function startGame(){
       player
     );
 
-    if(
-      input.consumeAction()
-    ){
-
-      world.playerAction(
-        player
-      );
-    }
-
     cameraSystem.update(
       dt,
       input
