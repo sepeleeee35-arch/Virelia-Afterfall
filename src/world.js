@@ -1,337 +1,240 @@
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+
 export const world = {
   width: 6000,
   height: 4500,
-  roads: [],
+  safeZone: { x: 3000, y: 2250, radius: 1850 },
+  spawn: { x: 3000, y: 2250 },
+  scene: null,
+  loot: [],
+  vehicles: [],
   buildings: [],
   trees: [],
-  hills: [],
-  vehicles: [],
-  loot: [],
-  safeZone: { x: 3000, y: 2250, radius: 1850 },
-  spawn: { x: 3000, y: 2250 }
+  bots: []
 };
 
-function addBuilding(x,y,w,h,type,label=""){
-  world.buildings.push({x,y,w,h,type,label});
+const mats = {};
+
+function material(color, roughness=1){
+  return new THREE.MeshStandardMaterial({color,roughness});
 }
 
-export function createWorld(){
-  world.roads=[];
+function box(scene,x,y,z,w,h,d,mat){
+  const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
+  mesh.position.set(x,y,z);
+  mesh.castShadow=true;
+  mesh.receiveShadow=true;
+  scene.add(mesh);
+  return mesh;
+}
+
+export function createWorld(scene){
+  world.scene=scene;
+  world.loot=[];
+  world.vehicles=[];
   world.buildings=[];
   world.trees=[];
-  world.hills=[];
-  world.vehicles=[];
-  world.loot=[];
 
-  world.safeZone={x:3000,y:2250,radius:1850};
-  world.spawn={x:3000,y:2250};
+  mats.ground=material(0x6f865f);
+  mats.road=material(0x444b4a);
+  mats.roadLine=material(0xd8cb69);
+  mats.water=material(0x3e7787);
+  mats.sand=material(0xc6b276);
+  mats.house=material(0x918978);
+  mats.roof=material(0x55514a);
+  mats.glass=material(0x526d75);
+  mats.tree=material(0x3e6544);
+  mats.trunk=material(0x614b38);
+  mats.car=material(0x27363a);
+  mats.carGlass=material(0x70878b);
+  mats.loot=material(0xe5cf63);
+  mats.hill=material(0x5d7650);
 
-  world.roads.push(
-    {x:0,y:2050,w:6000,h:180,type:"main"},
-    {x:2910,y:0,w:180,h:4500,type:"main"},
-    {x:350,y:650,w:2300,h:120,type:"local"},
-    {x:3650,y:650,w:1900,h:120,type:"local"},
-    {x:450,y:3550,w:2000,h:120,type:"local"},
-    {x:3500,y:3550,w:2050,h:120,type:"local"}
+  const ground=new THREE.Mesh(
+    new THREE.PlaneGeometry(world.width,world.height),
+    mats.ground
   );
+  ground.rotation.x=-Math.PI/2;
+  ground.receiveShadow=true;
+  scene.add(ground);
 
-  world.hills.push(
-    {x:180,y:120,w:1250,h:720,level:1},
-    {x:1450,y:180,w:1100,h:760,level:2},
-    {x:330,y:2720,w:1450,h:700,level:1},
-    {x:3300,y:2680,w:1350,h:780,level:2},
-    {x:4550,y:250,w:850,h:1050,level:1}
-  );
+  const coast=box(scene,5350,0,2250,1300,0.5,4500,mats.water);
+  coast.receiveShadow=false;
+  box(scene,4700,0.04,2250,180,0.08,4500,mats.sand);
 
-  addBuilding(2320,1180,760,560,"landmark","CENTRAL FORT");
-  addBuilding(2600,1850,380,260,"market","MARKET");
-  addBuilding(3350,1350,520,300,"warehouse","WAREHOUSE");
-  addBuilding(4050,900,460,300,"warehouse","DEPOT");
-  addBuilding(950,2500,520,340,"compound","WEST COMPOUND");
-  addBuilding(3500,2550,560,350,"compound","EAST COMPOUND");
-  addBuilding(1500,3550,650,300,"compound","SOUTH ESTATE");
+  addRoad(scene,0,2050,6000,180);
+  addRoad(scene,2910,0,180,4500);
+  addRoad(scene,350,650,2300,120);
+  addRoad(scene,3650,650,1900,120);
+  addRoad(scene,450,3550,2000,120);
+  addRoad(scene,3500,3550,2050,120);
+  addRoad(scene,4300,2020,600,240);
+
+  addBuilding(scene,2320,1180,760,560,"CENTRAL FORT",true);
+  addBuilding(scene,2600,1850,380,260,"MARKET");
+  addBuilding(scene,3350,1350,520,300,"WAREHOUSE");
+  addBuilding(scene,4050,900,460,300,"DEPOT");
+  addBuilding(scene,950,2500,520,340,"WEST COMPOUND");
+  addBuilding(scene,3500,2550,560,350,"EAST COMPOUND");
+  addBuilding(scene,1500,3550,650,300,"SOUTH ESTATE");
 
   for(let row=0;row<4;row++){
     for(let col=0;col<3;col++){
-      addBuilding(
-        380+col*300,
-        850+row*250+(col%2)*25,
-        205,
-        145,
-        "house",
-        "HOMESTEAD"
-      );
+      addBuilding(scene,380+col*300,850+row*250+(col%2)*25,205,145,"HOMESTEAD");
+      addBuilding(scene,3900+col*300,700+row*260+(col%2)*30,215,150,"COASTAL HOME");
     }
   }
 
-  for(let row=0;row<4;row++){
-    for(let col=0;col<3;col++){
-      addBuilding(
-        3900+col*300,
-        700+row*260+(col%2)*30,
-        215,
-        150,
-        "house",
-        "COASTAL HOMESTEAD"
-      );
-    }
+  for(let i=0;i<8;i++) addBuilding(scene,650+i*300,3200,230,160,"SOUTH BLOCK");
+  for(let i=0;i<7;i++) addBuilding(scene,3300+i*290,3250,220,155,"EAST BLOCK");
+
+  const hillData=[
+    [180,120,1250,720],[1450,180,1100,760],[330,2720,1450,700],
+    [3300,2680,1350,780],[4550,250,850,1050]
+  ];
+  for(const [x,z,w,d] of hillData){
+    const h=new THREE.Mesh(
+      new THREE.CylinderGeometry(Math.min(w,d)*0.22,Math.min(w,d)*0.52,110,32),
+      mats.hill
+    );
+    h.scale.set(w/Math.min(w,d),1,d/Math.min(w,d));
+    h.position.set(x+w/2,55,z+d/2);
+    h.castShadow=true;
+    h.receiveShadow=true;
+    scene.add(h);
   }
 
-  for(let i=0;i<8;i++){
-    addBuilding(650+i*300,3200,230,160,"compound","SOUTH BLOCK");
+  for(let i=0;i<150;i++){
+    const x=120+Math.random()*4250;
+    const z=100+Math.random()*4200;
+    if(isNearRoad(x,z,90) || isNearBuilding(x,z,100)) continue;
+    addTree(scene,x,z,0.8+Math.random()*0.8);
   }
 
-  for(let i=0;i<7;i++){
-    addBuilding(3300+i*290,3250,220,155,"compound","EAST BLOCK");
+  for(let i=0;i<24;i++){
+    const x=300+Math.random()*4050;
+    const z=300+Math.random()*3800;
+    if(isNearBuilding(x,z,80)) continue;
+    addVehicle(scene,x,z,Math.random()*Math.PI*2);
   }
 
-  for(let i=0;i<220;i++){
-    const x=80+Math.random()*4300;
-    const y=80+Math.random()*4200;
-    if(x>4400) continue;
-    world.trees.push({x,y,r:13+Math.random()*14});
-  }
-
-  for(let i=0;i<28;i++){
-    world.vehicles.push({
-      x:250+Math.random()*4050,
-      y:280+Math.random()*3800,
-      angle:Math.random()*Math.PI*2,
-      used:false
-    });
-  }
-
-  const lootTypes=["HELMET","VEST","BACKPACK","SHOES","MEDKIT","FOOD"];
+  const types=["HELMET","VEST","BACKPACK","SHOES","MEDKIT","FOOD"];
   for(let i=0;i<90;i++){
-    const type=lootTypes[i%lootTypes.length];
-    world.loot.push({
-      x:300+Math.random()*4050,
-      y:250+Math.random()*3900,
-      type,
-      taken:false
-    });
+    const x=350+Math.random()*4050;
+    const z=250+Math.random()*3900;
+    const type=types[i%types.length];
+    const mesh=new THREE.Mesh(
+      new THREE.BoxGeometry(14,8,14),
+      mats.loot
+    );
+    mesh.position.set(x,8,z);
+    mesh.castShadow=true;
+    scene.add(mesh);
+    world.loot.push({x,y:z,z,type,taken:false,mesh});
+  }
+
+  const ring=new THREE.Mesh(
+    new THREE.RingGeometry(world.safeZone.radius-8,world.safeZone.radius,96),
+    new THREE.MeshBasicMaterial({color:0xffffff,side:THREE.DoubleSide,transparent:true,opacity:.75})
+  );
+  ring.rotation.x=-Math.PI/2;
+  ring.position.set(world.safeZone.x,1,world.safeZone.y);
+  scene.add(ring);
+
+  const centerMarker=box(scene,3000,4,2250,160,8,160,mats.roof);
+  centerMarker.material=material(0x65615a);
+}
+
+function addRoad(scene,x,z,w,d){
+  box(scene,x+w/2,1,z+d/2,w,2,d,mats.road);
+  const horizontal=w>d;
+  const count=Math.floor((horizontal?w:d)/85);
+  for(let i=0;i<count;i++){
+    const line=box(
+      scene,
+      horizontal ? x+i*85+20 : x+w/2,
+      2.2,
+      horizontal ? z+d/2 : z+i*85+20,
+      horizontal ? 38 : 4,
+      .4,
+      horizontal ? 4 : 38,
+      mats.roadLine
+    );
+    line.receiveShadow=false;
   }
 }
 
-export function getZoneState(x,y){
-  const d=Math.hypot(x-world.safeZone.x,y-world.safeZone.y);
+function addBuilding(scene,x,z,w,d,label,landmark=false){
+  const base=box(scene,x+w/2,45,z+d/2,w,90,d,landmark?material(0x666863):mats.house);
+  const roof=box(scene,x+w/2,92,z+d/2,w+12,8,d+12,mats.roof);
+  const cols=Math.max(1,Math.floor(w/75));
+  for(let i=0;i<cols;i++){
+    box(scene,x+25+i*70,55,z-1,22,18,3,mats.glass);
+    box(scene,x+25+i*70,55,z+d+1,22,18,3,mats.glass);
+  }
+  box(scene,x+w/2,30,z+d+2,28,55,4,mats.roof);
+  world.buildings.push({x,z,w,d,label,base,roof});
+}
+
+function addTree(scene,x,z,s){
+  const trunk=new THREE.Mesh(new THREE.CylinderGeometry(5*s,7*s,34*s,8),mats.trunk);
+  trunk.position.set(x,17*s,z);
+  trunk.castShadow=true;
+  scene.add(trunk);
+  const crown=new THREE.Mesh(new THREE.SphereGeometry(24*s,10,8),mats.tree);
+  crown.position.set(x,45*s,z);
+  crown.castShadow=true;
+  crown.receiveShadow=true;
+  scene.add(crown);
+  world.trees.push({x,z});
+}
+
+function addVehicle(scene,x,z,angle){
+  const group=new THREE.Group();
+  group.position.set(x,18,z);
+  group.rotation.y=angle;
+  const body=new THREE.Mesh(new THREE.BoxGeometry(70,24,38),mats.car);
+  body.castShadow=true;
+  group.add(body);
+  const glass=new THREE.Mesh(new THREE.BoxGeometry(38,16,32),mats.carGlass);
+  glass.position.y=16;
+  glass.castShadow=true;
+  group.add(glass);
+  for(const sx of [-1,1]){
+    for(const sz of [-1,1]){
+      const wheel=new THREE.Mesh(new THREE.CylinderGeometry(8,8,6,12),mats.roof);
+      wheel.rotation.z=Math.PI/2;
+      wheel.position.set(sx*25,-13,sz*17);
+      group.add(wheel);
+    }
+  }
+  scene.add(group);
+  world.vehicles.push({x,z,angle,mesh:group,used:false});
+}
+
+function isNearRoad(x,z,r){
+  return world.roadsSome ? false : false;
+}
+
+function isNearBuilding(x,z,r){
+  return world.buildings.some(b=>x>b.x-r&&x<b.x+b.w+r&&z>b.z-r&&z<b.z+b.d+r);
+}
+
+export function getZoneState(x,z){
+  const d=Math.hypot(x-world.safeZone.x,z-world.safeZone.y);
   return {distance:d,inside:d<=world.safeZone.radius,outside:d>world.safeZone.radius};
 }
 
-export function getNearbyInteraction(x,y){
-  let nearest=null;
-  let best=95;
-
+export function getNearbyInteraction(x,z){
+  let nearest=null,best=95;
   for(const v of world.vehicles){
-    const d=Math.hypot(x-v.x,y-v.y);
-    if(d<best){
-      best=d;
-      nearest={label:"VEHICLE • tap INTERACT",result:"Vehicle ready for the next system.",type:"vehicle",object:v};
-    }
+    const d=Math.hypot(x-v.x,z-v.z);
+    if(d<best){best=d;nearest={label:"VEHICLE • tap INTERACT",result:"Vehicle interaction ready.",type:"vehicle",object:v};}
   }
-
   for(const loot of world.loot){
     if(loot.taken) continue;
-    const d=Math.hypot(x-loot.x,y-loot.y);
-    if(d<best){
-      best=d;
-      nearest={label:`LOOT • ${loot.type}`,result:`Found ${loot.type}.`,type:"loot",object:loot};
-    }
+    const d=Math.hypot(x-loot.x,z-loot.z);
+    if(d<best){best=d;nearest={label:"LOOT • "+loot.type,result:"Found "+loot.type+".",type:"loot",object:loot};}
   }
-
-  for(const b of world.buildings){
-    const cx=b.x+b.w/2,cy=b.y+b.h/2;
-    const d=Math.hypot(x-cx,y-cy);
-    if(d<best+30){
-      best=d;
-      nearest={label:`${b.label||b.type.toUpperCase()} • INTERACT`,result:"Building interaction point.",type:"building",object:b};
-    }
-  }
-
   return nearest;
-}
-
-export function drawWorld(ctx){
-  ctx.fillStyle="#789260";
-  ctx.fillRect(0,0,world.width,world.height);
-
-  drawCoast(ctx);
-  drawHills(ctx);
-  drawRoads(ctx);
-  drawBridge(ctx);
-  drawBuildings(ctx);
-  drawLoot(ctx);
-  drawTrees(ctx);
-  drawVehicles(ctx);
-
-  ctx.strokeStyle="rgba(255,255,255,.55)";
-  ctx.lineWidth=8;
-  ctx.setLineDash([28,20]);
-  ctx.beginPath();
-  ctx.arc(world.safeZone.x,world.safeZone.y,world.safeZone.radius,0,Math.PI*2);
-  ctx.stroke();
-  ctx.setLineDash([]);
-}
-
-function drawCoast(ctx){
-  ctx.fillStyle="#4b7e8d";
-  ctx.fillRect(4700,0,1300,4500);
-
-  ctx.fillStyle="#d1bb79";
-  ctx.fillRect(4480,0,220,4500);
-
-  ctx.fillStyle="rgba(255,255,255,.22)";
-  for(let y=80;y<4400;y+=180){
-    ctx.fillRect(4740,y,900,5);
-  }
-}
-
-function drawHills(ctx){
-  for(const hill of world.hills){
-    ctx.fillStyle=hill.level===2?"#526e49":"#607b52";
-
-    ctx.beginPath();
-    ctx.ellipse(
-      hill.x+hill.w/2,
-      hill.y+hill.h/2,
-      hill.w/2,
-      hill.h/2,
-      0,
-      0,
-      Math.PI*2
-    );
-    ctx.fill();
-
-    if(hill.level===2){
-      ctx.fillStyle="rgba(255,255,255,.08)";
-      ctx.beginPath();
-      ctx.ellipse(
-        hill.x+hill.w*.52,
-        hill.y+hill.h*.40,
-        hill.w*.25,
-        hill.h*.16,
-        0,
-        0,
-        Math.PI*2
-      );
-      ctx.fill();
-    }
-  }
-}
-
-function drawRoads(ctx){
-  for(const road of world.roads){
-    ctx.fillStyle=road.type==="main"?"#4b5553":"#58615e";
-    ctx.fillRect(road.x,road.y,road.w,road.h);
-
-    ctx.strokeStyle="#303735";
-    ctx.lineWidth=5;
-    ctx.strokeRect(road.x,road.y,road.w,road.h);
-
-    ctx.strokeStyle=road.type==="main"?"#e0d36f":"#aaa75e";
-    ctx.lineWidth=3;
-    ctx.setLineDash([28,22]);
-
-    ctx.beginPath();
-    if(road.w>road.h){
-      ctx.moveTo(road.x,road.y+road.h/2);
-      ctx.lineTo(road.x+road.w,road.y+road.h/2);
-    }else{
-      ctx.moveTo(road.x+road.w/2,road.y);
-      ctx.lineTo(road.x+road.w/2,road.y+road.h);
-    }
-    ctx.stroke();
-    ctx.setLineDash([]);
-  }
-}
-
-function drawBridge(ctx){
-  ctx.fillStyle="#55595a";
-  ctx.fillRect(4300,2020,600,240);
-  ctx.strokeStyle="#d8cb69";
-  ctx.lineWidth=4;
-  ctx.setLineDash([28,20]);
-  ctx.beginPath();
-  ctx.moveTo(4300,2140);
-  ctx.lineTo(4900,2140);
-  ctx.stroke();
-  ctx.setLineDash([]);
-}
-
-function drawBuildings(ctx){
-  for(const b of world.buildings){
-    const landmark=b.type==="landmark";
-    const compound=b.type==="compound";
-
-    ctx.fillStyle=landmark?"#646663":compound?"#817b6d":"#938b79";
-    ctx.fillRect(b.x,b.y,b.w,b.h);
-
-    ctx.fillStyle=landmark?"#303535":compound?"#514d46":"#625c51";
-    ctx.fillRect(b.x,b.y,b.w,34);
-
-    ctx.fillStyle="#304952";
-    const cols=Math.max(1,Math.floor(b.w/75));
-    for(let i=0;i<cols;i++){
-      ctx.fillRect(b.x+25+i*70,b.y+62,22,18);
-    }
-
-    ctx.fillStyle="#463b33";
-    ctx.fillRect(b.x+b.w/2-13,b.y+b.h-38,26,38);
-
-    if(landmark){
-      ctx.strokeStyle="#bdb8a1";
-      ctx.lineWidth=8;
-      ctx.strokeRect(b.x+14,b.y+14,b.w-28,b.h-28);
-      ctx.fillStyle="#eee1a1";
-      ctx.font="bold 24px Arial";
-      ctx.textAlign="center";
-      ctx.fillText("CENTRAL FORT",b.x+b.w/2,b.y-18);
-    }
-  }
-}
-
-function drawLoot(ctx){
-  for(const loot of world.loot){
-    if(loot.taken) continue;
-
-    ctx.fillStyle="#f0d86d";
-    ctx.fillRect(loot.x-5,loot.y-5,10,10);
-
-    ctx.strokeStyle="rgba(0,0,0,.35)";
-    ctx.strokeRect(loot.x-5,loot.y-5,10,10);
-  }
-}
-
-function drawTrees(ctx){
-  for(const tree of world.trees){
-    ctx.fillStyle="#5a4635";
-    ctx.fillRect(tree.x-4,tree.y,8,22);
-
-    ctx.fillStyle="#3e6743";
-    ctx.beginPath();
-    ctx.arc(tree.x,tree.y-6,tree.r,0,Math.PI*2);
-    ctx.fill();
-  }
-}
-
-function drawVehicles(ctx){
-  for(const v of world.vehicles){
-    ctx.save();
-    ctx.translate(v.x,v.y);
-    ctx.rotate(v.angle);
-
-    ctx.fillStyle="#27363a";
-    ctx.fillRect(-30,-15,60,30);
-
-    ctx.fillStyle="#71878a";
-    ctx.fillRect(-18,-10,36,20);
-
-    ctx.fillStyle="#151b1d";
-    ctx.fillRect(-23,-18,12,5);
-    ctx.fillRect(11,-18,12,5);
-    ctx.fillRect(-23,13,12,5);
-    ctx.fillRect(11,13,12,5);
-
-    ctx.restore();
-  }
 }
