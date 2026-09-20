@@ -2,12 +2,20 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
+<meta
+  name="viewport"
+  content="width=device-width,
+  initial-scale=1,
+  maximum-scale=1,
+  user-scalable=no,
+  viewport-fit=cover"
+>
 
 <title>Virelia: Afterfall</title>
 
 <style>
+
 *{
   box-sizing:border-box;
   user-select:none;
@@ -15,39 +23,120 @@
   -webkit-tap-highlight-color:transparent;
 }
 
-html,body{
+html,
+body{
   margin:0;
   width:100%;
   height:100%;
   overflow:hidden;
-  background:#151b1a;
+  background:#101615;
   font-family:Arial,sans-serif;
 }
 
-canvas{
-  display:block;
-  width:100%;
-  height:100%;
+body{
   touch-action:none;
 }
+
+canvas{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+  touch-action:none;
+}
+
+/* =========================================
+   PORTRAIT SCREEN
+========================================= */
+
+#portrait{
+  position:fixed;
+  inset:0;
+  z-index:1000;
+
+  display:none;
+
+  align-items:center;
+  justify-content:center;
+
+  background:#101615;
+  color:white;
+
+  text-align:center;
+}
+
+.portraitBox{
+  width:80%;
+  max-width:400px;
+}
+
+.rotateIcon{
+  font-size:60px;
+  margin-bottom:20px;
+  animation:rotatePhone 1.5s infinite ease-in-out;
+}
+
+@keyframes rotatePhone{
+
+  0%{
+    transform:rotate(0deg);
+  }
+
+  50%{
+    transform:rotate(90deg);
+  }
+
+  100%{
+    transform:rotate(0deg);
+  }
+}
+
+.portraitTitle{
+  font-size:20px;
+  font-weight:bold;
+}
+
+.portraitSub{
+  margin-top:10px;
+  color:#9ca8a4;
+  font-size:13px;
+  line-height:1.5;
+}
+
+/* =========================================
+   HUD
+========================================= */
 
 #hud{
   position:fixed;
   inset:0;
+  z-index:10;
+
   pointer-events:none;
-  color:#fff;
+
+  color:white;
 }
 
-/* PLAYER CARD */
+/* PLAYER */
 
 #playerCard{
+
   position:absolute;
-  top:12px;
-  left:12px;
-  width:185px;
+
+  top:
+    max(12px,env(safe-area-inset-top));
+
+  left:
+    max(12px,env(safe-area-inset-left));
+
+  width:190px;
+
   padding:10px;
-  border-radius:12px;
-  background:rgba(10,15,16,.82);
+
+  border-radius:13px;
+
+  background:rgba(8,13,13,.82);
 }
 
 .name{
@@ -56,11 +145,16 @@ canvas{
 }
 
 .bar{
+
   height:7px;
+
   margin-top:6px;
-  overflow:hidden;
+
   border-radius:8px;
-  background:#303839;
+
+  overflow:hidden;
+
+  background:#303837;
 }
 
 #hpBar{
@@ -72,113 +166,181 @@ canvas{
 #staminaBar{
   width:100%;
   height:100%;
-  background:#d8d75c;
+  background:#ded65c;
 }
 
 /* ZONE */
 
 #zone{
+
   position:absolute;
-  top:12px;
+
+  top:
+    max(12px,env(safe-area-inset-top));
+
   left:50%;
+
   transform:translateX(-50%);
-  padding:8px 15px;
-  border-radius:14px;
+
+  padding:9px 18px;
+
+  border-radius:15px;
+
   text-align:center;
-  background:rgba(10,15,16,.82);
+
+  background:rgba(8,13,13,.82);
+
   font-size:11px;
 }
 
 /* ALIVE */
 
 #aliveBox{
+
   position:absolute;
-  top:12px;
-  right:140px;
-  padding:9px 12px;
+
+  top:
+    max(12px,env(safe-area-inset-top));
+
+  right:145px;
+
+  padding:9px 13px;
+
   border-radius:11px;
-  background:rgba(10,15,16,.82);
+
+  background:rgba(8,13,13,.82);
+
   font-size:11px;
 }
 
 /* MINIMAP */
 
 #miniWrap{
+
   position:absolute;
-  top:12px;
-  right:12px;
-  width:115px;
-  height:115px;
+
+  top:
+    max(12px,env(safe-area-inset-top));
+
+  right:
+    max(12px,env(safe-area-inset-right));
+
+  width:118px;
+  height:118px;
+
   overflow:hidden;
-  border:2px solid rgba(255,255,255,.3);
-  border-radius:12px;
-  background:#687c59;
+
+  border:
+    2px solid
+    rgba(255,255,255,.35);
+
+  border-radius:13px;
+
+  background:#6d805c;
 }
 
 #mini{
+
   width:100%;
   height:100%;
 }
 
-/* CENTER */
+/* CROSSHAIR */
 
 #crosshair{
+
   position:absolute;
+
   left:50%;
   top:50%;
-  width:18px;
-  height:18px;
-  transform:translate(-50%,-50%);
+
+  width:20px;
+  height:20px;
+
+  transform:
+    translate(-50%,-50%);
 }
 
 #crosshair::before,
 #crosshair::after{
+
   content:"";
+
   position:absolute;
-  background:rgba(255,255,255,.8);
+
+  background:
+    rgba(255,255,255,.9);
 }
 
 #crosshair::before{
-  left:8px;
+
+  left:9px;
   top:0;
+
   width:2px;
-  height:18px;
+  height:20px;
 }
 
 #crosshair::after{
+
   left:0;
-  top:8px;
-  width:18px;
+  top:9px;
+
+  width:20px;
   height:2px;
 }
 
 /* MESSAGE */
 
 #message{
+
   position:absolute;
+
   left:50%;
   bottom:210px;
-  transform:translateX(-50%);
-  padding:8px 13px;
+
+  transform:
+    translateX(-50%);
+
+  padding:9px 14px;
+
   border-radius:10px;
-  background:rgba(0,0,0,.65);
+
+  background:
+    rgba(0,0,0,.72);
+
   font-size:12px;
+
   opacity:0;
+
   transition:.2s;
 }
 
-/* INVENTORY */
+/* =========================================
+   INVENTORY
+========================================= */
 
 #inventory{
+
   position:absolute;
-  right:15px;
-  bottom:190px;
-  width:220px;
-  padding:12px;
-  border-radius:13px;
-  background:rgba(10,15,16,.92);
+
+  right:20px;
+  bottom:185px;
+
+  width:225px;
+
+  padding:13px;
+
+  border-radius:14px;
+
+  background:
+    rgba(8,13,13,.94);
+
   display:none;
+
   font-size:12px;
+
+  pointer-events:auto;
 }
 
 .invTitle{
@@ -187,149 +349,241 @@ canvas{
 }
 
 .invRow{
+
   display:flex;
+
   justify-content:space-between;
+
   padding:7px 0;
-  border-bottom:1px solid rgba(255,255,255,.08);
+
+  border-bottom:
+    1px solid
+    rgba(255,255,255,.08);
 }
 
-/* JOYSTICK */
+/* =========================================
+   JOYSTICK
+========================================= */
 
 #joystick{
+
   position:absolute;
-  left:22px;
-  bottom:25px;
+
+  left:
+    max(22px,env(safe-area-inset-left));
+
+  bottom:
+    max(22px,env(safe-area-inset-bottom));
+
   width:145px;
   height:145px;
-  border:2px solid rgba(255,255,255,.14);
+
+  border:
+    2px solid
+    rgba(255,255,255,.14);
+
   border-radius:50%;
-  background:rgba(255,255,255,.07);
+
+  background:
+    rgba(255,255,255,.07);
+
   pointer-events:auto;
 }
 
 #stick{
+
   position:absolute;
+
   left:40px;
   top:40px;
+
   width:65px;
   height:65px;
-  border:2px solid rgba(255,255,255,.25);
+
+  border:
+    2px solid
+    rgba(255,255,255,.25);
+
   border-radius:50%;
-  background:rgba(255,255,255,.18);
+
+  background:
+    rgba(255,255,255,.18);
 }
 
-/* ACTIONS */
+/* =========================================
+   BUTTONS
+========================================= */
 
 #buttons{
+
   position:absolute;
-  right:16px;
-  bottom:22px;
-  width:190px;
-  height:180px;
+
+  right:
+    max(16px,env(safe-area-inset-right));
+
+  bottom:
+    max(18px,env(safe-area-inset-bottom));
+
+  width:205px;
+  height:190px;
+
   pointer-events:none;
 }
 
 .btn{
+
   position:absolute;
-  width:61px;
-  height:61px;
-  border:1px solid rgba(255,255,255,.15);
+
+  width:62px;
+  height:62px;
+
+  border:
+    1px solid
+    rgba(255,255,255,.15);
+
   border-radius:50%;
+
   color:white;
-  background:rgba(12,19,20,.82);
+
+  background:
+    rgba(8,14,14,.84);
+
   font-size:10px;
   font-weight:bold;
+
   pointer-events:auto;
 }
 
 .btn:active{
-  transform:scale(.93);
+  transform:scale(.92);
 }
 
 #actionBtn{
+
   right:0;
-  top:48px;
-  width:75px;
-  height:75px;
+  top:43px;
+
+  width:78px;
+  height:78px;
 }
 
 #runBtn{
-  right:76px;
-  bottom:5px;
+
+  right:80px;
+  bottom:3px;
 }
 
 #crouchBtn{
+
   right:0;
   bottom:0;
 }
 
 #bagBtn{
-  right:145px;
-  bottom:130px;
-  width:45px;
-  height:45px;
+
+  right:150px;
+  bottom:138px;
+
+  width:47px;
+  height:47px;
 }
 
-/* START */
+/* =========================================
+   START
+========================================= */
 
 #start{
+
   position:fixed;
+
   inset:0;
-  z-index:10;
+
+  z-index:500;
+
   display:flex;
+
   align-items:center;
   justify-content:center;
+
   background:#101615;
+
   color:white;
 }
 
 .startBox{
-  width:min(90%,390px);
+
+  width:min(90%,400px);
+
   padding:28px;
+
   border-radius:18px;
+
   text-align:center;
+
   background:#18211f;
 }
 
 .title{
-  font-size:27px;
+
+  font-size:28px;
+
   font-weight:900;
-  letter-spacing:3px;
+
+  letter-spacing:4px;
 }
 
 .sub{
+
   margin-top:10px;
+
   color:#9da9a5;
+
   font-size:12px;
+
   line-height:1.5;
 }
 
 #startBtn{
+
   width:100%;
+
   margin-top:22px;
+
   padding:15px;
+
   border:0;
-  border-radius:10px;
+
+  border-radius:11px;
+
   background:#587a65;
+
   color:white;
+
   font-weight:bold;
+
+  font-size:14px;
 }
 
-@media(max-width:600px){
+/* =========================================
+   PORTRAIT DETECTION
+========================================= */
 
-  #aliveBox{
+@media (orientation:portrait){
+
+  #portrait{
+    display:flex;
+  }
+
+  #hud{
     display:none;
   }
 
-  #playerCard{
-    width:165px;
+  #game{
+    display:none;
   }
 
-  #miniWrap{
-    width:105px;
-    height:105px;
-  }
 }
+
 </style>
 </head>
 
@@ -337,10 +591,36 @@ canvas{
 
 <canvas id="game"></canvas>
 
+<div id="portrait">
+
+  <div class="portraitBox">
+
+    <div class="rotateIcon">
+      📱
+    </div>
+
+    <div class="portraitTitle">
+      PUTAR PERANGKAT
+    </div>
+
+    <div class="portraitSub">
+      Virelia: Afterfall dimainkan
+      dalam mode landscape.
+      <br><br>
+      Miringkan HP ke samping.
+    </div>
+
+  </div>
+
+</div>
+
 <div id="hud">
 
   <div id="playerCard">
-    <div class="name">SURVIVOR • 01</div>
+
+    <div class="name">
+      SURVIVOR • 01
+    </div>
 
     <div class="bar">
       <div id="hpBar"></div>
@@ -349,20 +629,33 @@ canvas{
     <div class="bar">
       <div id="staminaBar"></div>
     </div>
+
   </div>
 
   <div id="zone">
+
     ZONA AMAN<br>
-    <span id="zoneTimer">05:00</span>
+
+    <span id="zoneTimer">
+      05:00
+    </span>
+
   </div>
 
   <div id="aliveBox">
+
     ALIVE<br>
-    <b id="alive">70</b>
+
+    <b id="alive">
+      70
+    </b>
+
   </div>
 
   <div id="miniWrap">
+
     <canvas id="mini"></canvas>
+
   </div>
 
   <div id="crosshair"></div>
@@ -408,28 +701,34 @@ canvas{
   </div>
 
   <div id="joystick">
+
     <div id="stick"></div>
+
   </div>
 
   <div id="buttons">
 
-    <button class="btn"
-            id="bagBtn">
+    <button
+      class="btn"
+      id="bagBtn">
       BAG
     </button>
 
-    <button class="btn"
-            id="actionBtn">
+    <button
+      class="btn"
+      id="actionBtn">
       ACTION
     </button>
 
-    <button class="btn"
-            id="runBtn">
+    <button
+      class="btn"
+      id="runBtn">
       RUN
     </button>
 
-    <button class="btn"
-            id="crouchBtn">
+    <button
+      class="btn"
+      id="crouchBtn">
       CROUCH
     </button>
 
@@ -446,9 +745,13 @@ canvas{
     </div>
 
     <div class="sub">
-      AFTERFALL<br><br>
-      GAMEPLAY FOUNDATION<br>
+      AFTERFALL
+      <br><br>
+      GAMEPLAY FOUNDATION
+      <br>
       70 SURVIVORS
+      <br>
+      LANDSCAPE MOBILE
     </div>
 
     <button id="startBtn">
@@ -460,9 +763,76 @@ canvas{
 </div>
 
 <script type="module">
-import { startGame } from "./src/main.js";
 
-startGame();
+import {
+  startGame
+} from "./src/main.js";
+
+document
+  .getElementById("startBtn")
+  .addEventListener(
+    "click",
+    async () => {
+
+      /*
+        Coba fullscreen terlebih dahulu.
+        Screen Orientation API pada Android
+        biasanya baru bisa lock setelah fullscreen.
+      */
+
+      try{
+
+        if(
+          !document.fullscreenElement &&
+          document.documentElement.requestFullscreen
+        ){
+
+          await document
+            .documentElement
+            .requestFullscreen();
+        }
+
+      }catch(e){
+
+        console.log(
+          "Fullscreen tidak tersedia:",
+          e
+        );
+
+      }
+
+      try{
+
+        if(
+          screen.orientation &&
+          screen.orientation.lock
+        ){
+
+          await screen
+            .orientation
+            .lock("landscape");
+
+        }
+
+      }catch(e){
+
+        /*
+          Browser tertentu tidak mengizinkan
+          orientation lock.
+          CSS portrait overlay tetap bekerja.
+        */
+
+        console.log(
+          "Orientation lock tidak tersedia:",
+          e
+        );
+      }
+
+      startGame();
+
+    }
+  );
+
 </script>
 
 </body>
