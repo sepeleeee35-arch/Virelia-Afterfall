@@ -1,3195 +1,1054 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Virelia: Afterfall</title>
 <style>
-html,body{
-margin:0;
-width:100%;
-height:100%;
-overflow:hidden;
-background:#000;
-font-family:Arial,sans-serif;
-touch-action:none
-}
-#game{
-position:fixed;
-inset:0
-}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#111;font-family:Arial,sans-serif;touch-action:none}
+#game{position:fixed;inset:0}
+canvas{display:block}
 #hud{
-position:fixed;
-top:12px;
-left:12px;
-z-index:20;
-color:#fff;
-font-weight:700;
-font-size:14px;
-line-height:1.5;
-text-shadow:0 2px 5px #000
+position:fixed;top:14px;left:16px;color:white;font-weight:700;
+font-size:17px;line-height:1.45;text-shadow:0 2px 4px #000;z-index:10
 }
-#msg{
-position:fixed;
-top:14px;
-left:50%;
-transform:translateX(-50%);
-z-index:50;
-color:#fff;
-background:#000b;
-padding:8px 14px;
-border-radius:10px;
-font-weight:700;
-opacity:0;
-transition:.2s
-}
-#hint{
-position:fixed;
-right:15px;
-top:65px;
-z-index:20;
-color:#fff;
-background:#0008;
-padding:7px 10px;
-border-radius:9px;
-font-size:11px;
-text-align:right
+#tip{
+position:fixed;right:14px;top:88px;background:#20272bcc;color:#eee;
+padding:10px 14px;border-radius:14px;font-size:13px;text-align:center;
+z-index:10;backdrop-filter:blur(5px)
 }
 #joy{
-position:fixed;
-left:22px;
-bottom:22px;
-width:132px;
-height:132px;
-border-radius:50%;
-background:#ffffff20;
-border:2px solid #ffffff55;
-z-index:30
+position:fixed;left:28px;bottom:28px;width:145px;height:145px;
+border:2px solid #ffffff55;border-radius:50%;background:#ffffff18;z-index:20
 }
 #knob{
-position:absolute;
-left:34px;
-top:34px;
-width:60px;
-height:60px;
-border-radius:50%;
-background:#ffffff66;
-border:2px solid #ffffffaa
+position:absolute;width:68px;height:68px;left:36px;top:36px;border-radius:50%;
+background:#ffffff55;border:2px solid #ffffff77
 }
-#interact{
-position:fixed;
-right:24px;
-bottom:27px;
-width:82px;
-height:82px;
-border:0;
-border-radius:50%;
-background:#ffffffdf;
-color:#111;
-font-size:11px;
-font-weight:900;
-z-index:35;
-box-shadow:0 3px 12px #0005
+.btn{
+position:fixed;z-index:20;border:0;border-radius:50%;background:#ffffffd9;
+color:#222;font-weight:800;box-shadow:0 5px 15px #0005
 }
-#jump{
-position:fixed;
-right:128px;
-bottom:31px;
-width:62px;
-height:62px;
-border-radius:50%;
-border:0;
-background:#ffffffcc;
-color:#111;
-font-size:10px;
-font-weight:900;
-z-index:35
+#jump{right:150px;bottom:45px;width:86px;height:86px}
+#action{right:28px;bottom:35px;width:100px;height:100px;font-size:15px}
+#crouch{right:45px;bottom:150px;width:82px;height:64px;border-radius:22px}
+#exitCar{display:none;right:28px;bottom:150px;width:100px;height:64px;border-radius:22px}
+#full{
+position:fixed;right:16px;top:18px;width:58px;height:58px;border:0;border-radius:17px;
+background:#ffffffdd;font-size:23px;z-index:20
 }
-#crouch{
-position:fixed;
-right:25px;
-bottom:119px;
-width:62px;
-height:50px;
-border-radius:15px;
-border:0;
-background:#ffffffbb;
-color:#111;
-font-size:10px;
-font-weight:900;
-z-index:35
+#speed{
+position:fixed;left:16px;bottom:12px;color:white;font-weight:800;
+font-size:14px;text-shadow:0 2px 4px #000;z-index:20;display:none
 }
-#fs{
-position:fixed;
-right:17px;
-top:14px;
-width:43px;
-height:43px;
-border:0;
-border-radius:12px;
-background:#ffffffbb;
-color:#111;
-font-size:20px;
-font-weight:900;
-z-index:35
-}
-#drive{
-position:fixed;
-right:122px;
-bottom:111px;
-width:68px;
-height:52px;
-border:0;
-border-radius:16px;
-background:#ffffffcc;
-color:#111;
-font-size:10px;
-font-weight:900;
-z-index:35;
-display:none
+@media(max-width:700px){
+#hud{font-size:15px}
+#tip{font-size:11px;top:82px}
 }
 </style>
 </head>
 <body>
-
 <div id="game"></div>
 
 <div id="hud">
 HP <span id="hp">100</span><br>
-Hunger 100<br>
+Hunger <span id="hunger">100</span><br>
 Supplies <span id="supplies">0</span>
 </div>
 
-<div id="msg"></div>
+<div id="tip">GESER KANAN = KAMERA<br>360° • ATAS/BAWAH</div>
 
-<div id="hint">
-GESER KANAN = KAMERA<br>
-360° • ATAS / BAWAH
-</div>
+<button id="full">⛶</button>
 
-<div id="joy">
-<div id="knob"></div>
-</div>
-
-<button id="interact">👊<br>TINJU</button>
-<button id="jump">LOMPAT</button>
+<div id="joy"><div id="knob"></div></div>
 <button id="crouch">JONGKOK</button>
-<button id="drive">KELUAR<br>MOBIL</button>
-<button id="fs">⛶</button>
+<button id="jump">LOMPAT</button>
+<button id="action">👊<br>TINJU</button>
+<button id="exitCar">KELUAR</button>
+
+<div id="speed">0 KM/H</div>
 
 <script type="module">
-
-const THREE=await import(
-"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js"
-);
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js";
 
 const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x778184);
+scene.fog=new THREE.FogExp2(0x778184,0.0042);
 
-scene.background=
-new THREE.Color(0x707b80);
-
-scene.fog=
-new THREE.Fog(
-0x707b80,
-90,
-300
-);
-
-const camera=
-new THREE.PerspectiveCamera(
-68,
-innerWidth/innerHeight,
-.1,
-700
-);
-
-const renderer=
-new THREE.WebGLRenderer({
-antialias:true
-});
-
-renderer.setPixelRatio(
-Math.min(devicePixelRatio,1.5)
-);
-
-renderer.setSize(
-innerWidth,
-innerHeight
-);
-
+const camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,.1,900);
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));
 renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.05;
+document.getElementById("game").appendChild(renderer.domElement);
 
-renderer.shadowMap.type=
-THREE.PCFSoftShadowMap;
+const hemi=new THREE.HemisphereLight(0xbfd4dc,0x394137,1.8);
+scene.add(hemi);
 
-document
-.getElementById("game")
-.appendChild(
-renderer.domElement
-);
-
-scene.add(
-new THREE.HemisphereLight(
-0xc9dce5,
-0x30372d,
-1.8
-)
-);
-
-const sun=
-new THREE.DirectionalLight(
-0xffffff,
-2.2
-);
-
-sun.position.set(
-60,
-100,
-40
-);
-
+const sun=new THREE.DirectionalLight(0xffe4bd,3.0);
+sun.position.set(-90,130,80);
 sun.castShadow=true;
-
-sun.shadow.mapSize.set(
-1024,
-1024
-);
-
-sun.shadow.camera.left=-180;
-sun.shadow.camera.right=180;
-sun.shadow.camera.top=180;
-sun.shadow.camera.bottom=-180;
-
+sun.shadow.mapSize.set(2048,2048);
+sun.shadow.camera.left=-220;
+sun.shadow.camera.right=220;
+sun.shadow.camera.top=220;
+sun.shadow.camera.bottom=-220;
+sun.shadow.camera.near=1;
+sun.shadow.camera.far=500;
 scene.add(sun);
 
-function material(
-color,
-roughness=.8,
-metalness=0
-){
+const world=new THREE.Group();
+scene.add(world);
 
-return new THREE.MeshStandardMaterial({
-color,
-roughness,
-metalness
-});
-
-}
-
-const ground=
-new THREE.Mesh(
-new THREE.PlaneGeometry(
-360,
-300
-),
-material(0x506849)
-);
-
-ground.rotation.x=-Math.PI/2;
-
-ground.receiveShadow=true;
-
-scene.add(ground);
-
-const roadMaterial=
-material(0x27292a);
-
-const roadLine=
-material(0xd8d09b);
-
-const ROAD=13;
-
-const verticalRoads=[
--110,-55,0,55,110
-];
-
-const horizontalRoads=[
--90,-45,0,45,90
-];
-
-const colliders=[];
 const cameraMeshes=[];
+const solidObjects=[];
 const buildings=[];
-const traversalObjects=[];
+const trees=[];
 const cars=[];
 const zombies=[];
 const supplies=[];
+const lowObjects=[];
+const overheadObjects=[];
+const lamps=[];
 
-function box(
-w,h,d,
-mat,
-x,y,z,
-parent=scene
-){
+const MAT={};
 
-const mesh=
-new THREE.Mesh(
-new THREE.BoxGeometry(
-w,h,d
-),
-mat
-);
-
-mesh.position.set(
-x,y,z
-);
-
-mesh.castShadow=true;
-mesh.receiveShadow=true;
-
-parent.add(mesh);
-
-return mesh;
-
-}
-
-for(
-const x of verticalRoads
-){
-
-box(
-ROAD,
-.04,
-300,
-roadMaterial,
-x,
-.02,
-0
-);
-
-for(
-let z=-140;
-z<=140;
-z+=10
-){
-
-box(
-.12,
-.05,
-4,
-roadLine,
-x,
-.055,
-z
-);
-
-}
-
-}
-
-for(
-const z of horizontalRoads
-){
-
-box(
-360,
-.04,
-ROAD,
-roadMaterial,
-0,
-.025,
-z
-);
-
-for(
-let x=-170;
-x<=170;
-x+=10
-){
-
-box(
-4,
-.05,
-.12,
-roadLine,
-x,
-.055,
-z
-);
-
-}
-
-}
-
-function addBuilding(
-x,z,w,d,h=10
-){
-
-const group=
-new THREE.Group();
-
-group.position.set(
-x,0,z
-);
-
-scene.add(group);
-
-const wall=
-material(0x77746e);
-
-const insideWall=
-material(0x55514b);
-
-const roof=
-material(0x45433f);
-
-const doorMat=
-material(0x33251f);
-
-const floorMat=
-material(0x59544c);
-
-box(
-w,
-.25,
-d,
-floorMat,
-0,
-.12,
-0,
-group
-);
-
-const wallThickness=.65;
-const doorWidth=3.4;
-const sideWidth=
-(w-doorWidth)/2;
-
-box(
-sideWidth,
-h,
-wallThickness,
-wall,
--(doorWidth/2+sideWidth/2),
-h/2,
--d/2,
-group
-);
-
-box(
-sideWidth,
-h,
-wallThickness,
-wall,
-doorWidth/2+sideWidth/2,
-h/2,
--d/2,
-group
-);
-
-box(
-doorWidth,
-.8,
-wallThickness,
-wall,
-0,
-h-.4,
--d/2,
-group
-);
-
-box(
-wallThickness,
-h,
-d,
-wall,
--w/2,
-h/2,
-0,
-group
-);
-
-box(
-wallThickness,
-h,
-d,
-wall,
-w/2,
-h/2,
-0,
-group
-);
-
-box(
-w,
-h,
-wallThickness,
-wall,
-0,
-h/2,
-d/2,
-group
-);
-
-box(
-w,
-.5,
-d,
-roof,
-0,
-h,
-0,
-group
-);
-
-box(
-2.9,
-4.2,
-.12,
-doorMat,
-0,
-2.1,
--d/2-.05,
-group
-);
-
-const furniture=[];
-
-function addFurniture(
-fw,fh,fd,
-fx,fz
-){
-
-box(
-fw,
-fh,
-fd,
-insideWall,
-fx,
-fh/2,
-fz,
-group
-);
-
-furniture.push({
-x:x+fx,
-z:z+fz,
-w:fw,
-d:fd
+function mat(color,rough=.8,metal=0){
+return new THREE.MeshStandardMaterial({
+color,
+roughness:rough,
+metalness:metal
 });
-
 }
 
-addFurniture(
-3,
-.7,
-1.4,
--5,
-2
-);
+MAT.grass=mat(0x465b46,1);
+MAT.grass2=mat(0x536750,1);
+MAT.road=mat(0x202427,1);
+MAT.sidewalk=mat(0x777b78,.95);
+MAT.concrete=mat(0x707473,.95);
+MAT.dark=mat(0x202427,.85);
+MAT.window=mat(0x17262b,.22,.45);
+MAT.glass=mat(0x41606a,.16,.35);
+MAT.metal=mat(0x303536,.35,.75);
+MAT.rust=mat(0x6c4938,.8,.25);
+MAT.door=mat(0x272624,.7);
+MAT.white=mat(0xd4d1c6,.8);
+MAT.yellow=mat(0xb49a24,.55,.2);
+MAT.red=mat(0x6d2924,.75);
+MAT.green=mat(0x365340,.8);
+MAT.skin=mat(0xb87958,.8);
+MAT.hair=mat(0x171719,.65);
+MAT.cloth=mat(0x171b1c,.9);
+MAT.armor=mat(0x30383b,.55,.45);
+MAT.boot=mat(0x181818,.8,.1);
 
-addFurniture(
-1.5,
-2.3,
-1.5,
-5,
-3
-);
-
-addFurniture(
-2.5,
-.8,
-1.2,
-4,
--4
-);
-
-const building={
-x,z,w,d,h,
-group,
-furniture,
-inside:false
-};
-
-buildings.push(building);
-
-colliders.push({
-type:"building",
-building
-});
-
-group.traverse(
-o=>{
-if(o.isMesh){
-cameraMeshes.push(o);
-}
-}
-);
-
+function box(name,x,y,z,sx,sy,sz,material,group=world,shadow=true){
+const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),material);
+m.name=name;
+m.position.set(x,y,z);
+m.castShadow=shadow;
+m.receiveShadow=true;
+group.add(m);
+return m;
 }
 
-const buildingX=[
--82.5,
--27.5,
-27.5,
-82.5
-];
-
-const buildingZ=[
--67.5,
--22.5,
-22.5,
-67.5
-];
-
-for(
-const x of buildingX
-){
-
-for(
-const z of buildingZ
-){
-
-if(
-Math.abs(x)<35 &&
-Math.abs(z)<35
-){
-continue;
+function cyl(x,y,z,r,h,material,group=world){
+const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,12),material);
+m.position.set(x,y,z);
+m.castShadow=true;
+m.receiveShadow=true;
+group.add(m);
+return m;
 }
 
-addBuilding(
-x,z,
-20,17,9.5
-);
-
+function addGround(){
+box("ground",0,-.45,0,380,.8,320,MAT.grass);
 }
 
+function addRoad(x,z,w,d){
+box("road",x,.01,z,w,.08,d,MAT.road);
+box("sidewalkA",x,.09,z-d/2-1.1,w,.18,2.2,MAT.sidewalk);
+box("sidewalkB",x,.09,z+d/2+1.1,w,.18,2.2,MAT.sidewalk);
 }
 
-const treeTrunk=
-material(0x563b27);
+function addRoadMarkings(){
+for(let x=-110;x<=110;x+=55){
+for(let z=-145;z<145;z+=10){
+box("mark",x,.065,z,.18,.015,5.2,MAT.white);
+}
+}
+for(let z=-90;z<=90;z+=45){
+for(let x=-175;x<175;x+=10){
+box("mark",x,.065,z,5.2,.015,.18,MAT.white);
+}
+}
+}
 
-const treeLeaves=
-material(0x284126);
+function addBuilding(x,z,w,d,h,style){
+const g=new THREE.Group();
+g.position.set(x,0,z);
 
-function addTree(x,z){
+const colors=[0x656764,0x77756d,0x555b59,0x806f61,0x646b70];
+const body=mat(colors[style%colors.length],.9);
+const base=box("building",0,h/2,0,w,h,d,body,g);
+solidObjects.push({type:"building",x,z,w:w*.82,d:d*.82,h});
+cameraMeshes.push(base);
 
-const group=
-new THREE.Group();
+box("roof",0,h+.12,0,w+.25,.28,d+.25,MAT.dark,g);
 
-group.position.set(
-x,0,z
-);
+const door=box("door",0,1.25,d/2+.025,1.5,2.5,.12,MAT.door,g);
+door.userData.door=true;
+door.userData.building=g;
 
-scene.add(group);
+const windows=[];
+const floors=Math.max(1,Math.floor(h/3.1));
 
-const trunk=
-new THREE.Mesh(
-new THREE.CylinderGeometry(
-.55,.7,3.2,8
-),
-treeTrunk
-);
+for(let f=0;f<floors;f++){
+const yy=2.3+f*3.0;
+for(let side=-1;side<=1;side+=2){
+for(let i=-1;i<=1;i++){
+const xx=i*w*.25;
+const win=box("window",xx,yy,side*(d/2+.03),1.65,1.45,.08,MAT.window,g);
+windows.push(win);
+}
+}
+}
 
-trunk.position.y=1.6;
+for(let i=0;i<2;i++){
+const ac=box("ac",i===0?-w*.25:w*.25,h*.58,d/2+.12,.75,.55,.38,MAT.metal,g);
+ac.rotation.x=-.12;
+}
 
+if(h>7){
+box("balcony",0,4.0,d/2+.65,w*.48,.15,1.1,MAT.concrete,g);
+box("rail",0,4.75,d/2+1.05,w*.48,.9,.08,MAT.metal,g);
+}
+
+const sign=box("sign",0,h*.28,d/2+.08,2.7,.45,.08,style%2?MAT.red:MAT.yellow,g);
+sign.rotation.y=0;
+
+g.userData={solid:true,door,inside:false};
+buildings.push(g);
+world.add(g);
+}
+
+function addTree(x,z,scale=1){
+const g=new THREE.Group();
+g.position.set(x,0,z);
+g.scale.setScalar(scale);
+
+const trunk=cyl(0,1.8,0,.45,3.6,MAT.rust,g);
 trunk.castShadow=true;
 
-group.add(trunk);
-
-const crown=
-new THREE.Mesh(
-new THREE.SphereGeometry(
-2.7,10,8
-),
-treeLeaves
+const crown=new THREE.Mesh(
+new THREE.SphereGeometry(2.6,12,10),
+MAT.green
 );
-
-crown.position.y=4.5;
-
+crown.position.y=4.6;
+crown.scale.y=.85;
 crown.castShadow=true;
+g.add(crown);
 
-group.add(crown);
-
-colliders.push({
-type:"tree",
-x,z,r:2.3
-});
-
-cameraMeshes.push(
-trunk,
-crown
+const crown2=new THREE.Mesh(
+new THREE.SphereGeometry(1.8,12,10),
+MAT.grass2
 );
+crown2.position.set(1.2,5.1,.3);
+g.add(crown2);
 
+trees.push(g);
+solidObjects.push({type:"tree",x,z,r:2.0*scale,h:6});
+cameraMeshes.push(trunk,crown,crown2);
+world.add(g);
 }
 
-[
-[-150,-125],
-[150,-125],
-[-150,125],
-[150,125],
-[-135,-35],
-[135,35],
-[-135,35],
-[135,-35],
-[-35,115],
-[35,-115],
-[-145,75],
-[145,-75]
-].forEach(
-p=>addTree(
-p[0],p[1]
-)
+function addStreetLight(x,z,rot=0){
+const g=new THREE.Group();
+g.position.set(x,0,z);
+g.rotation.y=rot;
+
+cyl(0,3.4,0,.11,6.8,MAT.metal,g);
+box("lamphead",.55,6.55,0,1.1,.28,.32,MAT.metal,g);
+
+const light=new THREE.PointLight(0xffdca2,5,18,2);
+light.position.set(.55,6.2,0);
+g.add(light);
+
+const bulb=new THREE.Mesh(
+new THREE.SphereGeometry(.16,10,8),
+new THREE.MeshStandardMaterial({color:0xffe5ad,emissive:0xffc866,emissiveIntensity:3})
 );
+bulb.position.copy(light.position);
+g.add(bulb);
 
-function addLowObstacle(
-x,z,w,d,h
-){
-
-const group=
-new THREE.Group();
-
-group.position.set(
-x,0,z
-);
-
-scene.add(group);
-
-const mat=
-material(0x625447);
-
-box(
-w,h,d,
-mat,
-0,h/2,0,
-group
-);
-
-const obj={
-type:"low",
-x,z,w,d,
-height:h,
-group
-};
-
-traversalObjects.push(obj);
-
-colliders.push({
-type:"traversal",
-object:obj
-});
-
-cameraMeshes.push(
-...group.children
-);
-
+lamps.push(light);
+world.add(g);
 }
 
-addLowObstacle(
--72,-40,5,1.2,.75
-);
-
-addLowObstacle(
-72,40,5,1.2,.75
-);
-
-addLowObstacle(
--35,40,4,1.4,1
-);
-
-addLowObstacle(
-35,-40,4,1.4,1
-);
-
-function addFallenLog(
-x,z,rotation
-){
-
-const group=
-new THREE.Group();
-
-group.position.set(
-x,0,z
-);
-
-group.rotation.y=
-rotation;
-
-scene.add(group);
-
-const log=
-new THREE.Mesh(
-new THREE.CylinderGeometry(
-.6,.7,5,10
-),
-treeTrunk
-);
-
-log.rotation.z=
-Math.PI/2;
-
-log.position.y=.65;
-
-log.castShadow=true;
-
-group.add(log);
-
-const obj={
-type:"low",
-x,z,
-w:5,
-d:1.4,
-height:1.3,
-group
-};
-
-traversalObjects.push(obj);
-
-colliders.push({
-type:"traversal",
-object:obj
-});
-
-cameraMeshes.push(log);
-
+function addDebris(x,z){
+const g=new THREE.Group();
+g.position.set(x,0,z);
+for(let i=0;i<5;i++){
+const s=.2+Math.random()*.55;
+const m=box("debris",(Math.random()-.5)*2,.15*s,(Math.random()-.5)*2,s,.2*s,s*.7,[MAT.concrete,MAT.rust,MAT.dark][i%3],g);
+m.rotation.set(Math.random(),Math.random(),Math.random());
+}
+world.add(g);
 }
 
-addFallenLog(
--105,30,.15
-);
-
-addFallenLog(
-105,-30,-.2
-);
-
-function addCrouchGap(
-x,z,w,d,clearance
-){
-
-const group=
-new THREE.Group();
-
-group.position.set(
-x,0,z
-);
-
-scene.add(group);
-
-const mat=
-material(0x3e403d);
-
-box(
-.55,
-clearance,
-d,
-mat,
--w/2,
-clearance/2,
-0,
-group
-);
-
-box(
-.55,
-clearance,
-d,
-mat,
-w/2,
-clearance/2,
-0,
-group
-);
-
-box(
-w+.55,
-.45,
-d,
-mat,
-0,
-clearance+.35,
-0,
-group
-);
-
-const obj={
-type:"overhead",
-x,z,w,d,
-clearance,
-group
-};
-
-traversalObjects.push(obj);
-
-colliders.push({
-type:"traversal",
-object:obj
-});
-
-cameraMeshes.push(
-...group.children
-);
-
-}
-
-addCrouchGap(
--20,-105,
-4.8,3,2.65
-);
-
-addCrouchGap(
-20,105,
-4.8,3,2.65
-);
-
-function addCar(
-x,z,color,rotation
-){
-
-const group=
-new THREE.Group();
-
-group.position.set(
-x,0,z
-);
-
-group.rotation.y=
-rotation;
-
-scene.add(group);
-
-const body=
-material(color,.5,.15);
-
-const dark=
-material(0x111416,.35,.25);
-
-const glass=
-material(0x17272f,.15,.4);
-
-box(
-4.1,1.15,6.3,
-body,
-0,1.05,0,
-group
-);
-
-box(
-3.25,.85,2.8,
-body,
-0,1.85,-.2,
-group
-);
-
-box(
-3.05,.65,2.45,
-glass,
-0,1.92,-.2,
-group
-);
-
-box(
-3.3,.13,5.25,
-dark,
-0,1.6,0,
-group
-);
-
-for(
-const sx of[-1,1]
-){
-
-for(
-const sz of[-2.05,2.05]
-){
-
-const wheel=
-new THREE.Mesh(
-new THREE.CylinderGeometry(
-.55,.55,.38,16
-),
-dark
-);
-
-wheel.rotation.z=
-Math.PI/2;
-
-wheel.position.set(
-sx*1.9,
-.62,
-sz
-);
-
-wheel.castShadow=true;
-
-group.add(wheel);
-
-}
-
-}
-
-const car={
-group,
-speed:0,
-driving:false
-};
-
-cars.push(car);
-
-colliders.push({
-type:"car",
-car
-});
-
-group.traverse(
-o=>{
-if(o.isMesh){
-cameraMeshes.push(o);
+function addFence(x,z,len,rot=0){
+const g=new THREE.Group();
+g.position.set(x,.0,z);
+g.rotation.y=rot;
+for(let i=0;i<=Math.floor(len/2);i++){
+const xx=-len/2+i*2;
+cyl(xx,1,0,.07,2,MAT.metal,g);
+if(i<Math.floor(len/2)){
+box("fence",xx+1,1,0,2,.08,.08,MAT.metal,g);
+box("fence",xx+1,.45,0,2,.08,.08,MAT.metal,g);
 }
 }
-);
-
+world.add(g);
 }
 
-addCar(
--4,-70,
-0xb49a20,0
-);
+function addCar(x,z,rot,color){
+const g=new THREE.Group();
+g.position.set(x,.25,z);
+g.rotation.y=rot;
 
-addCar(
-4,70,
-0x9e2929,
-Math.PI
-);
+const bodyMat=mat(color,.38,.25);
 
-addCar(
--110,-4,
-0x28518c,
-Math.PI/2
-);
+const body=box("carbody",0,.65,0,4.5,1.05,7.5,bodyMat,g);
+const hood=box("hood",0,1.12,2.0,4.1,.25,2.1,bodyMat,g);
 
-addCar(
-110,4,
-0x777777,
--Math.PI/2
-);
+const cabin=box("cabin",0,1.55,-.5,3.65,1.25,3.2,MAT.dark,g);
+const windshield=box("windshield",0,1.58,1.14,3.2,.75,.06,MAT.glass,g);
+windshield.rotation.x=-.1;
 
-let playerArmR;
+const rearGlass=box("rearGlass",0,1.58,-2.12,3.2,.75,.06,MAT.glass,g);
+rearGlass.rotation.x=.1;
+
+for(const sx of [-2.15,2.15]){
+for(const sz of [-2.35,2.35]){
+const wheel=cyl(sx,.42,sz,.62,.48,MAT.boot,g);
+wheel.rotation.z=Math.PI/2;
+}
+}
+
+box("bumper",0,.48,3.76,4.25,.3,.2,MAT.metal,g);
+box("bumper",0,.48,-3.76,4.25,.3,.2,MAT.metal,g);
+
+const head1=box("headlight",-1.45,1.05,3.82,.7,.35,.08,new THREE.MeshStandardMaterial({color:0xffffe0,emissive:0xffffb0,emissiveIntensity:1.4}),g);
+const head2=head1.clone();
+head2.position.x=1.45;
+g.add(head2);
+
+g.userData={speed:0,solid:true,drivable:true};
+cars.push(g);
+
+solidObjects.push({type:"car",x,z,w:2.5,d:4.2,group:g});
+cameraMeshes.push(body,cabin,hood,windshield,rearGlass);
+
+world.add(g);
+}
 
 function createPlayer(){
+const g=new THREE.Group();
+g.scale.setScalar(.7);
 
-const group=
-new THREE.Group();
+const torso=box("torso",0,1.55,0,1.35,1.55,.72,MAT.cloth,g);
+box("chestarmor",0,1.75,-.42,1.28,1.15,.15,MAT.armor,g);
 
-const skin=
-material(0x9a6b4c);
+box("belt",0,.95,0,1.45,.18,.78,MAT.rust,g);
 
-const armor=
-material(
-0x363c40,.5,.4
-);
+const head=new THREE.Mesh(new THREE.SphereGeometry(.52,20,16),MAT.skin);
+head.position.y=2.75;
+head.scale.set(1,.95,.9);
+head.castShadow=true;
+g.add(head);
 
-const armorDark=
-material(
-0x20262b,.45,.5
-);
+const hair=new THREE.Mesh(new THREE.SphereGeometry(.54,20,12),MAT.hair);
+hair.position.set(0,3.02,-.02);
+hair.scale.set(1.02,.58,1.0);
+g.add(hair);
 
-const cloth=
-material(0x181a1d);
+for(const x of [-.19,.19]){
+const eye=new THREE.Mesh(new THREE.SphereGeometry(.07,10,8),MAT.white);
+eye.position.set(x,2.79,-.47);
+g.add(eye);
 
-const leather=
-material(0x3d2b20);
-
-box(
-1.55,2,.82,
-armorDark,
-0,2.65,0,
-group
-);
-
-box(
-1.85,.35,.95,
-armor,
-0,3.65,0,
-group
-);
-
-const head=
-new THREE.Mesh(
-new THREE.SphereGeometry(
-.58,20,14
-),
-skin
-);
-
-head.position.y=
-4.25;
-
-group.add(head);
-
-const hair=
-new THREE.Mesh(
-new THREE.SphereGeometry(
-.63,20,12
-),
-material(0x171719)
-);
-
-hair.scale.set(
-1,.7,1
-);
-
-hair.position.set(
-0,4.7,-.03
-);
-
-group.add(hair);
-
-const eyeMat=
-material(0x111111);
-
-const whiteMat=
-material(0xe9e4d6);
-
-for(
-const side of[-1,1]
-){
-
-const eye=
-new THREE.Mesh(
-new THREE.SphereGeometry(
-.075,8,6
-),
-whiteMat
-);
-
-eye.scale.z=.45;
-
-eye.position.set(
-side*.205,
-4.28,
--.535
-);
-
-group.add(eye);
-
-const pupil=
-new THREE.Mesh(
-new THREE.SphereGeometry(
-.038,8,6
-),
-eyeMat
-);
-
-pupil.position.set(
-side*.205,
-4.28,
--.575
-);
-
-group.add(pupil);
-
-const brow=
-new THREE.Mesh(
-new THREE.BoxGeometry(
-.22,.045,.045
-),
-eyeMat
-);
-
-brow.position.set(
-side*.205,
-4.43,
--.54
-);
-
-brow.rotation.z=
-side*.08;
-
-group.add(brow);
-
+const pupil=new THREE.Mesh(new THREE.SphereGeometry(.032,8,6),MAT.hair);
+pupil.position.set(x,2.79,-.525);
+g.add(pupil);
 }
 
-const nose=
-new THREE.Mesh(
-new THREE.ConeGeometry(
-.07,.18,6
-),
-skin
-);
+box("nose",0,2.68,-.52,.08,.12,.13,MAT.skin,g);
+box("mouth",0,2.54,-.50,.22,.055,.035,MAT.dark,g);
 
-nose.rotation.x=
-Math.PI/2;
+for(const x of [-.83,.83]){
+const shoulder=new THREE.Mesh(new THREE.SphereGeometry(.35,12,8),MAT.armor);
+shoulder.position.set(x,2.0,0);
+shoulder.scale.set(.8,.55,1);
+g.add(shoulder);
 
-nose.position.set(
-0,4.15,-.61
-);
-
-group.add(nose);
-
-const mouth=
-new THREE.Mesh(
-new THREE.BoxGeometry(
-.23,.045,.035
-),
-material(0x3b1717)
-);
-
-mouth.position.set(
-0,3.99,-.565
-);
-
-group.add(mouth);
-
-const scarf=
-new THREE.Mesh(
-new THREE.TorusGeometry(
-.52,.1,8,18
-),
-cloth
-);
-
-scarf.rotation.x=
-Math.PI/2;
-
-scarf.position.y=
-3.72;
-
-group.add(scarf);
-
-for(
-const side of[-1,1]
-){
-
-box(
-.65,.35,.9,
-armor,
-side*1.02,
-3.45,0,
-group
-);
-
-const arm=
-box(
-.5,1.55,.5,
-cloth,
-side*.78,
-2.45,0,
-group
-);
-
-if(side===1){
-playerArmR=arm;
+const arm=box("arm",x*.98,1.35,0,.4,1.25,.42,MAT.cloth,g);
+arm.rotation.z=x<0?-.08:.08;
 }
 
-box(
-.52,.4,.58,
-armor,
-side*.78,
-1.7,0,
-group
-);
-
-const leg=
-new THREE.Mesh(
-new THREE.CapsuleGeometry(
-.27,1.15,4,8
-),
-cloth
-);
-
-leg.position.set(
-side*.4,.9,0
-);
-
-leg.castShadow=true;
-
-group.add(leg);
-
-const boot=
-new THREE.Mesh(
-new THREE.BoxGeometry(
-.62,.42,.95
-),
-leather
-);
-
-boot.position.set(
-side*.4,.18,-.12
-);
-
-boot.castShadow=true;
-
-group.add(boot);
-
+for(const x of [-.4,.4]){
+box("leg",x,.38,0,.48,1.0,.5,MAT.cloth,g);
+box("boot",x,-.15,-.08,.58,.42,.8,MAT.boot,g);
 }
 
-box(
-1.65,.35,.9,
-leather,
-0,1.72,0,
-group
-);
+const scarf=box("scarf",0,2.25,.02,1.15,.24,.8,MAT.red,g);
+scarf.rotation.x=.12;
 
-group.traverse(
-o=>{
-if(o.isMesh){
-o.castShadow=true;
-o.receiveShadow=true;
-}
-}
-);
-
-group.scale.set(
-.68,.68,.68
-);
-
-scene.add(group);
-
-return group;
-
+g.userData={standingScale:.7,crouchScale:.48};
+world.add(g);
+return g;
 }
 
-const player=
-createPlayer();
+const player=createPlayer();
+player.position.set(0,.02,35);
 
-player.position.set(
-0,0,105
-);
-
-function createZombie(){
-
-const group=
-new THREE.Group();
-
-const skin=
-material(0x657060);
-
-const shirt=
-material(0x343936);
-
-const pants=
-material(0x202426);
-
-const shoe=
-material(0x181919);
-
-box(
-1.15,1.65,.7,
-shirt,
-0,2.05,0,
-group
-);
-
-const head=
-new THREE.Mesh(
-new THREE.SphereGeometry(
-.52,14,10
-),
-skin
-);
-
-head.position.y=3.5;
-
-group.add(head);
-
-for(
-const side of[-1,1]
-){
-
-const arm=
-new THREE.Mesh(
-new THREE.CapsuleGeometry(
-.18,.75,4,8
-),
-shirt
-);
-
-arm.position.set(
-side*.78,2.15,0
-);
-
-group.add(arm);
-
-const leg=
-new THREE.Mesh(
-new THREE.CapsuleGeometry(
-.23,1,4,8
-),
-pants
-);
-
-leg.position.set(
-side*.3,.65,0
-);
-
-group.add(leg);
-
-}
-
-group.traverse(
-o=>{
-if(o.isMesh){
-o.castShadow=true;
-}
-}
-);
-
-return group;
-
-}
-
-function addZombie(x,z){
-
-const group=
-createZombie();
-
-group.position.set(
-x,0,z
-);
-
-group.userData.hp=2;
-group.userData.stun=0;
-
-scene.add(group);
-
-zombies.push(group);
-
-}
-
-[
-[-145,-105],
-[145,-105],
-[-145,105],
-[145,105],
-[-45,-25],
-[45,25],
-[-25,-25],
-[25,25],
-[-125,55],
-[125,-55],
-[-45,105],
-[45,-105]
-].forEach(
-p=>addZombie(
-p[0],p[1]
-)
-);
-
-function addSupply(x,z){
-
-const group=
-new THREE.Group();
-
-box(
-.9,.7,.9,
-material(0x9a7440,.6,.1),
-0,.45,0,
-group
-);
-
-box(
-.65,.12,.65,
-material(0xb9a36d,.6,.1),
-0,.85,0,
-group
-);
-
-group.position.set(
-x,0,z
-);
-
-scene.add(group);
-
-const item={
-group,
-taken:false
-};
-
-supplies.push(item);
-
-cameraMeshes.push(
-...group.children
-);
-
-}
-
-[
-[-96,-72],
-[-20,-72],
-[20,-18],
-[96,-18],
-[-96,27],
-[-20,72],
-[20,27],
-[96,72]
-].forEach(
-p=>addSupply(
-p[0],p[1]
-)
-);
-
-let insideBuilding=null;
-let activeCar=null;
-
+let hp=100;
+let hunger=100;
+let supplyCount=2;
+let crouching=false;
 let verticalVelocity=0;
 let grounded=true;
-let crouching=false;
-
-const PLAYER_RADIUS=.52;
-
-function currentPlayerHeight(){
-
-return crouching
-?2.55
-:3.15;
-
-}
-
-function circleRect(
-x,z,
-radius,
-cx,cz,
-w,d
-){
-
-const nearestX=
-Math.max(
-cx-w/2,
-Math.min(
-x,
-cx+w/2
-)
-);
-
-const nearestZ=
-Math.max(
-cz-d/2,
-Math.min(
-z,
-cz+d/2
-)
-);
-
-return Math.hypot(
-x-nearestX,
-z-nearestZ
-)<radius;
-
-}
-
-function canPassTraversal(
-obj,x,z
-){
-
-if(
-!circleRect(
-x,z,
-PLAYER_RADIUS,
-obj.x,obj.z,
-obj.w,obj.d
-)
-){
-return true;
-}
-
-if(
-obj.type==="low"
-){
-
-if(
-!grounded &&
-player.position.y>
-obj.height+.18
-){
-return true;
-}
-
-return false;
-
-}
-
-if(
-obj.type==="overhead"
-){
-
-return currentPlayerHeight()<=
-obj.clearance;
-
-}
-
-return false;
-
-}
-
-function blockedOutside(
-x,z,
-ignoreCar=null
-){
-
-if(
-x<-175||
-x>175||
-z<-145||
-z>145
-){
-return true;
-}
-
-for(
-const c of colliders
-){
-
-if(
-c.type==="building"
-){
-
-const b=c.building;
-
-if(
-x>b.x-b.w/2-1 &&
-x<b.x+b.w/2+1 &&
-z>b.z-b.d/2-1 &&
-z<b.z+b.d/2+1
-){
-
-const nearDoor=
-Math.abs(x-b.x)<2.5 &&
-Math.abs(
-z-(b.z-b.d/2)
-)<2.8;
-
-if(!nearDoor){
-return true;
-}
-
-}
-
-}
-
-if(
-c.type==="tree"
-){
-
-if(
-Math.hypot(
-x-c.x,
-z-c.z
-)<c.r+PLAYER_RADIUS
-){
-return true;
-}
-
-}
-
-if(
-c.type==="traversal"
-){
-
-if(
-!canPassTraversal(
-c.object,x,z
-)
-){
-return true;
-}
-
-}
-
-if(
-c.type==="car"
-){
-
-if(c.car===ignoreCar)
-continue;
-
-if(
-Math.hypot(
-x-c.car.group.position.x,
-z-c.car.group.position.z
-)<4
-){
-return true;
-}
-
-}
-
-}
-
-return false;
-
-}
-
-function blockedInside(
-x,z
-){
-
-const b=insideBuilding;
-
-if(!b)
-return false;
-
-if(
-x<b.x-b.w/2+1.2||
-x>b.x+b.w/2-1.2||
-z<b.z-b.d/2+1.2||
-z>b.z+b.d/2-1.2
-){
-return true;
-}
-
-for(
-const f of b.furniture
-){
-
-if(
-x>f.x-f.w/2-.5 &&
-x<f.x+f.w/2+.5 &&
-z>f.z-f.d/2-.5 &&
-z<f.z+f.d/2+.5
-){
-return true;
-}
-
-}
-
-return false;
-
-}
-
-function blocked(
-x,z,
-ignoreCar=null
-){
-
-return insideBuilding
-?blockedInside(x,z)
-:blockedOutside(
-x,z,ignoreCar
-);
-
-}
-
-let joyX=0;
-let joyY=0;
-let joyPointer=null;
-
-const joy=
-document.getElementById("joy");
-
-const knob=
-document.getElementById("knob");
-
-function updateJoystick(x,y){
-
-const r=
-joy.getBoundingClientRect();
-
-let dx=
-x-(r.left+r.width/2);
-
-let dy=
-y-(r.top+r.height/2);
-
-const max=46;
-
-const len=
-Math.hypot(dx,dy);
-
-if(len>max){
-
-dx=dx/len*max;
-dy=dy/len*max;
-
-}
-
-knob.style.transform=
-`translate(${dx}px,${dy}px)`;
-
-joyX=dx/max;
-joyY=dy/max;
-
-}
-
-joy.addEventListener(
-"pointerdown",
-e=>{
-joyPointer=e.pointerId;
-joy.setPointerCapture(
-e.pointerId
-);
-updateJoystick(
-e.clientX,e.clientY
-);
-}
-);
-
-joy.addEventListener(
-"pointermove",
-e=>{
-if(
-e.pointerId===joyPointer
-){
-updateJoystick(
-e.clientX,e.clientY
-);
-}
-}
-);
-
-function resetJoystick(){
-
-joyPointer=null;
-joyX=0;
-joyY=0;
-
-knob.style.transform=
-"translate(0,0)";
-
-}
-
-joy.addEventListener(
-"pointerup",
-resetJoystick
-);
-
-joy.addEventListener(
-"pointercancel",
-resetJoystick
-);
-
-let yaw=0;
-let pitch=.18;
-
-let targetYaw=0;
-let targetPitch=.18;
-
-let cameraDragging=false;
-let cameraPointer=null;
-
-let lastX=0;
-let lastY=0;
-
-renderer.domElement.addEventListener(
-"pointerdown",
-e=>{
-
-if(
-e.clientX<
-innerWidth*.38
-){
-return;
-}
-
-cameraDragging=true;
-
-cameraPointer=
-e.pointerId;
-
-lastX=e.clientX;
-lastY=e.clientY;
-
-renderer.domElement.setPointerCapture(
-e.pointerId
-);
-
-}
-);
-
-renderer.domElement.addEventListener(
-"pointermove",
-e=>{
-
-if(
-!cameraDragging||
-e.pointerId!==cameraPointer
-){
-return;
-}
-
-const dx=
-e.clientX-lastX;
-
-const dy=
-e.clientY-lastY;
-
-lastX=e.clientX;
-lastY=e.clientY;
-
-targetYaw-=dx*.011;
-
-targetPitch-=dy*.008;
-
-targetPitch=
-THREE.MathUtils.clamp(
-targetPitch,
--1.25,
-1.15
-);
-
-}
-);
-
-renderer.domElement.addEventListener(
-"pointerup",
-e=>{
-
-if(
-e.pointerId===cameraPointer
-){
-
-cameraDragging=false;
-cameraPointer=null;
-
-}
-
-}
-);
-
-renderer.domElement.addEventListener(
-"pointercancel",
-e=>{
-
-if(
-e.pointerId===cameraPointer
-){
-
-cameraDragging=false;
-cameraPointer=null;
-
-}
-
-}
-);
+let punching=false;
+let activeCar=null;
 
 const keys={};
+let joyX=0,joyY=0;
+let cameraYaw=0;
+let cameraPitch=.18;
+let dragging=false;
+let lastX=0,lastY=0;
 
-addEventListener(
-"keydown",
-e=>{
+function createZombie(x,z){
+const g=new THREE.Group();
 
-keys[
-e.key.toLowerCase()
-]=true;
+const torso=box("ztorso",0,1.35,0,.95,1.35,.58,MAT.cloth,g);
+const head=new THREE.Mesh(new THREE.SphereGeometry(.38,16,12),MAT.skin);
+head.position.y=2.35;
+g.add(head);
 
-if(e.code==="Space"){
-e.preventDefault();
-jump();
+const hair=new THREE.Mesh(new THREE.SphereGeometry(.4,14,10),MAT.hair);
+hair.position.y=2.55;
+hair.scale.y=.5;
+g.add(hair);
+
+for(const sx of [-.63,.63]){
+box("zarm",sx,1.25,0,.28,1.2,.3,MAT.cloth,g);
 }
 
-if(
-e.key.toLowerCase()==="c"
-){
-toggleCrouch();
+for(const sx of [-.28,.28]){
+box("zleg",sx,.35,0,.34,.9,.38,MAT.dark,g);
+box("zboot",sx,-.15,-.05,.42,.3,.58,MAT.boot,g);
 }
 
-if(
-e.key.toLowerCase()==="e"
-){
-doInteract();
+g.position.set(x,0,z);
+g.userData={hp:2,stun:0};
+zombies.push(g);
+world.add(g);
 }
 
-}
-);
+function addSupply(x,z){
+const g=new THREE.Group();
+g.position.set(x,.1,z);
 
-addEventListener(
-"keyup",
-e=>{
-keys[
-e.key.toLowerCase()
-]=false;
-}
-);
+box("crate",0,.3,0,.9,.6,.9,MAT.yellow,g);
+box("strap",0,.61,0,.12,.04,.95,MAT.rust,g);
+box("strap",0,.61,0,.95,.04,.12,MAT.rust,g);
 
-function movementInput(){
-
-let x=joyX;
-let y=joyY;
-
-if(
-keys.a||
-keys.arrowleft
-){
-x=-1;
+g.userData={taken:false};
+supplies.push(g);
+world.add(g);
 }
 
-if(
-keys.d||
-keys.arrowright
-){
-x=1;
+function buildCity(){
+addGround();
+
+for(let x=-110;x<=110;x+=55)addRoad(x,0,13,320);
+for(let z=-90;z<=90;z+=45)addRoad(0,z,360,13);
+addRoadMarkings();
+
+const bx=[-82.5,-27.5,27.5,82.5];
+const bz=[-67.5,-22.5,22.5,67.5];
+
+let style=0;
+for(const x of bx){
+for(const z of bz){
+if(Math.abs(x)<35&&Math.abs(z)<35)continue;
+addBuilding(x,z,28,25,5+((style%3)*2),style++);
+}
 }
 
-if(
-keys.w||
-keys.arrowup
-){
-y=-1;
+const treePositions=[
+[-145,-120,1.1],[-120,-115,.9],[-90,-125,1.2],[100,-125,1],
+[135,-105,1.1],[-145,100,1.2],[-125,125,.9],[110,115,1.2],
+[140,80,1],[-145,-10,1],[-125,35,.9],[135,25,1.1]
+];
+
+for(const p of treePositions)addTree(...p);
+
+for(let x=-137.5;x<=137.5;x+=27.5){
+if(Math.abs(x)<18)continue;
+addStreetLight(x,-10,0);
+addStreetLight(x,55,0);
 }
 
-if(
-keys.s||
-keys.arrowdown
-){
-y=1;
+for(let z=-75;z<=75;z+=30){
+addStreetLight(-145,z,Math.PI/2);
+addStreetLight(145,z,Math.PI/2);
 }
 
-return{x,y};
+addFence(-118,-65,24);
+addFence(118,65,24,Math.PI);
 
+const debrisPos=[
+[-70,-35],[65,32],[-55,75],[75,-72],[-105,60],[105,-55],
+[-32,-105],[32,105],[-138,20],[138,-20]
+];
+for(const p of debrisPos)addDebris(...p);
+
+addCar(-5,-70,.02,0x9b8124);
+addCar(5,70,Math.PI,0x59646a);
+addCar(-110,-5,Math.PI/2,0x6b3430);
+addCar(110,5,-Math.PI/2,0x36515a);
+
+addSupply(-48,-37);
+addSupply(48,37);
+addSupply(-78,38);
+addSupply(78,-38);
+addSupply(-18,72);
+addSupply(18,-72);
+addSupply(-130,-30);
+addSupply(130,30);
+
+const low1=box("low",0,.4,0,3.5,.8,1.8,MAT.concrete);
+low1.position.set(-58,0,-40);
+lowObjects.push({mesh:low1,x:-58,z:-40,w:2.1,d:1.2,h:.8});
+solidObjects.push({type:"low",x:-58,z:-40,w:2.1,d:1.2,h:.8});
+
+const low2=box("low",0,.5,0,3.8,1,1.8,MAT.rust);
+low2.position.set(58,0,40);
+lowObjects.push({mesh:low2,x:58,z:40,w:2.2,d:1.2,h:1});
+solidObjects.push({type:"low",x:58,z:40,w:2.2,d:1.2,h:1});
+
+const gap1=box("overhead",0,3.0,0,6,.7,3.5,MAT.concrete);
+gap1.position.set(-20,0,-105);
+overheadObjects.push({mesh:gap1,x:-20,z:-105,w:3.3,d:1.8,clearance:2.65});
+solidObjects.push({type:"overhead",x:-20,z:-105,w:3.3,d:1.8,clearance:2.65});
+
+const gap2=box("overhead",0,3.0,0,6,.7,3.5,MAT.concrete);
+gap2.position.set(20,0,105);
+overheadObjects.push({mesh:gap2,x:20,z:105,w:3.3,d:1.8,clearance:2.65});
+solidObjects.push({type:"overhead",x:20,z:105,w:3.3,d:1.8,clearance:2.65});
+
+for(let i=0;i<14;i++){
+const a=Math.random()*Math.PI*2;
+const r=45+Math.random()*100;
+createZombie(Math.cos(a)*r,Math.sin(a)*r);
+}
 }
 
-function jump(){
+buildCity();
 
-if(
-activeCar||
-!grounded||
-crouching
-){
-return;
+function currentHeight(){
+return crouching?2.45:3.15;
 }
 
-verticalVelocity=7.2;
-grounded=false;
-
+function circleRect(px,pz,rx,rz,w,d,pad=.45){
+const cx=Math.max(rx-w/2,Math.min(px,rx+w/2));
+const cz=Math.max(rz-d/2,Math.min(pz,rz+d/2));
+const dx=px-cx,dz=pz-cz;
+return dx*dx+dz*dz<pad*pad;
 }
 
-function toggleCrouch(){
-
-if(
-activeCar||
-!grounded
-){
-return;
+function blocked(nx,nz){
+for(const o of solidObjects){
+if(o.type==="building"||o.type==="car"){
+if(circleRect(nx,nz,o.x,o.z,o.w,o.d,.58))return true;
+}
+if(o.type==="tree"){
+const dx=nx-o.x,dz=nz-o.z;
+if(dx*dx+dz*dz<(o.r+.55)*(o.r+.55))return true;
+}
+if(o.type==="low"){
+if(player.position.y<o.h+.15&&circleRect(nx,nz,o.x,o.z,o.w,o.d,.55))return true;
+}
+if(o.type==="overhead"){
+if(currentHeight()>o.clearance&&circleRect(nx,nz,o.x,o.z,o.w,o.d,.5))return true;
+}
+}
+return false;
 }
 
-crouching=!crouching;
+function movePlayer(dx,dz){
+if(activeCar)return;
 
-document.getElementById(
-"crouch"
-).textContent=
-crouching
-?"BERDIRI"
-:"JONGKOK";
+const len=Math.hypot(dx,dz);
+if(len>1){dx/=len;dz/=len}
 
+const nx=player.position.x+dx;
+const nz=player.position.z+dz;
+
+if(!blocked(nx,player.position.z))player.position.x=nx;
+if(!blocked(player.position.x,nz))player.position.z=nz;
 }
 
 function updateVertical(dt){
-
-if(!grounded){
+if(activeCar)return;
 
 verticalVelocity-=18*dt;
+player.position.y+=verticalVelocity*dt;
 
-player.position.y+=
-verticalVelocity*dt;
-
-if(
-player.position.y<=0
-){
-
-player.position.y=0;
+if(player.position.y<=.02){
+player.position.y=.02;
 verticalVelocity=0;
 grounded=true;
+}else grounded=false;
 
+player.scale.setScalar(crouching?.48:.7);
 }
 
+function jump(){
+if(activeCar)return;
+if(grounded){
+verticalVelocity=7.4;
+grounded=false;
+}
 }
 
-const targetY=
-crouching?.56:.68;
-
-player.scale.y=
-THREE.MathUtils.lerp(
-player.scale.y,
-targetY,
-1-Math.pow(.00001,dt)
-);
-
+function toggleCrouch(){
+if(activeCar)return;
+crouching=!crouching;
 }
-
-function movePlayer(dt){
-
-const input=
-movementInput();
-
-const magnitude=
-Math.hypot(
-input.x,input.y
-);
-
-if(
-magnitude<.05
-){
-return;
-}
-
-const forward=
-new THREE.Vector3(
--Math.sin(yaw),
-0,
--Math.cos(yaw)
-);
-
-const right=
-new THREE.Vector3(
-Math.cos(yaw),
-0,
--Math.sin(yaw)
-);
-
-const direction=
-forward
-.multiplyScalar(-input.y)
-.add(
-right.multiplyScalar(input.x)
-);
-
-direction.normalize();
-
-let speed=
-insideBuilding?5.8:8;
-
-if(crouching){
-speed*=.52;
-}
-
-const nx=
-player.position.x+
-direction.x*speed*dt;
-
-const nz=
-player.position.z+
-direction.z*speed*dt;
-
-if(
-!blocked(
-nx,
-player.position.z
-)
-){
-player.position.x=nx;
-}
-
-if(
-!blocked(
-player.position.x,
-nz
-)
-){
-player.position.z=nz;
-}
-
-player.rotation.y=
-Math.atan2(
-direction.x,
-direction.z
-);
-
-}
-
-function driveCar(dt){
-
-if(!activeCar)
-return;
-
-const car=
-activeCar;
-
-const input=
-movementInput();
-
-const throttle=
--input.y;
-
-const steering=
-input.x;
-
-const acceleration=
-throttle>0
-?26
-:throttle<0
-?34
-:0;
-
-if(
-throttle!==0
-){
-
-car.speed+=
-throttle*
-acceleration*
-dt;
-
-}else{
-
-car.speed*=
-Math.pow(
-.18,
-dt
-);
-
-}
-
-car.speed=
-THREE.MathUtils.clamp(
-car.speed,
--10,
-28
-);
-
-const steeringPower=
-THREE.MathUtils.clamp(
-Math.abs(car.speed)/7,
-.18,
-1
-);
-
-if(
-Math.abs(car.speed)>.4
-){
-
-car.group.rotation.y-=
-steering*
-steeringPower*
-2.1*
-dt*
-(car.speed>=0?1:-1);
-
-}
-
-const direction=
-new THREE.Vector3(
-Math.sin(
-car.group.rotation.y
-),
-0,
-Math.cos(
-car.group.rotation.y
-)
-);
-
-const nx=
-car.group.position.x+
-direction.x*
-car.speed*
-dt;
-
-const nz=
-car.group.position.z+
-direction.z*
-car.speed*
-dt;
-
-if(
-!blockedOutside(
-nx,nz,car
-)
-){
-
-car.group.position.x=nx;
-car.group.position.z=nz;
-
-}else{
-
-car.speed*=-.18;
-
-}
-
-}
-
-function updateZombies(dt){
-
-if(activeCar||insideBuilding)
-return;
-
-for(
-const zombie of zombies
-){
-
-if(
-zombie.userData.stun>0
-){
-
-zombie.userData.stun-=dt;
-continue;
-
-}
-
-const dx=
-player.position.x-
-zombie.position.x;
-
-const dz=
-player.position.z-
-zombie.position.z;
-
-const distance=
-Math.hypot(dx,dz);
-
-if(
-distance>4&&
-distance<100
-){
-
-const speed=1.45;
-
-const nx=
-zombie.position.x+
-dx/distance*
-speed*dt;
-
-const nz=
-zombie.position.z+
-dz/distance*
-speed*dt;
-
-if(
-!blockedOutside(nx,nz)
-){
-
-zombie.position.set(
-nx,0,nz
-);
-
-}
-
-zombie.rotation.y=
-Math.atan2(dx,dz);
-
-}
-
-}
-
-}
-
-let punchTimer=0;
-let punchCooldown=0;
 
 function nearestZombie(){
-
 let best=null;
-let distance=3.2;
-
-for(
-const zombie of zombies
-){
-
-if(
-zombie.userData.stun>0
-)
-continue;
-
-const d=
-Math.hypot(
-player.position.x-zombie.position.x,
-player.position.z-zombie.position.z
-);
-
-if(d<distance){
-
-distance=d;
-best=zombie;
-
+let dist=999;
+for(const z of zombies){
+if(z.userData.hp<=0)continue;
+const d=player.position.distanceTo(z.position);
+if(d<dist){dist=d;best=z}
 }
-
-}
-
-return best;
-
-}
-
-function punch(){
-
-if(
-activeCar||
-punchCooldown>0
-)
-return;
-
-const zombie=
-nearestZombie();
-
-if(!zombie)
-return;
-
-punchCooldown=.55;
-punchTimer=.28;
-
-const dx=
-zombie.position.x-
-player.position.x;
-
-const dz=
-zombie.position.z-
-player.position.z;
-
-const d=
-Math.hypot(dx,dz)||1;
-
-const nx=
-zombie.position.x+
-dx/d*3;
-
-const nz=
-zombie.position.z+
-dz/d*3;
-
-if(
-!blockedOutside(nx,nz)
-){
-
-zombie.position.set(
-nx,0,nz
-);
-
-}
-
-zombie.userData.hp--;
-zombie.userData.stun=.65;
-
-showMessage(
-zombie.userData.hp<=0
-?"ZOMBIE TUMBANG"
-:"PUKUL"
-);
-
-if(
-zombie.userData.hp<=0
-){
-
-setTimeout(
-()=>{
-
-const i=
-zombies.indexOf(zombie);
-
-if(i!==-1){
-
-scene.remove(zombie);
-zombies.splice(i,1);
-
-}
-
-},
-350
-);
-
-}
-
-}
-
-function updatePunch(dt){
-
-if(punchCooldown>0)
-punchCooldown-=dt;
-
-if(punchTimer>0){
-
-punchTimer-=dt;
-
-const t=
-1-punchTimer/.28;
-
-playerArmR.rotation.z=
--.15+
-Math.sin(t*Math.PI)*1.8;
-
-}else{
-
-playerArmR.rotation.z=-.15;
-
-}
-
+return {z:best,d:dist};
 }
 
 function nearestSupply(){
-
-let best=null;
-let distance=2.8;
-
-for(
-const item of supplies
-){
-
-if(item.taken)
-continue;
-
-const d=
-Math.hypot(
-player.position.x-
-item.group.position.x,
-player.position.z-
-item.group.position.z
-);
-
-if(d<distance){
-
-distance=d;
-best=item;
-
+let best=null,dist=999;
+for(const s of supplies){
+if(s.userData.taken)continue;
+const d=player.position.distanceTo(s.position);
+if(d<dist){dist=d;best=s}
 }
-
-}
-
-return best;
-
-}
-
-let supplyCount=0;
-
-function takeSupply(item){
-
-item.taken=true;
-
-scene.remove(
-item.group
-);
-
-supplyCount++;
-
-document.getElementById(
-"supplies"
-).textContent=
-supplyCount;
-
-showMessage(
-"SUPPLY DIAMBIL"
-);
-
+return {s:best,d:dist};
 }
 
 function nearestCar(){
-
-let best=null;
-let distance=5.5;
-
-for(
-const car of cars
-){
-
-if(car.driving)
-continue;
-
-const d=
-Math.hypot(
-player.position.x-
-car.group.position.x,
-player.position.z-
-car.group.position.z
-);
-
-if(d<distance){
-
-distance=d;
-best=car;
-
+let best=null,dist=999;
+for(const c of cars){
+const d=player.position.distanceTo(c.position);
+if(d<dist){dist=d;best=c}
 }
-
-}
-
-return best;
-
+return {c:best,d:dist};
 }
 
 function nearestBuilding(){
-
-let best=null;
-let distance=4.5;
-
-for(
-const b of buildings
-){
-
-const doorZ=
-b.z-b.d/2-1;
-
-const d=
-Math.hypot(
-player.position.x-b.x,
-player.position.z-doorZ
-);
-
-if(d<distance){
-
-distance=d;
-best=b;
-
+let best=null,dist=999;
+for(const b of buildings){
+const d=player.position.distanceTo(b.position);
+if(d<17&&d<dist){dist=d;best=b}
+}
+return {b:best,d:dist};
 }
 
+function punch(){
+if(activeCar)return;
+
+const q=nearestZombie();
+if(q.z&&q.d<3.4){
+q.z.userData.hp--;
+q.z.userData.stun=.5;
+
+const dir=new THREE.Vector3().subVectors(q.z.position,player.position).normalize();
+q.z.position.addScaledVector(dir,1.2);
+
+if(q.z.userData.hp<=0){
+world.remove(q.z);
+}
+}
 }
 
-return best;
-
+function pickup(){
+const q=nearestSupply();
+if(q.s&&q.d<3){
+q.s.userData.taken=true;
+q.s.visible=false;
+supplyCount++;
+document.getElementById("supplies").textContent=supplyCount;
+}
 }
 
-function nearInsideDoor(){
+function enterBuilding(){
+const q=nearestBuilding();
+if(!q.b||q.d>10)return;
 
-if(!insideBuilding)
-return false;
+const b=q.b;
+const local=new THREE.Vector3();
+player.getWorldPosition(local);
 
-const b=
-insideBuilding;
+const dx=player.position.x-b.position.x;
+const dz=player.position.z-b.position.z;
 
-return Math.hypot(
-player.position.x-b.x,
-player.position.z-
-(b.z-b.d/2+2.2)
-)<3;
-
+if(!b.userData.inside){
+if(Math.abs(dz)>8){
+player.position.set(b.position.x,b.position.y,b.position.z+10);
+b.userData.inside=true;
+}else{
+player.position.set(b.position.x,b.position.y,b.position.z+10);
+b.userData.inside=true;
+}
+}else{
+player.position.set(b.position.x,b.position.y,b.position.z+14);
+b.userData.inside=false;
+}
 }
 
-function showMessage(text){
+function enterCar(){
+const q=nearestCar();
+if(!q.c||q.d>6)return;
 
-const msg=
-document.getElementById("msg");
-
-msg.textContent=text;
-msg.style.opacity=1;
-
-clearTimeout(
-showMessage.timer
-);
-
-showMessage.timer=
-setTimeout(
-()=>{
-msg.style.opacity=0;
-},
-1200
-);
-
-}
-
-function enterCar(car){
-
-activeCar=car;
-
-car.driving=true;
-
+activeCar=q.c;
 player.visible=false;
-
-car.speed=0;
-
-targetYaw=
-car.group.rotation.y;
-
-document.getElementById(
-"drive"
-).style.display="block";
-
-showMessage(
-"SIAP MENYETIR"
-);
-
+activeCar.userData.speed=0;
+document.getElementById("exitCar").style.display="block";
+document.getElementById("speed").style.display="block";
 }
 
 function exitCar(){
+if(!activeCar)return;
 
-if(!activeCar)
-return;
+const side=new THREE.Vector3(3.2,0,0).applyQuaternion(activeCar.quaternion);
+const p=activeCar.position.clone().add(side);
 
-const car=
-activeCar;
-
-const side=
-new THREE.Vector3(
-3.8,0,0
-);
-
-side.applyAxisAngle(
-new THREE.Vector3(0,1,0),
-car.group.rotation.y
-);
-
-const x=
-car.group.position.x+side.x;
-
-const z=
-car.group.position.z+side.z;
-
-if(
-!blockedOutside(
-x,z,car
-)
-){
-
-player.position.set(
-x,0,z
-);
-
+if(!blocked(p.x,p.z)){
+player.position.set(p.x,.02,p.z);
 player.visible=true;
-
-car.driving=false;
-car.speed=0;
-
 activeCar=null;
+document.getElementById("exitCar").style.display="none";
+document.getElementById("speed").style.display="none";
+}
+}
 
-document.getElementById(
-"drive"
-).style.display="none";
+function drive(dt){
+if(!activeCar)return;
 
-showMessage(
-"KELUAR MOBIL"
-);
+const steer=joyX;
+const throttle=-joyY;
 
+let speed=activeCar.userData.speed;
+
+if(Math.abs(throttle)>.08){
+speed+=throttle*(throttle>0?27:34)*dt;
 }else{
-
-showMessage(
-"JALAN KELUAR TERHALANG"
-);
-
+speed*=Math.pow(.12,dt);
 }
 
+speed=Math.max(-11,Math.min(29,speed));
+
+const steering=steer*(speed/29)*1.65*dt;
+activeCar.rotation.y-=steering;
+
+const forward=new THREE.Vector3(0,0,1).applyQuaternion(activeCar.quaternion);
+const nx=activeCar.position.x+forward.x*speed*dt;
+const nz=activeCar.position.z+forward.z*speed*dt;
+
+if(!blocked(nx,nz)){
+activeCar.position.x=nx;
+activeCar.position.z=nz;
+}else{
+speed*=-.2;
 }
 
-function enterBuilding(b){
+activeCar.userData.speed=speed;
 
-insideBuilding=b;
-
-b.inside=true;
-
-player.position.set(
-b.x,
-0,
-b.z-b.d/2+3.5
-);
-
-targetYaw=0;
-
-showMessage(
-"MASUK RUMAH"
-);
-
+const km=Math.round(Math.abs(speed)*3.6);
+document.getElementById("speed").textContent=km+" KM/H";
 }
 
-function exitBuilding(){
+function updateZombies(dt){
+if(activeCar)return;
 
-const b=
-insideBuilding;
-
-if(!b)
-return;
-
-if(
-!nearInsideDoor()
-){
-
-showMessage(
-"DEKATI PINTU"
-);
-
-return;
-
+for(const z of zombies){
+if(!z.parent)continue;
+if(z.userData.stun>0){
+z.userData.stun-=dt;
+continue;
 }
 
-insideBuilding=null;
+const dx=player.position.x-z.position.x;
+const dz=player.position.z-z.position.z;
+const d=Math.hypot(dx,dz);
 
-b.inside=false;
-
-player.position.set(
-b.x,
-0,
-b.z-b.d/2-3.5
-);
-
-showMessage(
-"KELUAR RUMAH"
-);
-
+if(d<28&&d>1.7){
+const vx=dx/d*dt*1.5;
+const vz=dz/d*dt*1.5;
+if(!blocked(z.position.x+vx,z.position.z))z.position.x+=vx;
+if(!blocked(z.position.x,z.position.z+vz))z.position.z+=vz;
+z.rotation.y=Math.atan2(dx,dz);
+}
+}
 }
 
 function updateActionButton(){
-
-const button=
-document.getElementById(
-"interact"
-);
+const btn=document.getElementById("action");
 
 if(activeCar){
-
-button.innerHTML=
-"🚪<br>KELUAR";
-
+btn.innerHTML="🚗<br>KELUAR";
 return;
-
 }
 
-if(insideBuilding){
+const z=nearestZombie();
+const s=nearestSupply();
+const c=nearestCar();
+const b=nearestBuilding();
 
-if(nearInsideDoor()){
-
-button.innerHTML=
-"🚪<br>KELUAR";
-
+if(z.z&&z.d<3.8){
+btn.innerHTML="👊<br>PUKUL";
+}else if(s.s&&s.d<3.5){
+btn.innerHTML="📦<br>AMBIL";
+}else if(c.c&&c.d<6){
+btn.innerHTML="🚗<br>MASUK";
+}else if(b.b&&b.d<10){
+btn.innerHTML="🚪<br>MASUK";
 }else{
-
-button.innerHTML=
-"👊<br>TINJU";
-
+btn.innerHTML="👊<br>TINJU";
+}
 }
 
-return;
+const raycaster=new THREE.Raycaster();
 
-}
-
-if(nearestZombie()){
-
-button.innerHTML=
-"👊<br>PUKUL";
-
-return;
-
-}
-
-if(nearestSupply()){
-
-button.innerHTML=
-"📦<br>AMBIL";
-
-return;
-
-}
-
-if(nearestCar()){
-
-button.innerHTML=
-"🚗<br>MASUK";
-
-return;
-
-}
-
-if(nearestBuilding()){
-
-button.innerHTML=
-"🚪<br>MASUK";
-
-return;
-
-}
-
-button.innerHTML=
-"👊<br>TINJU";
-
-}
-
-function doInteract(){
+function updateCamera(){
+const target=new THREE.Vector3();
 
 if(activeCar){
-
-exitCar();
-return;
-
-}
-
-if(insideBuilding){
-
-if(nearInsideDoor()){
-
-exitBuilding();
-return;
-
-}
-
-const item=
-nearestSupply();
-
-if(item){
-
-takeSupply(item);
-return;
-
-}
-
-punch();
-return;
-
-}
-
-const zombie=
-nearestZombie();
-
-if(zombie){
-
-punch();
-return;
-
-}
-
-const item=
-nearestSupply();
-
-if(item){
-
-takeSupply(item);
-return;
-
-}
-
-const car=
-nearestCar();
-
-if(car){
-
-enterCar(car);
-return;
-
-}
-
-const building=
-nearestBuilding();
-
-if(building){
-
-enterBuilding(building);
-return;
-
-}
-
-}
-
-document
-.getElementById("interact")
-.addEventListener(
-"pointerdown",
-e=>{
-e.preventDefault();
-doInteract();
-}
-);
-
-document
-.getElementById("jump")
-.addEventListener(
-"pointerdown",
-e=>{
-e.preventDefault();
-jump();
-}
-);
-
-document
-.getElementById("crouch")
-.addEventListener(
-"pointerdown",
-e=>{
-e.preventDefault();
-toggleCrouch();
-}
-);
-
-document
-.getElementById("drive")
-.addEventListener(
-"pointerdown",
-e=>{
-e.preventDefault();
-exitCar();
-}
-);
-
-document
-.getElementById("fs")
-.addEventListener(
-"click",
-async()=>{
-try{
-
-if(!document.fullscreenElement){
-
-await document
-.documentElement
-.requestFullscreen();
-
+target.copy(activeCar.position);
+target.y+=1.35;
 }else{
-
-await document.exitFullscreen();
-
+target.copy(player.position);
+target.y+=crouching?1.65:2.0;
 }
 
-}catch(e){}
+const distance=activeCar?15:11.5;
 
-}
+const offset=new THREE.Vector3(
+Math.sin(cameraYaw)*Math.cos(cameraPitch)*distance,
+Math.sin(cameraPitch)*distance+3.0,
+Math.cos(cameraYaw)*Math.cos(cameraPitch)*distance
 );
 
-const raycaster=
-new THREE.Raycaster();
-
-function updateCamera(dt){
-
-const target=
-activeCar
-?activeCar.group.position
-:player.position;
-
-yaw=
-THREE.MathUtils.lerp(
-yaw,
-targetYaw,
-1-Math.pow(.0005,dt)
-);
-
-pitch=
-THREE.MathUtils.lerp(
-pitch,
-targetPitch,
-1-Math.pow(.0005,dt)
-);
-
-const distance=
-activeCar
-?14
-:12.8;
-
-const focusHeight=
-activeCar
-?1.8
-:crouching
-?1.4
-:2.15;
-
-const cp=
-Math.cos(pitch);
-
-const desired=
-new THREE.Vector3(
-target.x+
-Math.sin(yaw)*cp*distance,
-target.y+
-focusHeight+
-Math.sin(pitch)*distance,
-target.z+
-Math.cos(yaw)*cp*distance
-);
-
-const lookOrigin=
-new THREE.Vector3(
-target.x,
-target.y+focusHeight,
-target.z
-);
-
-const direction=
-desired.clone()
-.sub(lookOrigin);
-
-const wantedDistance=
-direction.length();
-
+const desired=target.clone().add(offset);
+const direction=desired.clone().sub(target);
+const length=direction.length();
 direction.normalize();
 
-raycaster.set(
-lookOrigin,
-direction
-);
+raycaster.set(target,direction);
+const hits=raycaster.intersectObjects(cameraMeshes,true);
 
-raycaster.far=
-wantedDistance;
+let finalDistance=length;
 
-const hits=
-raycaster.intersectObjects(
-cameraMeshes,
-true
-);
-
-let finalDistance=
-wantedDistance;
-
-for(
-const hit of hits
-){
-
-if(
-hit.distance>.15 &&
-hit.distance<finalDistance
-){
-
-finalDistance=
-Math.max(
-.75,
-hit.distance-.4
-);
-
+for(const hit of hits){
+if(hit.distance>.3&&hit.distance<finalDistance){
+finalDistance=Math.max(.9,hit.distance-.55);
 break;
-
+}
 }
 
+const finalPos=target.clone().add(direction.multiplyScalar(finalDistance));
+camera.position.lerp(finalPos,.18);
+camera.lookAt(target);
 }
 
-const safePosition=
-lookOrigin.clone()
-.add(
-direction.multiplyScalar(
-finalDistance
-)
-);
-
-safePosition.y=
-Math.max(
-.8,
-safePosition.y
-);
-
-camera.position.lerp(
-safePosition,
-1-Math.pow(.00008,dt)
-);
-
-camera.lookAt(
-lookOrigin
-);
-
+function interact(){
+if(activeCar){
+exitCar();
+return;
 }
 
-let previous=
-performance.now();
+const z=nearestZombie();
+if(z.z&&z.d<3.8){
+punch();
+return;
+}
+
+const s=nearestSupply();
+if(s.s&&s.d<3.5){
+pickup();
+return;
+}
+
+const c=nearestCar();
+if(c.c&&c.d<6){
+enterCar();
+return;
+}
+
+const b=nearestBuilding();
+if(b.b&&b.d<10){
+enterBuilding();
+return;
+}
+
+punch();
+}
+
+document.getElementById("action").onclick=interact;
+document.getElementById("jump").onclick=jump;
+document.getElementById("crouch").onclick=toggleCrouch;
+document.getElementById("exitCar").onclick=exitCar;
+
+document.getElementById("full").onclick=()=>{
+if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();
+else document.exitFullscreen?.();
+};
+
+renderer.domElement.addEventListener("pointerdown",e=>{
+if(e.clientX>innerWidth*.45){
+dragging=true;
+lastX=e.clientX;
+lastY=e.clientY;
+}
+});
+
+renderer.domElement.addEventListener("pointermove",e=>{
+if(!dragging)return;
+
+const dx=e.clientX-lastX;
+const dy=e.clientY-lastY;
+
+cameraYaw-=dx*.006;
+cameraPitch-=dy*.004;
+cameraPitch=Math.max(-.55,Math.min(1.0,cameraPitch));
+
+lastX=e.clientX;
+lastY=e.clientY;
+});
+
+renderer.domElement.addEventListener("pointerup",()=>dragging=false);
+renderer.domElement.addEventListener("pointercancel",()=>dragging=false);
+
+document.addEventListener("keydown",e=>{
+keys[e.key.toLowerCase()]=true;
+
+if(e.key===" "){e.preventDefault();jump()}
+if(e.key.toLowerCase()==="c")toggleCrouch();
+if(e.key.toLowerCase()==="e")interact();
+});
+
+document.addEventListener("keyup",e=>{
+keys[e.key.toLowerCase()]=false;
+});
+
+const joy=document.getElementById("joy");
+const knob=document.getElementById("knob");
+let joyActive=false;
+
+function setJoy(x,y){
+const r=joy.getBoundingClientRect();
+let dx=x-(r.left+r.width/2);
+let dy=y-(r.top+r.height/2);
+const max=50;
+const len=Math.hypot(dx,dy);
+if(len>max){
+dx=dx/len*max;
+dy=dy/len*max;
+}
+joyX=dx/max;
+joyY=dy/max;
+knob.style.transform=`translate(${dx}px,${dy}px)`;
+}
+
+joy.addEventListener("pointerdown",e=>{
+joyActive=true;
+joy.setPointerCapture(e.pointerId);
+setJoy(e.clientX,e.clientY);
+});
+
+joy.addEventListener("pointermove",e=>{
+if(joyActive)setJoy(e.clientX,e.clientY);
+});
+
+joy.addEventListener("pointerup",()=>{
+joyActive=false;
+joyX=0;
+joyY=0;
+knob.style.transform="translate(0,0)";
+});
+
+let last=performance.now();
 
 function animate(now){
+requestAnimationFrame(animate);
 
-const dt=
-Math.min(
-.033,
-(now-previous)/1000
+const dt=Math.min(.033,(now-last)/1000);
+last=now;
+
+let mx=joyX;
+let mz=joyY;
+
+if(keys.w||keys.arrowup)mz=-1;
+if(keys.s||keys.arrowdown)mz=1;
+if(keys.a||keys.arrowleft)mx=-1;
+if(keys.d||keys.arrowright)mx=1;
+
+if(!activeCar){
+const forward=new THREE.Vector3(
+Math.sin(cameraYaw),0,Math.cos(cameraYaw)
+);
+const right=new THREE.Vector3(
+Math.cos(cameraYaw),0,-Math.sin(cameraYaw)
 );
 
-previous=now;
+const move=forward.clone().multiplyScalar(-mz*.12);
+move.add(right.multiplyScalar(mx*.12));
 
-if(activeCar){
-
-driveCar(dt);
-
-}else{
-
-movePlayer(dt);
-
+if(move.length()>0){
+move.multiplyScalar(Math.min(1,Math.hypot(mx,mz)));
+movePlayer(move.x,move.z);
+player.rotation.y=Math.atan2(move.x,move.z);
+}
 }
 
+drive(dt);
 updateVertical(dt);
-updatePunch(dt);
 updateZombies(dt);
+updateCamera();
 updateActionButton();
-updateCamera(dt);
 
-renderer.render(
-scene,
-camera
-);
+hunger=Math.max(0,hunger-dt*.008);
+document.getElementById("hp").textContent=Math.round(hp);
+document.getElementById("hunger").textContent=Math.round(hunger);
 
-requestAnimationFrame(
-animate
-);
-
+renderer.render(scene,camera);
 }
 
-requestAnimationFrame(
-animate
-);
-
-addEventListener(
-"resize",
-()=>{
-
-camera.aspect=
-innerWidth/innerHeight;
-
+window.addEventListener("resize",()=>{
+camera.aspect=innerWidth/innerHeight;
 camera.updateProjectionMatrix();
+renderer.setSize(innerWidth,innerHeight);
+});
 
-renderer.setSize(
-innerWidth,
-innerHeight
-);
-
-}
-);
-
+animate(performance.now());
 </script>
 </body>
 </html>
