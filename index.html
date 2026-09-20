@@ -102,11 +102,12 @@ canvas{
   position:absolute;
   top:0;
   right:0;
-  width:58%;
+  width:62%;
   height:100%;
   z-index:1;
   pointer-events:auto;
   touch-action:none;
+  cursor:grab;
 }
 
 #joystick,
@@ -323,11 +324,11 @@ canvas{
 #joystick{
   position:absolute;
 
-  left:max(22px,env(safe-area-inset-left));
-  bottom:max(22px,env(safe-area-inset-bottom));
+  left:max(24px,env(safe-area-inset-left));
+  bottom:max(24px,env(safe-area-inset-bottom));
 
-  width:145px;
-  height:145px;
+  width:152px;
+  height:152px;
 
   border:2px solid rgba(255,255,255,.14);
 
@@ -341,11 +342,11 @@ canvas{
 #stick{
   position:absolute;
 
-  left:40px;
-  top:40px;
+  left:43px;
+  top:43px;
 
-  width:65px;
-  height:65px;
+  width:66px;
+  height:66px;
 
   border:2px solid rgba(255,255,255,.25);
 
@@ -359,11 +360,11 @@ canvas{
 #buttons{
   position:absolute;
 
-  right:max(16px,env(safe-area-inset-right));
-  bottom:max(18px,env(safe-area-inset-bottom));
+  right:max(18px,env(safe-area-inset-right));
+  bottom:max(20px,env(safe-area-inset-bottom));
 
-  width:205px;
-  height:190px;
+  width:225px;
+  height:205px;
 
   pointer-events:none;
 }
@@ -394,25 +395,25 @@ canvas{
 
 #actionBtn{
   right:0;
-  top:43px;
+  top:48px;
 
-  width:78px;
-  height:78px;
+  width:84px;
+  height:84px;
 }
 
 #runBtn{
-  right:80px;
-  bottom:3px;
+  right:92px;
+  bottom:2px;
 }
 
 #crouchBtn{
-  right:0;
+  right:4px;
   bottom:0;
 }
 
 #bagBtn{
-  right:150px;
-  bottom:138px;
+  right:166px;
+  bottom:150px;
 
   width:47px;
   height:47px;
@@ -593,7 +594,7 @@ canvas{
 
 <meta name="cache-control" content="no-cache, no-store, must-revalidate">
 <meta name="pragma" content="no-cache">
-<meta name="build-version" content="1.3.0">
+<meta name="build-version" content="1.4.0">
 
 </head>
 
@@ -624,11 +625,11 @@ canvas{
 
 </div>
 
-<div id="buildVersion">BUILD v1.3.0</div>
+<div id="buildVersion">BUILD v1.4.0</div>
 
 <div id="hud">
 
-  <div id="lookPad" aria-label="Geser untuk memutar pandangan • kiri/kanan + atas/bawah"></div>
+  <div id="lookPad" aria-label="Geser sisi kanan untuk memutar kamera 360 derajat"></div>
 
   <div id="playerCard">
 
@@ -637,7 +638,7 @@ canvas{
     </div>
 
     <div class="version">
-      VIRELIA v1.3.0
+      VIRELIA v1.4.0
     </div>
 
     <div class="bar">
@@ -650,7 +651,7 @@ canvas{
 
   </div>
 
-  <div id="compass">N&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S</div>
+  <div id="compass">N&nbsp;&nbsp;&nbsp;NE&nbsp;&nbsp;&nbsp;E&nbsp;&nbsp;&nbsp;SE&nbsp;&nbsp;&nbsp;S</div>
 
   <div id="zone">
 
@@ -763,7 +764,7 @@ canvas{
     <div class="sub">
       AFTERFALL
       <br><br>
-      GAMEPLAY FOUNDATION
+      TPP MOBILE CONTROLS
       <br>
       70 SURVIVORS
       <br>
@@ -771,7 +772,7 @@ canvas{
     </div>
 
     <div class="versionStart">
-      VERSION 1.3.0
+      VERSION 1.4.0
     </div>
 
     <button id="startBtn">
@@ -786,7 +787,7 @@ canvas{
 
 import {
   startGame
-} from "./src/main.js?v=1.3.0";
+} from "./src/main.js?v=1.4.0";
 
 const startScreen =
   document.getElementById("start");
@@ -841,7 +842,7 @@ window.addEventListener("error",function(event){
   const box=document.getElementById("bootError");
   if(box){
     box.style.display="block";
-    box.textContent="BUILD v1.3.0 • ERROR: "+(event.message||"unknown");
+    box.textContent="BUILD v1.4.0 • ERROR: "+(event.message||"unknown");
   }
 });
 </script>
