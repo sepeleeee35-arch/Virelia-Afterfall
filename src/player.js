@@ -20,6 +20,12 @@ export function updatePlayer(dt){
     y/=length;
   }
 
+  const cos=Math.cos(input.cameraYaw);
+  const sin=Math.sin(input.cameraYaw);
+
+  const worldX=x*cos-y*sin;
+  const worldY=x*sin+y*cos;
+
   let speed=player.speed;
   player.crouch=input.crouch;
 
@@ -34,8 +40,8 @@ export function updatePlayer(dt){
     player.stamina=Math.min(100,player.stamina+18*dt);
   }
 
-  player.x+=x*speed*dt;
-  player.y+=y*speed*dt;
+  player.x+=worldX*speed*dt;
+  player.y+=worldY*speed*dt;
 
   player.x=Math.max(35,Math.min(world.width-35,player.x));
   player.y=Math.max(35,Math.min(world.height-35,player.y));
