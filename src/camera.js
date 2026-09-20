@@ -1,163 +1,257 @@
 import * as THREE from "three";
 
-export class ThirdPersonCamera{
+export class CameraController {
+  constructor(camera, dom, player, world) {
+    this.camera = camera;
+    this.dom = dom;
+    this.player = player;
+    this.world = world;
 
-  constructor(camera,scene,player){
+    this.yaw = 0;
+    this.pitch = -0.18;
 
-    this.camera=camera;
-    this.scene=scene;
-    this.player=player;
+    this.targetYaw = 0;
+    this.targetPitch = -0.18;
 
-    this.yaw=0;
-    this.pitch=.24;
+    this.distance = 5.2;
+    this.targetDistance = 5.2;
 
-    this.distance=4.9;
-    this.height=1.02;
+    this.height = 1.45;
 
-    this.target=new THREE.Vector3();
-    this.desired=new THREE.Vector3();
-    this.direction=new THREE.Vector3();
+    this.minPitch = -1.15;
+    this.maxPitch = 0.55;
 
-    this.raycaster=new THREE.Raycaster();
+    this.minDistance = 2.0;
+    this.maxDistance = 6.5;
 
-    this.currentDistance=this.distance;
+    this.lookTarget = new THREE.Vector3();
+    this.cameraTarget = new THREE.Vector3();
+
+    this.raycaster = new THREE.Raycaster();
+
+    this.pointerActive = false;
+    this.lastX = 0;
+    this.lastY = 0;
+
+    this.bindTouch();
   }
 
-  getYaw(){
-    return this.yaw;
-  }
+  bindTouch() {
+    this.dom.addEventListener(
+      "pointerdown",
+      e => {
+        if (
+          e.clientX <
+          innerWidth * 0.42
+        ) return;
 
-  isBlocker(object){
+        this.pointerActive = true;
 
-    let current=object;
-
-    while(current){
-
-      if(
-        current.userData &&
-        current.userData.cameraBlocker
-      ){
-        return true;
+        this.lastX = e.clientX;
+        this.lastY = e.clientY;
       }
-
-      if(current===this.player.group){
-        return false;
-      }
-
-      current=current.parent;
-    }
-
-    return false;
-  }
-
-  update(dt,input){
-
-    const delta=
-      input.consumeCameraDelta();
-
-    this.yaw-=delta.x*.0055;
-    this.pitch-=delta.y*.0045;
-
-    this.pitch=
-      THREE.MathUtils.clamp(
-        this.pitch,
-        -.55,
-        .95
-      );
-
-    const playerHeight=
-      this.player.getCameraHeight();
-
-    this.target.copy(
-      this.player.group.position
     );
 
-    this.target.y+=playerHeight;
+    this.dom.addEventListener(
+      "pointermove",
+      e => {
+        if (!this.pointerActive) return;
 
-    const horizontal=
-      Math.cos(this.pitch)*
-      this.distance;
+        const dx =
+          e.clientX - this.lastX;
 
-    this.desired.set(
-      this.target.x+
-      Math.sin(this.yaw)*horizontal,
+        const dy =
+          e.clientY - this.lastY;
 
-      this.target.y+
-      Math.sin(this.pitch)*
-      this.distance,
+        this.lastX = e.clientX;
+        this.lastY = e.clientY;
 
-      this.target.z+
-      Math.cos(this.yaw)*horizontal
-    );
+        this.targetYaw -= dx * 0.006;
+        this.targetPitch -= dy * 0.004;
 
-    this.direction
-      .copy(this.desired)
-      .sub(this.target)
-      .normalize();
-
-    this.raycaster.set(
-      this.target,
-      this.direction
-    );
-
-    this.raycaster.far=
-      this.distance;
-
-    const hits=
-      this.raycaster.intersectObjects(
-        this.scene.children,
-        true
-      );
-
-    let wantedDistance=
-      this.distance;
-
-    for(const hit of hits){
-
-      if(hit.distance<.4){
-        continue;
-      }
-
-      if(this.isBlocker(hit.object)){
-
-        wantedDistance=
-          Math.max(
-            .9,
-            hit.distance-.3
+        this.targetPitch =
+          THREE.MathUtils.clamp(
+            this.targetPitch,
+            this.minPitch,
+            this.maxPitch
           );
-
-        break;
       }
+    );
+
+    this.dom.addEventListener(
+      "pointerup",
+      () => {
+        this.pointerActive = false;
+      }
+    );
+
+    this.dom.addEventListener(
+      "pointercancel",
+      () => {
+        this.pointerActive = false;
+      }
+    );
+  }
+
+  update(dt, input) {
+    if (
+      Math.abs(input.cameraDX) >
+        0.001 ||
+      Math.abs(input.cameraDY) >
+        0.001
+    ) {
+      this.targetYaw -=
+        input.cameraDX * 0.006;
+
+      this.targetPitch -=
+        input.cameraDY * 0.004;
+
+      this.targetPitch =
+        THREE.MathUtils.clamp(
+          this.targetPitch,
+          this.minPitch,
+          this.maxPitch
+        );
     }
 
-    const distanceSmooth=
-      1-Math.pow(.002,dt);
+    this.yaw =
+      THREE.MathUtils.damp(
+        this.yaw,
+        this.targetYaw,
+        12,
+        dt
+      );
 
-    this.currentDistance=
+    this.pitch =
+      THREE.MathUtils.damp(
+        this.pitch,
+        this.targetPitch,
+        12,
+        dt
+      );
+
+    const crouch =
+      this.player.crouchAmount || 0;
+
+    const wantedHeight =
       THREE.MathUtils.lerp(
-        this.currentDistance,
-        wantedDistance,
-        distanceSmooth
+        1.45,
+        0.88,
+        crouch
       );
 
-    const finalPosition=
-      this.target.clone().add(
-        this.direction.clone()
-          .multiplyScalar(
-            this.currentDistance
-          )
+    this.height =
+      THREE.MathUtils.damp(
+        this.height,
+        wantedHeight,
+        10,
+        dt
       );
 
-    const positionSmooth=
-      1-Math.pow(.0005,dt);
+    this.targetDistance =
+      this.player.driving
+        ? 7.0
+        : 5.2;
 
-    this.camera.position.lerp(
-      finalPosition,
-      positionSmooth
+    this.distance =
+      THREE.MathUtils.damp(
+        this.distance,
+        this.targetDistance,
+        8,
+        dt
+      );
+
+    const p =
+      this.player.group.position;
+
+    this.lookTarget.set(
+      p.x,
+      p.y + this.height,
+      p.z
+    );
+
+    const offset =
+      new THREE.Vector3(
+        0,
+        0,
+        this.distance
+      );
+
+    offset.applyEuler(
+      new THREE.Euler(
+        this.pitch,
+        this.yaw,
+        0,
+        "YXZ"
+      )
+    );
+
+    const desired =
+      this.lookTarget.clone()
+        .add(offset);
+
+    const safe =
+      this.resolveCollision(
+        this.lookTarget,
+        desired
+      );
+
+    this.cameraTarget.lerp(
+      safe,
+      1 - Math.pow(0.001, dt)
+    );
+
+    this.camera.position.copy(
+      this.cameraTarget
     );
 
     this.camera.lookAt(
-      this.target
+      this.lookTarget
     );
+  }
+
+  resolveCollision(from, to) {
+    const direction =
+      to.clone().sub(from);
+
+    const length =
+      direction.length();
+
+    if (length <= 0.01) {
+      return to;
+    }
+
+    direction.normalize();
+
+    this.raycaster.set(
+      from,
+      direction
+    );
+
+    this.raycaster.far =
+      length;
+
+    const objects =
+      this.world.cameraColliders || [];
+
+    const hits =
+      this.raycaster.intersectObjects(
+        objects,
+        true
+      );
+
+    if (hits.length) {
+      const d =
+        Math.max(
+          0.35,
+          hits[0].distance - 0.25
+        );
+
+      return from.clone().add(
+        direction.multiplyScalar(d)
+      );
+    }
+
+    return to;
   }
 }
