@@ -576,7 +576,7 @@ canvas{
   #statusFeed{top:145px;}\n  #ammo{right:235px;}
 }
 
-#buildVersion{
+#controlsHint{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);padding:6px 10px;border-radius:8px;background:rgba(0,0,0,.45);font-size:9px;color:rgba(255,255,255,.72);}\n\n#buildVersion{
   position:fixed;
   left:max(8px,env(safe-area-inset-left));
   bottom:max(7px,env(safe-area-inset-bottom));
@@ -594,7 +594,7 @@ canvas{
 
 <meta name="cache-control" content="no-cache, no-store, must-revalidate">
 <meta name="pragma" content="no-cache">
-<meta name="build-version" content="1.5.0">
+<meta name="build-version" content="1.6.0">
 
 </head>
 
@@ -625,7 +625,7 @@ canvas{
 
 </div>
 
-<div id="buildVersion">BUILD v1.5.0</div>
+<div id="buildVersion">BUILD v1.6.0</div>
 
 <div id="hud">
 
@@ -638,7 +638,7 @@ canvas{
     </div>
 
     <div class="version">
-      VIRELIA v1.5.0
+      VIRELIA v1.6.0
     </div>
 
     <div class="bar">
@@ -681,11 +681,16 @@ canvas{
 
   </div>
 
-  <div id="crosshair"></div>\n\n  <div id="ammo">30 / 30</div>
+  <div id="crosshair"></div>
+
+  <div id="ammo">30 / 30</div>
+  <div id="weaponName">AR-01 • AUTO</div>
+  <div id="hitMarker">×</div>
 
   <div id="message"></div>
 
   <div id="statusFeed"></div>
+  <div id="controlsHint">LEFT: MOVE • RIGHT: LOOK • FIRE: ATTACK • AIM: ZOOM</div>
 
   <div id="inventory">
 
@@ -733,6 +738,10 @@ canvas{
 
   <div id="buttons">
 
+    <button class="btn" id="fireBtn" style="right:0;top:-10px;width:88px;height:88px;background:rgba(115,35,35,.9);">FIRE</button>
+    <button class="btn" id="aimBtn" style="right:92px;top:15px;width:60px;height:60px;">AIM</button>
+    <button class="btn" id="reloadBtn" style="right:150px;bottom:62px;width:54px;height:54px;">RELOAD</button>
+
     <button class="btn" id="bagBtn">
       BAG
     </button>
@@ -768,11 +777,13 @@ canvas{
       <br>
       70 SURVIVORS
       <br>
+      BATTLE MAP • AUTO FIRE • SAFE ZONE
+      <br>
       LANDSCAPE MOBILE
     </div>
 
     <div class="versionStart">
-      VERSION 1.5.0
+      VERSION 1.6.0
     </div>
 
     <button id="startBtn">
@@ -787,7 +798,7 @@ canvas{
 
 import {
   startGame
-} from "./src/main.js?v=1.5.0";
+} from "./src/main.js?v=1.6.0";
 
 const startScreen =
   document.getElementById("start");
@@ -842,7 +853,7 @@ window.addEventListener("error",function(event){
   const box=document.getElementById("bootError");
   if(box){
     box.style.display="block";
-    box.textContent="BUILD v1.5.0 • ERROR: "+(event.message||"unknown");
+    box.textContent="BUILD v1.6.0 • ERROR: "+(event.message||"unknown");
   }
 });
 </script>
