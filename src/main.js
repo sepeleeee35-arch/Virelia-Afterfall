@@ -4,7 +4,7 @@ import { player } from "./player.js";
 import { world, createWorld, getZoneState, getNearbyInteraction } from "./world.js";
 import { bots, createBots, updateBots, damageBot } from "./bots.js";
 
-const VERSION="1.7.0";
+const VERSION="1.8.0";
 const canvas=document.getElementById("game");
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:"high-performance"});
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.shadowMap.enabled=true;
@@ -17,7 +17,7 @@ let running=false,lastTime=0,yaw=.35,pitch=.22;
 const CAMERA_DISTANCE=112,CAMERA_HEIGHT=34,CAMERA_SHOULDER=17,CAMERA_SMOOTH=16;
 const moveForward=new THREE.Vector3(),moveRight=new THREE.Vector3(),moveVector=new THREE.Vector3(),cameraTarget=new THREE.Vector3(),cameraDesired=new THREE.Vector3(),cameraRight=new THREE.Vector3(),aimDirection=new THREE.Vector3();
 const raycaster=new THREE.Raycaster(); let weaponGroup, muzzle, fireCooldown=0, ammo=30, reloadTimer=0, zoneClock=300;
-const inventory={medkit:0,food:0,helmet:"-",vest:"-",backpack:"-",shoes:"-"};
+const inventory={medkit:0,food:0,helmet:"-",vest:"-",backpack:"-",shoes:"-"};\nlet lastHp=100;
 
 function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
 function updatePlayer3D(dt){
@@ -53,7 +53,7 @@ function updateCamera(dt){
   const backX=-Math.sin(yaw)*cp,backZ=Math.cos(yaw)*cp;cameraRight.set(Math.cos(yaw),0,Math.sin(yaw));
   cameraDesired.set(player.x+backX*distance+cameraRight.x*CAMERA_SHOULDER,cameraTarget.y+CAMERA_HEIGHT+sp*distance*.42,player.y+backZ*distance+cameraRight.z*CAMERA_SHOULDER);
   camera.position.lerp(cameraDesired,1-Math.exp(-CAMERA_SMOOTH*dt));camera.lookAt(cameraTarget.x,cameraTarget.y+sp*distance*.12,cameraTarget.z);
-  if(weaponGroup){weaponGroup.position.set(player.x,0,player.y);weaponGroup.rotation.y=yaw;weaponGroup.visible=!input.crouch;}
+  if(weaponGroup){weaponGroup.position.set(0,0,0);weaponGroup.rotation.y=0;weaponGroup.visible=!input.crouch;}
 }
 function showCombatMessage(t){const m=document.getElementById("message");if(!m)return;m.textContent=t;m.style.opacity="1";clearTimeout(showCombatMessage.timer);showCombatMessage.timer=setTimeout(()=>m.style.opacity="0",650);}
 function fireWeapon(){
@@ -86,7 +86,7 @@ function drawMinimap(){
 }
 function updateHud(dt){
   const hp=document.getElementById("hpBar"),st=document.getElementById("staminaBar"),alive=document.getElementById("alive"),phase=document.getElementById("phase"),zt=document.getElementById("zoneTimer");
-  if(hp)hp.style.width=player.hp+"%";if(st)st.style.width=player.stamina+"%";if(alive)alive.textContent=String(bots.filter(b=>b.hp>0).length+1);
+  if(hp)hp.style.width=Math.max(0,player.hp)+"%";if(st)st.style.width=player.stamina+"%";const hpText=document.getElementById("hpText");if(hpText)hpText.textContent=Math.ceil(player.hp)+" / 100";const armor=document.getElementById("armorBar");if(armor)armor.style.width=inventory.vest!=="-"?"50%":"0%";if(player.hp<lastHp){const f=document.getElementById("damageFlash");if(f){f.style.opacity="1";setTimeout(()=>f.style.opacity="0",90);}}lastHp=player.hp;if(alive)alive.textContent=String(bots.filter(b=>b.hp>0).length+1);
   const zone=getZoneState(player.x,player.y);if(phase)phase.textContent=zone.outside?"OUTSIDE ZONE":"SURVIVAL";if(zt){const sec=Math.max(0,Math.floor(zoneClock));zt.textContent=String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0");}
   const ammoEl=document.getElementById("ammo");if(ammoEl)ammoEl.textContent=reloadTimer>0?"RELOADING":ammo+" / 30";
   const aimEl=document.getElementById("aimBtn");if(aimEl)aimEl.textContent=input.aim?"AIM ON":"AIM";
