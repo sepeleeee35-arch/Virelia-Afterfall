@@ -105,10 +105,10 @@ export function setupInput() {
       lastX = e.clientX;
       lastY = e.clientY;
 
-      input.cameraYaw += dx * 0.0105;
+      input.cameraYaw += dx * 0.012;
       input.cameraPitch = Math.max(
-        -0.58,
-        Math.min(0.62, input.cameraPitch - dy * 0.008)
+        -0.95,
+        Math.min(0.95, input.cameraPitch - dy * 0.009)
       );
     });
 
