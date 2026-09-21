@@ -4,7 +4,7 @@ import { player } from "./player.js";
 import { world, createWorld, getZoneState, getNearbyInteraction } from "./world.js";
 import { bots, createBots, updateBots, damageBot } from "./bots.js";
 
-const VERSION="2.0.0";
+const VERSION="2.1.0";
 const canvas=document.getElementById("game");
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:"high-performance"});
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.shadowMap.enabled=true;
@@ -53,7 +53,7 @@ function updateCamera(dt){
   // Original third-person battle-survival camera:
   // low over-shoulder framing, character anchored near the lower center,
   // right-side drag rotates the orbit, and AIM pulls the camera in.
-  const distance=input.aim?72:CAMERA_DISTANCE;
+  const distance=input.aim?62:CAMERA_DISTANCE;
   const height=input.crouch?52:CAMERA_HEIGHT;
   const lookHeight=input.crouch?38:48;
   const cp=Math.cos(pitch),sp=Math.sin(pitch);
@@ -86,7 +86,7 @@ import { player } from "./player.js";
 import { world, createWorld, getZoneState, getNearbyInteraction } from "./world.js";
 import { bots, createBots, updateBots, damageBot } from "./bots.js";
 
-const VERSION="2.0.0";
+const VERSION="2.1.0";
 const canvas=document.getElementById("game");
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:"high-performance"});
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.shadowMap.enabled=true;
