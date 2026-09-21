@@ -592,7 +592,7 @@ canvas{
   #ammo{right:235px;}
 }
 
-#controlsHint{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);padding:5px 9px;border-radius:7px;background:rgba(0,0,0,.42);font-size:8px;color:rgba(255,255,255,.65);}
+#damageFlash{position:absolute;inset:0;background:rgba(210,20,20,.22);opacity:0;pointer-events:none;transition:opacity .08s;}\n#controlsHint{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);padding:5px 9px;border-radius:7px;background:rgba(0,0,0,.42);font-size:8px;color:rgba(255,255,255,.65);}
 
 #buildVersion{
   position:fixed;
@@ -612,7 +612,7 @@ canvas{
 
 <meta name="cache-control" content="no-cache, no-store, must-revalidate">
 <meta name="pragma" content="no-cache">
-<meta name="build-version" content="1.7.0">
+<meta name="build-version" content="1.8.0">
 
 </head>
 
@@ -643,20 +643,21 @@ canvas{
 
 </div>
 
-<div id="buildVersion">BUILD v1.7.0</div>
+<div id="buildVersion">BUILD v1.8.0</div>
 
 <div id="hud">
 
   <div id="lookPad" aria-label="Geser sisi kanan untuk memutar kamera 360 derajat"></div>
 
   <div id="playerCard">
+    <div id="hpLine"><span>HP</span><b id="hpText">100 / 100</b></div>
 
     <div class="name">
       SURVIVOR • 01
     </div>
 
     <div class="version">
-      VIRELIA v1.7.0
+      VIRELIA v1.8.0
     </div>
 
     <div class="bar">
@@ -665,6 +666,7 @@ canvas{
 
     <div class="bar">
       <div id="staminaBar"></div>
+    <div class="bar armorBar"><div id="armorBar"></div></div>
     </div>
 
   </div>
@@ -708,7 +710,7 @@ canvas{
   <div id="message"></div>
 
   <div id="statusFeed"></div>
-  <div id="controlsHint">LEFT: MOVE • RIGHT: LOOK • FIRE: ATTACK • AIM: ZOOM</div>
+  <div id="damageFlash"></div>\n  <div id="controlsHint">LEFT: MOVE • RIGHT: LOOK • FIRE: ATTACK • AIM: ZOOM</div>
 
   <div id="inventory">
 
@@ -801,7 +803,7 @@ canvas{
     </div>
 
     <div class="versionStart">
-      VERSION 1.7.0
+      VERSION 1.8.0
     </div>
 
     <button id="startBtn">
@@ -816,7 +818,7 @@ canvas{
 
 import {
   startGame
-} from "./src/main.js?v=1.7.0";
+} from "./src/main.js?v=1.8.0";
 
 const startScreen =
   document.getElementById("start");
@@ -871,7 +873,7 @@ window.addEventListener("error",function(event){
   const box=document.getElementById("bootError");
   if(box){
     box.style.display="block";
-    box.textContent="BUILD v1.7.0 • ERROR: "+(event.message||"unknown");
+    box.textContent="BUILD v1.8.0 • ERROR: "+(event.message||"unknown");
   }
 });
 </script>
