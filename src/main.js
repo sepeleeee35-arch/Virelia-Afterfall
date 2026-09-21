@@ -4,7 +4,7 @@ import { player } from "./player.js";
 import { world, createWorld, getZoneState, getNearbyInteraction } from "./world.js";
 import { bots, createBots, updateBots, damageBot } from "./bots.js";
 
-const VERSION = "2.2.0";
+const VERSION = "2.3.0";
 const canvas = document.getElementById("game");
 
 const renderer = new THREE.WebGLRenderer({
@@ -49,9 +49,9 @@ let lastTime = 0;
 let yaw = 0.35;
 let pitch = 0.08;
 
-const CAMERA_DISTANCE = 92;
-const CAMERA_HEIGHT = 54;
-const CAMERA_SHOULDER = 22;
+const CAMERA_DISTANCE = 104;
+const CAMERA_HEIGHT = 60;
+const CAMERA_SHOULDER = 28;
 const CAMERA_SMOOTH = 14;
 
 const moveForward = new THREE.Vector3();
