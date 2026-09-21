@@ -17,7 +17,8 @@ let running=false,lastTime=0,yaw=.35,pitch=.22;
 const CAMERA_DISTANCE=112,CAMERA_HEIGHT=34,CAMERA_SHOULDER=17,CAMERA_SMOOTH=16;
 const moveForward=new THREE.Vector3(),moveRight=new THREE.Vector3(),moveVector=new THREE.Vector3(),cameraTarget=new THREE.Vector3(),cameraDesired=new THREE.Vector3(),cameraRight=new THREE.Vector3(),aimDirection=new THREE.Vector3();
 const raycaster=new THREE.Raycaster(); let weaponGroup, muzzle, fireCooldown=0, ammo=30, reloadTimer=0, zoneClock=300;
-const inventory={medkit:0,food:0,helmet:"-",vest:"-",backpack:"-",shoes:"-"};\nlet lastHp=100;
+const inventory={medkit:0,food:0,helmet:"-",vest:"-",backpack:"-",shoes:"-"};
+let lastHp=100;
 
 function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
 function updatePlayer3D(dt){
