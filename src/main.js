@@ -4,7 +4,7 @@ import { player } from "./player.js";
 import { world, createWorld, getZoneState, getNearbyInteraction } from "./world.js";
 import { bots, createBots, updateBots, damageBot } from "./bots.js";
 
-const VERSION="1.9.0";
+const VERSION="2.0.0";
 const canvas=document.getElementById("game");
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:"high-performance"});
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.shadowMap.enabled=true;
@@ -13,8 +13,90 @@ const camera=new THREE.PerspectiveCamera(60,1,.1,8000);
 scene.add(new THREE.HemisphereLight(0xe1eee9,0x465047,2.4));
 const sun=new THREE.DirectionalLight(0xffefc9,3.4); sun.position.set(-900,1500,700); sun.castShadow=true; sun.shadow.mapSize.set(1024,1024); scene.add(sun);
 
-let running=false,lastTime=0,yaw=.35,pitch=.12;
-const CAMERA_DISTANCE=70,CAMERA_HEIGHT=22,CAMERA_SHOULDER=20,CAMERA_SMOOTH=20;
+let running=false,lastTime=0,yaw=.35,pitch=.08;
+const CAMERA_DISTANCE=112,CAMERA_HEIGHT=68,CAMERA_SHOULDER=24,CAMERA_SMOOTH=18;
+const moveForward=new THREE.Vector3(),moveRight=new THREE.Vector3(),moveVector=new THREE.Vector3(),cameraTarget=new THREE.Vector3(),cameraDesired=new THREE.Vector3(),cameraRight=new THREE.Vector3(),aimDirection=new THREE.Vector3();
+const raycaster=new THREE.Raycaster(); let weaponGroup, muzzle, fireCooldown=0, ammo=30, reloadTimer=0, zoneClock=300;
+const inventory={medkit:0,food:0,helmet:"-",vest:"-",backpack:"-",shoes:"-"};
+let lastHp=100;
+
+function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+function updatePlayer3D(dt){
+  const sx=input.x,sy=input.y,m=Math.min(1,Math.hypot(sx,sy));
+  moveForward.set(Math.sin(yaw),0,-Math.cos(yaw)); moveRight.set(Math.cos(yaw),0,Math.sin(yaw)); moveVector.set(0,0,0);
+  moveVector.addScaledVector(moveRight,sx).addScaledVector(moveForward,sy);
+  if(moveVector.lengthSq()>.0001) moveVector.normalize().multiplyScalar(m);
+  let speed=player.speed; player.crouch=input.crouch;
+  if(player.crouch)speed*=.52;
+  if(input.run&&!player.crouch&&player.stamina>0&&m>.2){speed*=1.55;player.stamina=Math.max(0,player.stamina-30*dt);}else player.stamina=Math.min(100,player.stamina+20*dt);
+  player.x+=moveVector.x*speed*dt; player.y+=moveVector.z*speed*dt;
+  player.x=Math.max(35,Math.min(world.width-35,player.x)); player.y=Math.max(35,Math.min(world.height-35,player.y));
+}
+let playerGroup;
+function createWeapon(){
+  weaponGroup=new THREE.Group();
+  const mat=new THREE.MeshStandardMaterial({color:0x202629,metalness:.25,roughness:.65});
+  const stock=new THREE.Mesh(new THREE.BoxGeometry(9,7,38),mat);stock.position.set(13,45,-22);weaponGroup.add(stock);
+  const barrel=new THREE.Mesh(new THREE.CylinderGeometry(2.7,3,48,8),mat);barrel.rotation.x=Math.PI/2;barrel.position.set(13,50,-48);weaponGroup.add(barrel);
+  muzzle=new THREE.Mesh(new THREE.SphereGeometry(5,8,8),new THREE.MeshBasicMaterial({color:0xffd36a}));muzzle.position.set(13,50,-73);muzzle.visible=false;weaponGroup.add(muzzle);
+  scene.add(weaponGroup);
+}
+function createPlayer(){
+  playerGroup=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.CapsuleGeometry(13,30,6,10),new THREE.MeshStandardMaterial({color:0x243842}));body.position.y=38;body.castShadow=true;playerGroup.add(body);
+  const vest=new THREE.Mesh(new THREE.BoxGeometry(30,23,22),new THREE.MeshStandardMaterial({color:0x4a5d61}));vest.position.y=42;vest.castShadow=true;playerGroup.add(vest);
+  const backpack=new THREE.Mesh(new THREE.BoxGeometry(18,27,11),new THREE.MeshStandardMaterial({color:0x303a38}));backpack.position.set(0,43,13);backpack.castShadow=true;playerGroup.add(backpack); const head=new THREE.Mesh(new THREE.SphereGeometry(10.5,12,10),new THREE.MeshStandardMaterial({color:0xc28d73}));head.position.y=72;head.castShadow=true;playerGroup.add(head);
+  const helmet=new THREE.Mesh(new THREE.SphereGeometry(13,12,6,0,Math.PI*2,0,Math.PI*.55),new THREE.MeshStandardMaterial({color:0x20292c}));helmet.position.y=77;playerGroup.add(helmet);
+  for(const s of [-1,1]){const arm=new THREE.Mesh(new THREE.CapsuleGeometry(4.5,20,4,7),new THREE.MeshStandardMaterial({color:0x31474d}));arm.position.set(s*17,44,-1);arm.rotation.z=s*.18;playerGroup.add(arm);const leg=new THREE.Mesh(new THREE.CapsuleGeometry(5,24,4,7),new THREE.MeshStandardMaterial({color:0x20292c}));leg.position.set(s*7,16,0);playerGroup.add(leg);const boot=new THREE.Mesh(new THREE.BoxGeometry(10,7,16),new THREE.MeshStandardMaterial({color:0x171c1d}));boot.position.set(s*7,4,-3);playerGroup.add(boot);} createWeapon();scene.add(playerGroup);
+}
+function updateCamera(dt){
+  // Original third-person battle-survival camera:
+  // low over-shoulder framing, character anchored near the lower center,
+  // right-side drag rotates the orbit, and AIM pulls the camera in.
+  const distance=input.aim?72:CAMERA_DISTANCE;
+  const height=input.crouch?52:CAMERA_HEIGHT;
+  const lookHeight=input.crouch?38:48;
+  const cp=Math.cos(pitch),sp=Math.sin(pitch);
+  const backX=-Math.sin(yaw)*cp;
+  const backZ=Math.cos(yaw)*cp;
+  cameraRight.set(Math.cos(yaw),0,Math.sin(yaw));
+
+  cameraTarget.set(player.x,lookHeight,player.y);
+  cameraDesired.set(
+    player.x+backX*distance+cameraRight.x*CAMERA_SHOULDER,
+    height+sp*distance*.20,
+    player.y+backZ*distance+cameraRight.z*CAMERA_SHOULDER
+  );
+
+  camera.position.lerp(cameraDesired,1-Math.exp(-CAMERA_SMOOTH*dt));
+  camera.lookAt(
+    cameraTarget.x,
+    cameraTarget.y+sp*10,
+    cameraTarget.z
+  );
+
+  if(weaponGroup){
+    weaponGroup.position.set(0,0,0);
+    weaponGroup.rotation.y=0;
+    weaponGroup.visible=!input.crouch;
+  }
+}mport * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+import { input, setupInput } from "./input.js";
+import { player } from "./player.js";
+import { world, createWorld, getZoneState, getNearbyInteraction } from "./world.js";
+import { bots, createBots, updateBots, damageBot } from "./bots.js";
+
+const VERSION="2.0.0";
+const canvas=document.getElementById("game");
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:"high-performance"});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.shadowMap.enabled=true;
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x879da0); scene.fog=new THREE.Fog(0x879da0,1600,6200);
+const camera=new THREE.PerspectiveCamera(60,1,.1,8000);
+scene.add(new THREE.HemisphereLight(0xe1eee9,0x465047,2.4));
+const sun=new THREE.DirectionalLight(0xffefc9,3.4); sun.position.set(-900,1500,700); sun.castShadow=true; sun.shadow.mapSize.set(1024,1024); scene.add(sun);
+
+let running=false,lastTime=0,yaw=.35,pitch=.08;
+const CAMERA_DISTANCE=112,CAMERA_HEIGHT=68,CAMERA_SHOULDER=24,CAMERA_SMOOTH=18;
 const moveForward=new THREE.Vector3(),moveRight=new THREE.Vector3(),moveVector=new THREE.Vector3(),cameraTarget=new THREE.Vector3(),cameraDesired=new THREE.Vector3(),cameraRight=new THREE.Vector3(),aimDirection=new THREE.Vector3();
 const raycaster=new THREE.Raycaster(); let weaponGroup, muzzle, fireCooldown=0, ammo=30, reloadTimer=0, zoneClock=300;
 const inventory={medkit:0,food:0,helmet:"-",vest:"-",backpack:"-",shoes:"-"};
@@ -129,7 +211,7 @@ function setupUi(){
 }
 function loop(t){if(!running)return;const dt=Math.min((t-lastTime)/1000,.033);lastTime=t;update(dt);renderer.render(scene,camera);requestAnimationFrame(loop);}
 export function startGame(){
-  if(running)return;input.cameraYaw=.35;input.cameraPitch=.12;input.x=0;input.y=0;input.crouch=false;input.fire=false;input.aim=false;ammo=30;reloadTimer=0;zoneClock=300;player.hp=100;player.stamina=100;
+  if(running)return;input.cameraYaw=.35;input.cameraPitch=.08;input.x=0;input.y=0;input.crouch=false;input.fire=false;input.aim=false;ammo=30;reloadTimer=0;zoneClock=300;player.hp=100;player.stamina=100;
   for(const k of Object.keys(inventory))inventory[k]=["helmet","vest","backpack","shoes"].includes(k)?"-":0;
   running=true;resize();createWorld(scene);createBots(scene);createPlayer();player.x=world.spawn.x;player.y=world.spawn.y;setupInput();setupUi();lastTime=performance.now();requestAnimationFrame(loop);
 }
