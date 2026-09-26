@@ -49,10 +49,10 @@ let lastTime = 0;
 let yaw = 0.35;
 let pitch = 0.08;
 
-const CAMERA_DISTANCE = 104;
-const CAMERA_HEIGHT = 60;
-const CAMERA_SHOULDER = 28;
-const CAMERA_SMOOTH = 14;
+const CAMERA_DISTANCE = 132;
+const CAMERA_HEIGHT = 78;
+const CAMERA_SHOULDER = 10;
+const CAMERA_SMOOTH = 18;
 
 const moveForward = new THREE.Vector3();
 const moveRight = new THREE.Vector3();
@@ -268,8 +268,8 @@ function updatePlayerVisual() {
 
 function updateCamera(dt) {
   const distance = input.aim ? 52 : CAMERA_DISTANCE;
-  const height = input.crouch ? 38 : CAMERA_HEIGHT;
-  const lookHeight = input.crouch ? 34 : 47;
+  const height = input.crouch ? 50 : CAMERA_HEIGHT;
+  const lookHeight = input.crouch ? 36 : 45;
 
   const cp = Math.cos(pitch);
   const sp = Math.sin(pitch);
@@ -668,7 +668,7 @@ export function startGame() {
   if (running) return;
 
   input.cameraYaw = 0.35;
-  input.cameraPitch = 0.08;
+  input.cameraPitch = 0.16;
   input.x = 0;
   input.y = 0;
   input.run = false;
