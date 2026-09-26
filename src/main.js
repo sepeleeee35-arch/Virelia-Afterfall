@@ -304,11 +304,13 @@ function showCombatMessage(text) {
   if (!message) return;
 
   message.textContent = text;
+  message.dataset.combat = "1";
   message.style.opacity = "1";
 
   clearTimeout(showCombatMessage.timer);
   showCombatMessage.timer = setTimeout(() => {
     message.style.opacity = "0";
+    message.dataset.combat = "";
   }, 700);
 }
 
@@ -490,10 +492,14 @@ function updateHud(dt) {
   }
   lastHp = player.hp;
 
-  if (alive) {
-    alive.textContent = String(
-      bots.filter(bot => bot.hp > 0 && !bot.dead).length + 1
-    );
+  const survivors = bots.filter(bot => bot.hp > 0 && !bot.dead).length + 1;
+  if (alive) alive.textContent = String(survivors);
+
+  if (survivors <= 1 && player.hp > 0) {
+    showCombatMessage("WINNER • MATCH COMPLETE");
+    input.fire = false;
+    input.x = 0;
+    input.y = 0;
   }
 
   const zone = getZoneState(player.x, player.y);
@@ -547,6 +553,10 @@ function updateHud(dt) {
 
   const progress = Math.min(1, (300 - zoneClock) / 300);
   world.safeZone.radius = 1850 - progress * 1400;
+  if (world.safeZoneRing) {
+    const ringScale = world.safeZone.radius / 1850;
+    world.safeZoneRing.scale.set(ringScale, 1, ringScale);
+  }
 
   if (zone.outside) {
     player.hp = Math.max(0, player.hp - 4 * dt);
