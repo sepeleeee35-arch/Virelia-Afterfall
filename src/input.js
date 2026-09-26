@@ -4,7 +4,7 @@ export const input = {
   run: false,
   crouch: false,
   cameraYaw: 0.35,
-  cameraPitch: 0.14,
+  cameraPitch: 0.16,
   fire: false,
   aim: false
 };
