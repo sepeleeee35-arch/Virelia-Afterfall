@@ -1,10 +1,10 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 import { input, setupInput } from "./input.js";
 import { player } from "./player.js";
-import { world, createWorld, getZoneState, getNearbyInteraction } from "./world.js";
+import { world, createWorld, getZoneState, getNearbyInteraction, canMoveTo } from "./world.js";
 import { bots, createBots, updateBots, damageBot } from "./bots.js";
 
-const VERSION = "2.3.0";
+const VERSION = "2.4.0";
 const canvas = document.getElementById("game");
 
 const renderer = new THREE.WebGLRenderer({
@@ -241,11 +241,16 @@ function updatePlayer(dt) {
     player.stamina = Math.min(100, player.stamina + 20 * dt);
   }
 
-  player.x += moveVector.x * speed * dt;
-  player.y += moveVector.z * speed * dt;
+  const stepX = moveVector.x * speed * dt;
+  const stepZ = moveVector.z * speed * dt;
+  const nextX = player.x + stepX;
+  const nextZ = player.y + stepZ;
 
-  player.x = Math.max(35, Math.min(world.width - 35, player.x));
-  player.y = Math.max(35, Math.min(world.height - 35, player.y));
+  if (canMoveTo(nextX, player.y, 28)) player.x = nextX;
+  if (canMoveTo(player.x, nextZ, 28)) player.y = nextZ;
+
+  player.x = Math.max(28, Math.min(world.width - 28, player.x));
+  player.y = Math.max(28, Math.min(world.height - 28, player.y));
 }
 
 function updatePlayerVisual() {
@@ -540,13 +545,19 @@ function updateHud(dt) {
 
   zoneClock = Math.max(0, zoneClock - dt);
 
+  const progress = Math.min(1, (300 - zoneClock) / 300);
+  world.safeZone.radius = 1850 - progress * 1400;
+
   if (zone.outside) {
     player.hp = Math.max(0, player.hp - 4 * dt);
   }
 
   if (player.hp <= 0) {
-    showCombatMessage("YOU ARE DOWN");
+    showCombatMessage("ELIMINATED");
     input.fire = false;
+    input.x = 0;
+    input.y = 0;
+    input.run = false;
   }
 }
 
@@ -659,6 +670,7 @@ export function startGame() {
   reloadTimer = 0;
   fireCooldown = 0;
   zoneClock = 300;
+  world.safeZone.radius = 1850;
   player.hp = 100;
   player.stamina = 100;
   lastHp = 100;
