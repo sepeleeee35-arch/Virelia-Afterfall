@@ -33,5 +33,18 @@ function addTree(scene,x,z,s){const t=new THREE.Mesh(new THREE.CylinderGeometry(
 function addVehicle(scene,x,z,angle){const g=new THREE.Group();g.position.set(x,18,z);g.rotation.y=angle;g.add(new THREE.Mesh(new THREE.BoxGeometry(70,24,38),mats.car));const glass=new THREE.Mesh(new THREE.BoxGeometry(38,16,32),mats.carGlass);glass.position.y=16;g.add(glass);scene.add(g);world.vehicles.push({x,z,angle,mesh:g,used:false});}
 function isNearRoad(x,z,r){return world.roads.some(a=>x>a.x-r&&x<a.x+a.w+r&&z>a.z-r&&z<a.z+a.d+r);}
 function isNearBuilding(x,z,r){return world.buildings.some(b=>x>b.x-r&&x<b.x+b.w+r&&z>b.z-r&&z<b.z+b.d+r);}
+export function canMoveTo(x,z,radius=24){
+  if(x<radius||z<radius||x>world.width-radius||z>world.height-radius)return false;
+  for(const b of world.buildings){
+    if(x>b.x-radius&&x<b.x+b.w+radius&&z>b.z-radius&&z<b.z+b.d+radius)return false;
+  }
+  for(const t of world.trees){
+    if(Math.hypot(x-t.x,z-t.z)<radius+24)return false;
+  }
+  for(const v of world.vehicles){
+    if(Math.hypot(x-v.x,z-v.z)<radius+38)return false;
+  }
+  return true;
+}
 export function getZoneState(x,z){const d=Math.hypot(x-world.safeZone.x,z-world.safeZone.y);return{distance:d,inside:d<=world.safeZone.radius,outside:d>world.safeZone.radius};}
 export function getNearbyInteraction(x,z){let nearest=null,best=95;for(const v of world.vehicles){const d=Math.hypot(x-v.x,z-v.z);if(d<best){best=d;nearest={label:"VEHICLE • INTERACT",result:"Vehicle ready",type:"vehicle",object:v};}}for(const l of world.loot){if(l.taken)continue;const d=Math.hypot(x-l.x,z-l.z);if(d<best){best=d;nearest={label:"LOOT • "+l.type,result:"Pick up "+l.type,type:"loot",object:l};}}return nearest;}
