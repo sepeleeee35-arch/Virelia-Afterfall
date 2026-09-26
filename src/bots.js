@@ -1,4 +1,5 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+import { canMoveTo } from "./world.js";
 export const bots=[];const SPEED=78,COLORS=[0x344b55,0x574c43,0x455e4c,0x66524a];
 export function createBots(scene){for(const b of bots)if(b.mesh)scene.remove(b.mesh);bots.length=0;for(let i=0;i<69;i++){const a=Math.random()*Math.PI*2,d=650+Math.random()*1750,x=3000+Math.cos(a)*d,z=2250+Math.sin(a)*d,g=new THREE.Group();g.position.set(x,0,z);const body=new THREE.Mesh(new THREE.CapsuleGeometry(13,28,5,8),new THREE.MeshStandardMaterial({color:COLORS[i%COLORS.length]}));body.position.y=35;g.add(body);const head=new THREE.Mesh(new THREE.SphereGeometry(10,10,8),new THREE.MeshStandardMaterial({color:0xc08a72}));head.position.y=68;g.add(head);scene.add(g);bots.push({x,z,hp:100,targetX:x,targetZ:z,timer:Math.random()*2,state:"roam",mesh:g,dead:false,shoot:Math.random()*2,flash:0});}}
 function chooseTarget(bot){const live=bots.filter(b=>b!==bot&&b.hp>0&&!b.dead);if(live.length&&Math.random()<.55){const other=live[Math.floor(Math.random()*live.length)],d=Math.hypot(other.x-bot.x,other.z-bot.z);if(d<700){bot.state="duel";bot.enemy=other;return;}}bot.state="roam";const a=Math.random()*Math.PI*2,d=160+Math.random()*550;bot.targetX=bot.x+Math.cos(a)*d;bot.targetZ=bot.z+Math.sin(a)*d;}
@@ -7,6 +8,12 @@ export function updateBots(dt,player){
   for(const bot of bots){if(bot.dead||bot.hp<=0)continue;bot.timer-=dt;bot.shoot-=dt;
     if(bot.state==="duel"&&bot.enemy&&bot.enemy.hp>0){bot.targetX=bot.enemy.x;bot.targetZ=bot.enemy.z;const d=Math.hypot(bot.targetX-bot.x,bot.targetZ-bot.z);if(d<520&&bot.shoot<=0){bot.shoot=1.0+Math.random()*.9;if(Math.random()<.34){const dmg=8+Math.random()*7;if(d<250)player.hp=Math.max(0,player.hp-dmg);}}}
     else if(bot.timer<=0){bot.timer=1.2+Math.random()*2.5;chooseTarget(bot);}
-    let dx=bot.targetX-bot.x,dz=bot.targetZ-bot.z,d=Math.hypot(dx,dz);if(d>8){dx/=d;dz/=d;const sp=bot.state==="duel"?SPEED*1.12:SPEED;bot.x+=dx*sp*dt;bot.z+=dz*sp*dt;bot.mesh.position.set(bot.x,0,bot.z);bot.mesh.rotation.y=Math.atan2(dx,dz);}
+    let dx=bot.targetX-bot.x,dz=bot.targetZ-bot.z,d=Math.hypot(dx,dz);if(d>8){dx/=d;dz/=d;const sp=bot.state==="duel"?SPEED*1.12:SPEED;const nx=bot.x+dx*sp*dt;
+      const nz=bot.z+dz*sp*dt;
+      if(canMoveTo(nx,bot.z,24)) bot.x=nx;
+      else bot.targetX=bot.x;
+      if(canMoveTo(bot.x,nz,24)) bot.z=nz;
+      else bot.targetZ=bot.z;
+      bot.mesh.position.set(bot.x,0,bot.z);bot.mesh.rotation.y=Math.atan2(dx,dz);}
   }
 }
