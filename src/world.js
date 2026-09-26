@@ -1,5 +1,5 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
-export const world={width:6000,height:4500,safeZone:{x:3000,y:2250,radius:1850},spawn:{x:3000,y:2250},scene:null,loot:[],vehicles:[],buildings:[],trees:[],roads:[]};
+export const world={width:6000,height:4500,safeZone:{x:3000,y:2250,radius:1850},safeZoneRing:null,spawn:{x:3000,y:2250},scene:null,loot:[],vehicles:[],buildings:[],trees:[],roads:[]};
 const mats={};function material(color,roughness=1){return new THREE.MeshStandardMaterial({color,roughness});}
 function box(scene,x,y,z,w,h,d,mat){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m;}
 export function createWorld(scene){
@@ -20,7 +20,7 @@ export function createWorld(scene){
  for(let i=0;i<175;i++){const x=120+Math.random()*4300,z=100+Math.random()*4200;if(isNearRoad(x,z,100)||isNearBuilding(x,z,110))continue;addTree(scene,x,z,.8+Math.random()*.8);}
  for(let i=0;i<30;i++){const x=300+Math.random()*4050,z=300+Math.random()*3800;if(!isNearBuilding(x,z,80))addVehicle(scene,x,z,Math.random()*Math.PI*2);}
  const types=["HELMET","VEST","BACKPACK","SHOES","MEDKIT","FOOD"];for(let i=0;i<120;i++){const x=350+Math.random()*4050,z=250+Math.random()*3900,type=types[i%types.length],mesh=new THREE.Mesh(new THREE.BoxGeometry(14,8,14),mats.loot);mesh.position.set(x,8,z);scene.add(mesh);world.loot.push({x,z,type,taken:false,mesh});}
- const ring=new THREE.Mesh(new THREE.RingGeometry(world.safeZone.radius-9,world.safeZone.radius,96),new THREE.MeshBasicMaterial({color:0xffffff,side:THREE.DoubleSide,transparent:true,opacity:.75}));ring.rotation.x=-Math.PI/2;ring.position.set(world.safeZone.x,1,world.safeZone.y);scene.add(ring);
+ const ring=new THREE.Mesh(new THREE.RingGeometry(world.safeZone.radius-9,world.safeZone.radius,96),new THREE.MeshBasicMaterial({color:0xffffff,side:THREE.DoubleSide,transparent:true,opacity:.75}));ring.rotation.x=-Math.PI/2;ring.position.set(world.safeZone.x,1,world.safeZone.y);scene.add(ring);world.safeZoneRing=ring;
 }
 function addRoad(scene,x,z,w,d){world.roads.push({x,z,w,d});box(scene,x+w/2,1,z+d/2,w,2,d,mats.road);const horizontal=w>d,count=Math.floor((horizontal?w:d)/85);for(let i=0;i<count;i++)box(scene,horizontal?x+i*85+20:x+w/2,2.2,horizontal?z+d/2:z+i*85+20,horizontal?38:4,.4,horizontal?4:38,mats.roadLine);}
 function addBridge(scene,x,z,w,d){
