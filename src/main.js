@@ -4,7 +4,7 @@ import { player } from "./player.js";
 import { world, createWorld, getZoneState, getNearbyInteraction, canMoveTo } from "./world.js";
 import { bots, createBots, updateBots, damageBot } from "./bots.js";
 
-const VERSION = "2.4.0";
+const VERSION = "2.5.0";
 const canvas = document.getElementById("game");
 
 const renderer = new THREE.WebGLRenderer({
@@ -49,10 +49,10 @@ let lastTime = 0;
 let yaw = 0.35;
 let pitch = 0.08;
 
-const CAMERA_DISTANCE = 132;
-const CAMERA_HEIGHT = 78;
-const CAMERA_SHOULDER = 10;
-const CAMERA_SMOOTH = 18;
+const CAMERA_DISTANCE = 78;
+const CAMERA_HEIGHT = 34;
+const CAMERA_SHOULDER = 6;
+const CAMERA_SMOOTH = 20;
 
 const moveForward = new THREE.Vector3();
 const moveRight = new THREE.Vector3();
@@ -61,6 +61,9 @@ const cameraTarget = new THREE.Vector3();
 const cameraDesired = new THREE.Vector3();
 const cameraRight = new THREE.Vector3();
 const aimDirection = new THREE.Vector3();
+const playerForward = new THREE.Vector3();
+const playerLegs = [];
+const playerArms = [];
 
 const raycaster = new THREE.Raycaster();
 
@@ -150,6 +153,7 @@ function createPlayer() {
     arm.rotation.z = side * 0.18;
     arm.castShadow = true;
     playerGroup.add(arm);
+    playerArms.push(arm);
 
     const leg = new THREE.Mesh(
       new THREE.CapsuleGeometry(5, 24, 4, 7),
@@ -157,6 +161,8 @@ function createPlayer() {
     );
     leg.position.set(side * 7, 16, 0);
     leg.castShadow = true;
+    leg.userData.side = side;
+    playerLegs.push(leg);
     playerGroup.add(leg);
 
     const boot = new THREE.Mesh(
@@ -258,8 +264,32 @@ function updatePlayerVisual() {
 
   playerGroup.position.set(player.x, 0, player.y);
 
-  if (moveVector.lengthSq() > 0.0001) {
+  const moving = moveVector.lengthSq() > 0.0001;
+  const aiming = input.aim || input.fire;
+
+  if (aiming) {
+    // While aiming/firing, the character follows the camera direction.
+    playerGroup.rotation.y = yaw;
+  } else if (moving) {
+    // Free movement: body follows the joystick direction.
     playerGroup.rotation.y = Math.atan2(moveVector.x, -moveVector.z);
+  }
+
+  const walkAmount = Math.min(1, Math.hypot(input.x, input.y));
+  const sprintAmount = input.run ? 1.35 : 1;
+  const walkPhase = performance.now() * 0.012 * sprintAmount;
+  const stride = moving ? Math.sin(walkPhase) * 0.62 * walkAmount : 0;
+  const opposite = moving ? Math.sin(walkPhase + Math.PI) * 0.62 * walkAmount : 0;
+
+  if (playerLegs.length >= 2) {
+    playerLegs[0].rotation.x = stride;
+    playerLegs[1].rotation.x = opposite;
+  }
+
+  if (playerArms.length >= 2) {
+    const armSwing = moving && !aiming ? Math.sin(walkPhase) * 0.18 : 0;
+    playerArms[0].rotation.x = armSwing;
+    playerArms[1].rotation.x = -armSwing;
   }
 
   const targetScaleY = input.crouch ? 0.78 : 1;
@@ -267,24 +297,25 @@ function updatePlayerVisual() {
 }
 
 function updateCamera(dt) {
-  const distance = input.aim ? 52 : CAMERA_DISTANCE;
-  const height = input.crouch ? 50 : CAMERA_HEIGHT;
-  const lookHeight = input.crouch ? 36 : 45;
+  // Close shoulder-style third-person camera.
+  const distance = input.aim ? 42 : CAMERA_DISTANCE;
+  const baseHeight = input.crouch ? 28 : CAMERA_HEIGHT;
+  const lookHeight = input.crouch ? 36 : 49;
 
-  const cp = Math.cos(pitch);
-  const sp = Math.sin(pitch);
+  const horizontalDistance = Math.cos(pitch) * distance;
+  const verticalOffset = Math.sin(pitch) * distance;
 
-  const backX = -Math.sin(yaw) * cp;
-  const backZ = Math.cos(yaw) * cp;
+  const backX = -Math.sin(yaw) * horizontalDistance;
+  const backZ = Math.cos(yaw) * horizontalDistance;
 
   cameraRight.set(Math.cos(yaw), 0, Math.sin(yaw));
 
   cameraTarget.set(player.x, lookHeight, player.y);
 
   cameraDesired.set(
-    player.x + backX * distance + cameraRight.x * CAMERA_SHOULDER,
-    height + sp * distance * 0.2,
-    player.y + backZ * distance + cameraRight.z * CAMERA_SHOULDER
+    player.x + backX + cameraRight.x * CAMERA_SHOULDER,
+    baseHeight + verticalOffset,
+    player.y + backZ + cameraRight.z * CAMERA_SHOULDER
   );
 
   camera.position.lerp(
@@ -294,7 +325,7 @@ function updateCamera(dt) {
 
   camera.lookAt(
     cameraTarget.x,
-    cameraTarget.y + sp * 8,
+    cameraTarget.y + Math.sin(pitch) * 8,
     cameraTarget.z
   );
 }
@@ -668,7 +699,7 @@ export function startGame() {
   if (running) return;
 
   input.cameraYaw = 0.35;
-  input.cameraPitch = 0.16;
+  input.cameraPitch = 0.08;
   input.x = 0;
   input.y = 0;
   input.run = false;
