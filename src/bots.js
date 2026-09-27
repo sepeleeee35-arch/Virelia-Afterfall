@@ -1,7 +1,12 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 import { canMoveTo } from "./world.js";
 export const bots=[];const SPEED=78,COLORS=[0x344b55,0x574c43,0x455e4c,0x66524a];
-export function createBots(scene){for(const b of bots)if(b.mesh)scene.remove(b.mesh);bots.length=0;for(let i=0;i<69;i++){const a=Math.random()*Math.PI*2,d=650+Math.random()*1750,x=3000+Math.cos(a)*d,z=2250+Math.sin(a)*d,g=new THREE.Group();g.position.set(x,0,z);const body=new THREE.Mesh(new THREE.CapsuleGeometry(13,28,5,8),new THREE.MeshStandardMaterial({color:COLORS[i%COLORS.length]}));body.position.y=35;g.add(body);const head=new THREE.Mesh(new THREE.SphereGeometry(10,10,8),new THREE.MeshStandardMaterial({color:0xc08a72}));head.position.y=68;g.add(head);scene.add(g);bots.push({x,z,hp:100,targetX:x,targetZ:z,timer:Math.random()*2,state:"roam",mesh:g,dead:false,shoot:Math.random()*2,flash:0});}}
+export function createBots(scene){for(const b of bots)if(b.mesh)scene.remove(b.mesh);bots.length=0;let attempts=0;
+  while(bots.length<99 && attempts++<3000){
+    const x=280+Math.random()*4900;
+    const z=280+Math.random()*3940;
+    if(!canMoveTo(x,z,24)) continue;
+    const g=new THREE.Group();g.position.set(x,0,z);const body=new THREE.Mesh(new THREE.CapsuleGeometry(13,28,5,8),new THREE.MeshStandardMaterial({color:COLORS[i%COLORS.length]}));body.position.y=35;g.add(body);const head=new THREE.Mesh(new THREE.SphereGeometry(10,10,8),new THREE.MeshStandardMaterial({color:0xc08a72}));head.position.y=68;g.add(head);scene.add(g);bots.push({x,z,hp:100,targetX:x,targetZ:z,timer:Math.random()*2,state:"roam",mesh:g,dead:false,shoot:Math.random()*2,flash:0});}}
 function chooseTarget(bot){const live=bots.filter(b=>b!==bot&&b.hp>0&&!b.dead);if(live.length&&Math.random()<.55){const other=live[Math.floor(Math.random()*live.length)],d=Math.hypot(other.x-bot.x,other.z-bot.z);if(d<700){bot.state="duel";bot.enemy=other;return;}}bot.state="roam";const a=Math.random()*Math.PI*2,d=160+Math.random()*550;bot.targetX=bot.x+Math.cos(a)*d;bot.targetZ=bot.z+Math.sin(a)*d;}
 export function damageBot(bot,amount){if(!bot||bot.hp<=0)return false;bot.hp=Math.max(0,bot.hp-amount);if(bot.hp===0){bot.dead=true;bot.state="dead";bot.mesh.visible=false;}return true;}
 export function updateBots(dt,player){
