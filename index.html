@@ -613,7 +613,7 @@ canvas{
 
 <meta name="cache-control" content="no-cache, no-store, must-revalidate">
 <meta name="pragma" content="no-cache">
-<meta name="build-version" content="2.4.0">
+<meta name="build-version" content="3.0.0">
 
 </head>
 
@@ -644,7 +644,7 @@ canvas{
 
 </div>
 
-<div id="buildVersion">BUILD v2.4.0</div>
+<div id="buildVersion">BUILD v3.0.0</div>
 
 <div id="hud">
 
@@ -658,7 +658,7 @@ canvas{
     </div>
 
     <div class="version">
-      VIRELIA v2.4.0
+      VIRELIA v3.0.0
     </div>
 
     <div class="bar">
@@ -695,6 +695,8 @@ canvas{
     </b>
 
   </div>
+
+  <div id="killsBox" style="position:absolute;top:max(12px,env(safe-area-inset-top));right:275px;padding:9px 13px;border-radius:11px;background:rgba(8,13,13,.82);font-size:11px;">KILLS<br><b id="kills">0</b></div>
 
   <div id="miniWrap">
 
@@ -797,15 +799,15 @@ canvas{
       <br><br>
       TPP MOBILE CONTROLS
       <br>
-      70 SURVIVORS
+      100 SURVIVORS
       <br>
-      BATTLE MAP • AUTO FIRE • SAFE ZONE
+      100 PLAYER BR • LOOT • SAFE ZONE • TPP
       <br>
       LANDSCAPE MOBILE
     </div>
 
     <div class="versionStart">
-      VERSION 2.4.0
+      VERSION 3.0.0
     </div>
 
     <button id="startBtn">
@@ -820,7 +822,7 @@ canvas{
 
 import {
   startGame
-} from "./src/main.js?v=2.4.0";
+} from "./src/main.js?v=3.0.0";
 
 const startScreen =
   document.getElementById("start");
