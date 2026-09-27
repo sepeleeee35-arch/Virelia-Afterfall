@@ -4,7 +4,7 @@ import { player } from "./player.js";
 import { world, createWorld, getZoneState, getNearbyInteraction, canMoveTo } from "./world.js";
 import { bots, createBots, updateBots, damageBot } from "./bots.js";
 
-const VERSION = "2.5.0";
+const VERSION = "3.0.0";
 const canvas = document.getElementById("game");
 
 const renderer = new THREE.WebGLRenderer({
@@ -75,6 +75,7 @@ let ammo = 30;
 let reloadTimer = 0;
 let zoneClock = 300;
 let lastHp = 100;
+let kills = 0;
 
 const inventory = {
   medkit: 0,
@@ -395,6 +396,7 @@ function fireWeapon() {
   if (best) {
     const damage = input.aim ? 40 : 34;
     damageBot(best, damage);
+    if (best.hp <= 0) kills += 1;
     showCombatMessage(best.hp <= 0 ? "ELIMINATED" : "HIT -" + damage);
   }
 }
@@ -502,6 +504,7 @@ function updateHud(dt) {
   const staminaBar = document.getElementById("staminaBar");
   const alive = document.getElementById("alive");
   const phase = document.getElementById("phase");
+  const killsElement = document.getElementById("kills");
   const zoneTimer = document.getElementById("zoneTimer");
   const hpText = document.getElementById("hpText");
   const armorBar = document.getElementById("armorBar");
@@ -525,6 +528,7 @@ function updateHud(dt) {
 
   const survivors = bots.filter(bot => bot.hp > 0 && !bot.dead).length + 1;
   if (alive) alive.textContent = String(survivors);
+  if (killsElement) killsElement.textContent = String(kills);
 
   if (survivors <= 1 && player.hp > 0) {
     showCombatMessage("WINNER • MATCH COMPLETE");
@@ -536,7 +540,7 @@ function updateHud(dt) {
   const zone = getZoneState(player.x, player.y);
 
   if (phase) {
-    phase.textContent = zone.outside ? "OUTSIDE ZONE" : "SURVIVAL";
+    phase.textContent = zone.outside ? "OUTSIDE ZONE" : (zoneClock > 200 ? "DROP & LOOT" : zoneClock > 100 ? "ZONE CLOSING" : "FINAL CIRCLE");
   }
 
   if (zoneTimer) {
@@ -711,6 +715,7 @@ export function startGame() {
   reloadTimer = 0;
   fireCooldown = 0;
   zoneClock = 300;
+  kills = 0;
   world.safeZone.radius = 1850;
   player.hp = 100;
   player.stamina = 100;
